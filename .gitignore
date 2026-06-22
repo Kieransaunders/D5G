@@ -1,0 +1,11 @@
+node_modules/
+app/node_modules/
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.local
+skills/**/.playwright-mcp/
+skills/**/golden/*-diff.png
+
+.DS_Store

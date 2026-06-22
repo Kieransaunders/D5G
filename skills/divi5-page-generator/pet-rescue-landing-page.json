@@ -1,0 +1,1535 @@
+{
+  "context": "et_builder",
+  "data": {
+    "1": "<!-- wp:divi/placeholder -->\r\n<!-- wp:divi/section {\"module\":{\"meta\":{\"adminLabel\":{\"desktop\":{\"value\":\"Hero\"}}}},\"modulePreset\":[\"0ddst8cmsv\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_2\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\",\"columnGap\":\"80px\",\"alignItems\":\"center\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"1200px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"13_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>READING AND THE WEST COUNTRY</p>\"}}},\"modulePreset\":[\"x289hhfrxn\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Adopt a rescue dog Devon - find your new best friend\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h1\"}}}}}},\"modulePreset\":[\"v1um3uvvt3\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Ready to adopt a rescue dog Devon families love? Every animal here is looked after by our volunteer fosterers and ready for a loving home. Browse who's waiting today, updated live from Airtable.</p>\"}}},\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"maxWidth\":\"460px\"}}}}},\"modulePreset\":[\"quxm537c5v\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_2\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\",\"columnGap\":\"16px\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"460px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"12_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Browse all pets\",\"linkUrl\":\"#airloop-grid\"}}},\"decoration\":{\"button\":{\"desktop\":{\"value\":{\"enable\":\"on\"}}},\"font\":{\"font\":{\"desktop\":{\"value\":{\"size\":\"16px\",\"color\":\"$variable({\\\"type\\\":\\\"color\\\",\\\"value\\\":{\\\"name\\\":\\\"gcid-white\\\",\\\"settings\\\":{}}})$\",\"weight\":\"600\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"#f0552d\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"16px\",\"bottom\":\"16px\",\"left\":\"32px\",\"right\":\"32px\",\"syncVertical\":\"on\",\"syncHorizontal\":\"on\"}}}}}},\"modulePreset\":[\"erofkrepv8\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"12_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"How adoption works\",\"linkUrl\":\"#how-it-works\"}}},\"decoration\":{\"button\":{\"desktop\":{\"value\":{\"enable\":\"on\"}}},\"font\":{\"font\":{\"desktop\":{\"value\":{\"size\":\"16px\",\"color\":\"#13110e\",\"weight\":\"600\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"transparent\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"16px\",\"bottom\":\"16px\",\"left\":\"32px\",\"right\":\"32px\",\"syncVertical\":\"on\",\"syncHorizontal\":\"on\"}}}}}},\"modulePreset\":[\"it9ny9uu1p\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- wp:divi/divider {\"divider\":{\"advanced\":{\"line\":{\"desktop\":{\"value\":{\"show\":\"on\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_3\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\",\"columnGap\":\"0px\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"380px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/number-counter {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Pets in our care\"}}},\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"6\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"wkgnwxz5oo\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/number-counter {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Towns covered\"}}},\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"4\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"wkgnwxz5oo\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/number-counter {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Health checked\"}}},\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"100\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"on\"}}}},\"modulePreset\":[\"wkgnwxz5oo\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"11_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/image {\"image\":{\"innerContent\":{\"desktop\":{\"value\":{\"src\":\"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=900&q=80\",\"alt\":\"Golden retriever sitting in a garden, looking at the camera\"}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section -->\r\n<!-- wp:divi/section {\"module\":{\"meta\":{\"adminLabel\":{\"desktop\":{\"value\":\"Stats Band\"}}}},\"modulePreset\":[\"ycc6tgodq0\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_3\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\",\"columnGap\":\"32px\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"900px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/number-counter {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"PETS IN OUR CARE\"}}},\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"6\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"2ib2xzhpbd\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/number-counter {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"TOWNS COVERED\"}}},\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"4\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"2ib2xzhpbd\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/number-counter {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"HEALTH CHECKED\"}}},\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"100\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"on\"}}}},\"modulePreset\":[\"2ib2xzhpbd\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section -->\r\n<!-- wp:divi/section {\"module\":{\"meta\":{\"adminLabel\":{\"desktop\":{\"value\":\"Directory\"}}}},\"modulePreset\":[\"8dwfaqo1zm\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_1\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"1200px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Adopt a rescue dog Devon - meet the animals\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h2\"}}}}}},\"modulePreset\":[\"3ttpof40wb\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Pulled live from the rescue database, no manual updates needed. Every listing you see is real-time from Airtable.</p>\"}}},\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"maxWidth\":\"560px\"}}}}},\"modulePreset\":[\"quxm537c5v\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/code {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<div id='airloop-grid'>[airloop_display id='__AIRLOOP_DISPLAY_ID__']</div>\"}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section -->\r\n<!-- wp:divi/section {\"module\":{\"meta\":{\"adminLabel\":{\"desktop\":{\"value\":\"How It Works\"}}}},\"modulePreset\":[\"0ddst8cmsv\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_1\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"1200px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"How adoption works\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h2\"}}}}}},\"modulePreset\":[\"3ttpof40wb\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Three simple steps stand between you and a new companion. We handle the rest.</p>\"}}},\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"maxWidth\":\"520px\"}}}}},\"modulePreset\":[\"quxm537c5v\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_3\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\",\"columnGap\":\"40px\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"1200px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/divider {\"divider\":{\"advanced\":{\"line\":{\"desktop\":{\"value\":{\"show\":\"on\",\"color\":\"#f0552d\",\"weight\":\"2px\",\"style\":\"solid\"}}}}},\"module\":{\"decoration\":{\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"bottom\":\"24px\",\"top\":\"0px\",\"syncVertical\":\"off\",\"syncHorizontal\":\"off\"}}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/number-counter {\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"1\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"frxsk7hawh\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Fill in a short form\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h3\"}}}}}},\"modulePreset\":[\"lmsghipj02\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Tell us about your home, lifestyle and the kind of animal you are looking for. Takes about two minutes.</p>\"}}},\"modulePreset\":[\"quxm537c5v\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/divider {\"divider\":{\"advanced\":{\"line\":{\"desktop\":{\"value\":{\"show\":\"on\",\"color\":\"#f0552d\",\"weight\":\"2px\",\"style\":\"solid\"}}}}},\"module\":{\"decoration\":{\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"bottom\":\"24px\",\"top\":\"0px\",\"syncVertical\":\"off\",\"syncHorizontal\":\"off\"}}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/number-counter {\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"2\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"qkrg805q9w\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Meet your match\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h3\"}}}}}},\"modulePreset\":[\"lmsghipj02\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>We will introduce you to the animals that fit your situation. You can visit at a foster home or arrange a video call first.</p>\"}}},\"modulePreset\":[\"quxm537c5v\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"8_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/divider {\"divider\":{\"advanced\":{\"line\":{\"desktop\":{\"value\":{\"show\":\"on\",\"color\":\"#f0552d\",\"weight\":\"2px\",\"style\":\"solid\"}}}}},\"module\":{\"decoration\":{\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"bottom\":\"24px\",\"top\":\"0px\",\"syncVertical\":\"off\",\"syncHorizontal\":\"off\"}}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/number-counter {\"number\":{\"innerContent\":{\"desktop\":{\"value\":\"3\"}}},\"percent\":{\"advanced\":{\"sign\":{\"desktop\":{\"value\":\"off\"}}}},\"modulePreset\":[\"nzw79jeqhr\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Bring them home\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h3\"}}}}}},\"modulePreset\":[\"lmsghipj02\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Once you are both happy, we complete the adoption paperwork and hand over everything you need for a smooth first week.</p>\"}}},\"modulePreset\":[\"quxm537c5v\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section -->\r\n<!-- wp:divi/section {\"module\":{\"meta\":{\"adminLabel\":{\"desktop\":{\"value\":\"CTA Band\"}}}},\"modulePreset\":[\"9b91chlfoi\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_2\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\",\"columnGap\":\"80px\",\"alignItems\":\"center\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"1200px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"15_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Could you give one of them a home?\"}},\"decoration\":{\"font\":{\"font\":{\"desktop\":{\"value\":{\"headingLevel\":\"h2\"}}}}}},\"modulePreset\":[\"qvdh3dpvgu\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Start an adoption enquiry in two minutes. We will match you with the right companion and guide you through every step.</p>\"}}},\"modulePreset\":[\"wyvru8lruh\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"9_24\"}},\"phone\":{\"value\":{\"flexType\":\"24_24\"}},\"phoneWide\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/button {\"button\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Start an enquiry\",\"linkUrl\":\"#contact\"}}},\"decoration\":{\"button\":{\"desktop\":{\"value\":{\"enable\":\"on\"}}},\"font\":{\"font\":{\"desktop\":{\"value\":{\"size\":\"16px\",\"color\":\"$variable({\\\"type\\\":\\\"color\\\",\\\"value\\\":{\\\"name\\\":\\\"gcid-white\\\",\\\"settings\\\":{}}})$\",\"weight\":\"600\"}}}},\"background\":{\"desktop\":{\"value\":{\"color\":\"#f0552d\"}}},\"spacing\":{\"desktop\":{\"value\":{\"padding\":{\"top\":\"16px\",\"bottom\":\"16px\",\"left\":\"32px\",\"right\":\"32px\",\"syncVertical\":\"on\",\"syncHorizontal\":\"on\"}}}}}},\"modulePreset\":[\"ogg845uvbe\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section -->\r\n<!-- wp:divi/section {\"module\":{\"meta\":{\"adminLabel\":{\"desktop\":{\"value\":\"Footer\"}}}},\"modulePreset\":[\"0ddst8cmsv\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/row {\"module\":{\"advanced\":{\"flexColumnStructure\":{\"desktop\":{\"value\":\"equal-columns_1\"}}},\"decoration\":{\"layout\":{\"desktop\":{\"value\":{\"flexWrap\":\"nowrap\",\"display\":\"flex\"}},\"phone\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}},\"phoneWide\":{\"value\":{\"flexWrap\":\"wrap\",\"display\":\"flex\"}}},\"sizing\":{\"desktop\":{\"value\":{\"width\":\"100%\",\"maxWidth\":\"1200px\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/column {\"module\":{\"decoration\":{\"sizing\":{\"desktop\":{\"value\":{\"flexType\":\"24_24\"}}}}},\"builderVersion\":\"5.0.0-public-beta.9.1\"} -->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Westcountry Pet Rescue - Demo data, live from Airtable</p>\"}}},\"modulePreset\":[\"34oq4d2f64\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- wp:divi/text {\"content\":{\"innerContent\":{\"desktop\":{\"value\":\"<p>Powered by Airloop</p>\"}}},\"modulePreset\":[\"34oq4d2f64\"],\"builderVersion\":\"5.0.0-public-beta.9.1\"} /-->\r\n<!-- /wp:divi/column -->\r\n<!-- /wp:divi/row -->\r\n<!-- /wp:divi/section -->\r\n<!-- /wp:divi/placeholder -->"
+  },
+  "canvases": {},
+  "presets": {
+    "module": {
+      "divi/section": {
+        "default": "0ddst8cmsv",
+        "items": {
+          "0ddst8cmsv": {
+            "id": "0ddst8cmsv",
+            "name": "Section - Paper",
+            "moduleName": "divi/section",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#fbfaf7"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "80px",
+                          "bottom": "80px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#fbfaf7"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "80px",
+                          "bottom": "80px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "8dwfaqo1zm": {
+            "id": "8dwfaqo1zm",
+            "name": "Section - White",
+            "moduleName": "divi/section",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#ffffff"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "80px",
+                          "bottom": "96px",
+                          "syncVertical": "off",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#ffffff"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "80px",
+                          "bottom": "96px",
+                          "syncVertical": "off",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ycc6tgodq0": {
+            "id": "ycc6tgodq0",
+            "name": "Section - Coral",
+            "moduleName": "divi/section",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#f0552d"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "52px",
+                          "bottom": "52px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#f0552d"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "52px",
+                          "bottom": "52px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "9b91chlfoi": {
+            "id": "9b91chlfoi",
+            "name": "Section - Ink",
+            "moduleName": "divi/section",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#13110e"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "88px",
+                          "bottom": "88px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "module": {
+                "decoration": {
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#13110e"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "88px",
+                          "bottom": "88px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "off"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "divi/heading": {
+        "default": "v1um3uvvt3",
+        "items": {
+          "v1um3uvvt3": {
+            "id": "v1um3uvvt3",
+            "name": "H1 Hero",
+            "moduleName": "divi/heading",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h1",
+                          "family": "Space Grotesk",
+                          "size": "56px",
+                          "weight": "700",
+                          "lineHeight": "1.05em",
+                          "color": "#13110e",
+                          "textAlign": "left",
+                          "letterSpacing": "-0.02em"
+                        }
+                      },
+                      "phone": {
+                        "value": {
+                          "size": "34px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h1",
+                          "family": "Space Grotesk",
+                          "size": "56px",
+                          "weight": "700",
+                          "lineHeight": "1.05em",
+                          "color": "#13110e",
+                          "textAlign": "left",
+                          "letterSpacing": "-0.02em"
+                        }
+                      },
+                      "phone": {
+                        "value": {
+                          "size": "34px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "3ttpof40wb": {
+            "id": "3ttpof40wb",
+            "name": "H2 Section",
+            "moduleName": "divi/heading",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h2",
+                          "family": "Space Grotesk",
+                          "size": "38px",
+                          "weight": "700",
+                          "lineHeight": "1.15em",
+                          "color": "#13110e",
+                          "textAlign": "left",
+                          "letterSpacing": "-0.02em"
+                        }
+                      },
+                      "phone": {
+                        "value": {
+                          "size": "26px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h2",
+                          "family": "Space Grotesk",
+                          "size": "38px",
+                          "weight": "700",
+                          "lineHeight": "1.15em",
+                          "color": "#13110e",
+                          "textAlign": "left",
+                          "letterSpacing": "-0.02em"
+                        }
+                      },
+                      "phone": {
+                        "value": {
+                          "size": "26px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "qvdh3dpvgu": {
+            "id": "qvdh3dpvgu",
+            "name": "H2 Section Light",
+            "moduleName": "divi/heading",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h2",
+                          "family": "Space Grotesk",
+                          "size": "40px",
+                          "weight": "700",
+                          "lineHeight": "1.1em",
+                          "color": "#ffffff",
+                          "textAlign": "left",
+                          "letterSpacing": "-0.02em"
+                        }
+                      },
+                      "phone": {
+                        "value": {
+                          "size": "26px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h2",
+                          "family": "Space Grotesk",
+                          "size": "40px",
+                          "weight": "700",
+                          "lineHeight": "1.1em",
+                          "color": "#ffffff",
+                          "textAlign": "left",
+                          "letterSpacing": "-0.02em"
+                        }
+                      },
+                      "phone": {
+                        "value": {
+                          "size": "26px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "lmsghipj02": {
+            "id": "lmsghipj02",
+            "name": "H3 Card",
+            "moduleName": "divi/heading",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h3",
+                          "family": "Space Grotesk",
+                          "size": "20px",
+                          "weight": "600",
+                          "lineHeight": "1.3em",
+                          "color": "#13110e",
+                          "textAlign": "left"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "headingLevel": "h3",
+                          "family": "Space Grotesk",
+                          "size": "20px",
+                          "weight": "600",
+                          "lineHeight": "1.3em",
+                          "color": "#13110e",
+                          "textAlign": "left"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "divi/text": {
+        "default": "x289hhfrxn",
+        "items": {
+          "x289hhfrxn": {
+            "id": "x289hhfrxn",
+            "name": "Eyebrow",
+            "moduleName": "divi/text",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Space Grotesk",
+                            "size": "12px",
+                            "weight": "600",
+                            "lineHeight": "1em",
+                            "color": "#f0552d",
+                            "textAlign": "left",
+                            "letterSpacing": "0.1em"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Space Grotesk",
+                            "size": "12px",
+                            "weight": "600",
+                            "lineHeight": "1em",
+                            "color": "#f0552d",
+                            "textAlign": "left",
+                            "letterSpacing": "0.1em"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "quxm537c5v": {
+            "id": "quxm537c5v",
+            "name": "Body Light",
+            "moduleName": "divi/text",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Inter",
+                            "size": "17px",
+                            "lineHeight": "1.8em",
+                            "color": "#6b665d",
+                            "textAlign": "left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Inter",
+                            "size": "17px",
+                            "lineHeight": "1.8em",
+                            "color": "#6b665d",
+                            "textAlign": "left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "wyvru8lruh": {
+            "id": "wyvru8lruh",
+            "name": "Body Dark",
+            "moduleName": "divi/text",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Inter",
+                            "size": "17px",
+                            "lineHeight": "1.8em",
+                            "color": "rgba(255,255,255,0.65)",
+                            "textAlign": "left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Inter",
+                            "size": "17px",
+                            "lineHeight": "1.8em",
+                            "color": "rgba(255,255,255,0.65)",
+                            "textAlign": "left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "34oq4d2f64": {
+            "id": "34oq4d2f64",
+            "name": "Footer Text",
+            "moduleName": "divi/text",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Inter",
+                            "size": "14px",
+                            "lineHeight": "1.6em",
+                            "color": "#6b665d",
+                            "textAlign": "center"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "content": {
+                "decoration": {
+                  "bodyFont": {
+                    "body": {
+                      "font": {
+                        "desktop": {
+                          "value": {
+                            "family": "Inter",
+                            "size": "14px",
+                            "lineHeight": "1.6em",
+                            "color": "#6b665d",
+                            "textAlign": "center"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "divi/number-counter": {
+        "default": "wkgnwxz5oo",
+        "items": {
+          "wkgnwxz5oo": {
+            "id": "wkgnwxz5oo",
+            "name": "Stat Num Ink",
+            "moduleName": "divi/number-counter",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "36px",
+                          "weight": "700",
+                          "color": "#13110e"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "13px",
+                          "weight": "400",
+                          "color": "#6b665d"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "36px",
+                          "weight": "700",
+                          "color": "#13110e"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "13px",
+                          "weight": "400",
+                          "color": "#6b665d"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "2ib2xzhpbd": {
+            "id": "2ib2xzhpbd",
+            "name": "Stat Num White",
+            "moduleName": "divi/number-counter",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#ffffff",
+                          "letterSpacing": "-0.02em"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "13px",
+                          "weight": "500",
+                          "color": "rgba(255,255,255,0.85)",
+                          "letterSpacing": "0.06em"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#ffffff",
+                          "letterSpacing": "-0.02em"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "13px",
+                          "weight": "500",
+                          "color": "rgba(255,255,255,0.85)",
+                          "letterSpacing": "0.06em"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "frxsk7hawh": {
+            "id": "frxsk7hawh",
+            "name": "Step Num 1",
+            "moduleName": "divi/number-counter",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466245,
+            "updated": 1782027466245,
+            "attrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#e9e5dd"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "size": "0px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#e9e5dd"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "size": "0px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "qkrg805q9w": {
+            "id": "qkrg805q9w",
+            "name": "Step Num 2",
+            "moduleName": "divi/number-counter",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466245,
+            "updated": 1782027466245,
+            "attrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#e9e5dd"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "size": "0px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#e9e5dd"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "size": "0px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "nzw79jeqhr": {
+            "id": "nzw79jeqhr",
+            "name": "Step Num 3",
+            "moduleName": "divi/number-counter",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466245,
+            "updated": 1782027466245,
+            "attrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#e9e5dd"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "size": "0px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "number": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "52px",
+                          "weight": "700",
+                          "color": "#e9e5dd"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "title": {
+                "decoration": {
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "size": "0px"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "divi/button": {
+        "default": "erofkrepv8",
+        "items": {
+          "erofkrepv8": {
+            "id": "erofkrepv8",
+            "name": "Button - Primary",
+            "moduleName": "divi/button",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "button": {
+                "decoration": {
+                  "button": {
+                    "desktop": {
+                      "value": {
+                        "enable": "on"
+                      }
+                    }
+                  },
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "15px",
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-white\",\"settings\":{}}})$",
+                          "weight": "600"
+                        }
+                      }
+                    }
+                  },
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#f0552d"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "14px",
+                          "bottom": "14px",
+                          "left": "28px",
+                          "right": "28px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "on"
+                        }
+                      }
+                    }
+                  },
+                  "border": {
+                    "desktop": {
+                      "value": {
+                        "radius": {
+                          "topLeft": "6px",
+                          "topRight": "6px",
+                          "bottomLeft": "6px",
+                          "bottomRight": "6px",
+                          "sync": "on"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "button": {
+                "decoration": {
+                  "button": {
+                    "desktop": {
+                      "value": {
+                        "enable": "on"
+                      }
+                    }
+                  },
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "15px",
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-white\",\"settings\":{}}})$",
+                          "weight": "600"
+                        }
+                      }
+                    }
+                  },
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#f0552d"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "14px",
+                          "bottom": "14px",
+                          "left": "28px",
+                          "right": "28px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "on"
+                        }
+                      }
+                    }
+                  },
+                  "border": {
+                    "desktop": {
+                      "value": {
+                        "radius": {
+                          "topLeft": "6px",
+                          "topRight": "6px",
+                          "bottomLeft": "6px",
+                          "bottomRight": "6px",
+                          "sync": "on"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "it9ny9uu1p": {
+            "id": "it9ny9uu1p",
+            "name": "Button - Ghost",
+            "moduleName": "divi/button",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "button": {
+                "decoration": {
+                  "button": {
+                    "desktop": {
+                      "value": {
+                        "enable": "on"
+                      }
+                    }
+                  },
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "15px",
+                          "color": "#13110e",
+                          "weight": "500"
+                        }
+                      }
+                    }
+                  },
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "transparent"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "14px",
+                          "bottom": "14px",
+                          "left": "28px",
+                          "right": "28px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "on"
+                        }
+                      }
+                    }
+                  },
+                  "border": {
+                    "desktop": {
+                      "value": {
+                        "styles": {
+                          "all": "solid"
+                        },
+                        "widths": {
+                          "all": "1.5px"
+                        },
+                        "colors": {
+                          "all": "#e9e5dd"
+                        },
+                        "radius": {
+                          "topLeft": "6px",
+                          "topRight": "6px",
+                          "bottomLeft": "6px",
+                          "bottomRight": "6px",
+                          "sync": "on"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "button": {
+                "decoration": {
+                  "button": {
+                    "desktop": {
+                      "value": {
+                        "enable": "on"
+                      }
+                    }
+                  },
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Inter",
+                          "size": "15px",
+                          "color": "#13110e",
+                          "weight": "500"
+                        }
+                      }
+                    }
+                  },
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "transparent"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "14px",
+                          "bottom": "14px",
+                          "left": "28px",
+                          "right": "28px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "on"
+                        }
+                      }
+                    }
+                  },
+                  "border": {
+                    "desktop": {
+                      "value": {
+                        "styles": {
+                          "all": "solid"
+                        },
+                        "widths": {
+                          "all": "1.5px"
+                        },
+                        "colors": {
+                          "all": "#e9e5dd"
+                        },
+                        "radius": {
+                          "topLeft": "6px",
+                          "topRight": "6px",
+                          "bottomLeft": "6px",
+                          "bottomRight": "6px",
+                          "sync": "on"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ogg845uvbe": {
+            "id": "ogg845uvbe",
+            "name": "Button - Coral Large",
+            "moduleName": "divi/button",
+            "version": "5.0.0-public-beta.9.1",
+            "type": "module",
+            "created": 1782027466244,
+            "updated": 1782027466244,
+            "attrs": {
+              "button": {
+                "decoration": {
+                  "button": {
+                    "desktop": {
+                      "value": {
+                        "enable": "on"
+                      }
+                    }
+                  },
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "16px",
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-white\",\"settings\":{}}})$",
+                          "weight": "600"
+                        }
+                      }
+                    }
+                  },
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#f0552d"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "16px",
+                          "bottom": "16px",
+                          "left": "32px",
+                          "right": "32px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "on"
+                        }
+                      }
+                    }
+                  },
+                  "border": {
+                    "desktop": {
+                      "value": {
+                        "radius": {
+                          "topLeft": "6px",
+                          "topRight": "6px",
+                          "bottomLeft": "6px",
+                          "bottomRight": "6px",
+                          "sync": "on"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "styleAttrs": {
+              "button": {
+                "decoration": {
+                  "button": {
+                    "desktop": {
+                      "value": {
+                        "enable": "on"
+                      }
+                    }
+                  },
+                  "font": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Space Grotesk",
+                          "size": "16px",
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-white\",\"settings\":{}}})$",
+                          "weight": "600"
+                        }
+                      }
+                    }
+                  },
+                  "background": {
+                    "desktop": {
+                      "value": {
+                        "color": "#f0552d"
+                      }
+                    }
+                  },
+                  "spacing": {
+                    "desktop": {
+                      "value": {
+                        "padding": {
+                          "top": "16px",
+                          "bottom": "16px",
+                          "left": "32px",
+                          "right": "32px",
+                          "syncVertical": "on",
+                          "syncHorizontal": "on"
+                        }
+                      }
+                    }
+                  },
+                  "border": {
+                    "desktop": {
+                      "value": {
+                        "radius": {
+                          "topLeft": "6px",
+                          "topRight": "6px",
+                          "bottomLeft": "6px",
+                          "bottomRight": "6px",
+                          "sync": "on"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "global_colors": [
+    [
+      "gcid-coral",
+      {
+        "color": "#f0552d",
+        "status": "active",
+        "label": "Coral Accent"
+      }
+    ],
+    [
+      "gcid-ink",
+      {
+        "color": "#13110e",
+        "status": "active",
+        "label": "Ink"
+      }
+    ],
+    [
+      "gcid-paper",
+      {
+        "color": "#fbfaf7",
+        "status": "active",
+        "label": "Paper"
+      }
+    ],
+    [
+      "gcid-muted",
+      {
+        "color": "#6b665d",
+        "status": "active",
+        "label": "Muted Text"
+      }
+    ],
+    [
+      "gcid-white",
+      {
+        "color": "#ffffff",
+        "status": "active",
+        "label": "White"
+      }
+    ]
+  ],
+  "global_variables": [],
+  "images": {},
+  "thumbnails": []
+}
