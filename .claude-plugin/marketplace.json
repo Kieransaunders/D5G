@@ -1,0 +1,32 @@
+{
+  "name": "divi5generate",
+  "owner": {
+    "name": "Kieran, iConnectIT",
+    "email": "kieran@iconnectit.co.uk",
+    "url": "https://iconnectit.co.uk"
+  },
+  "metadata": {
+    "description": "Divi 5 page generator, design reviewer, style tools, importer, and custom module development.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "divi5generate",
+      "source": ".",
+      "description": "Divi 5 toolkit: SEO-optimised page JSON generator, design/SEO reviewer for any Divi 5 export, brand-guide-to-Global-Variables converter, one-command import into any WordPress site (local or hosted) with draft preview and publish-on-accept, plus Divi 5 plugin/custom-module development and a Theatre.js motion engine.",
+      "version": "1.0.0",
+      "keywords": [
+        "divi",
+        "divi-5",
+        "wordpress",
+        "page-generator",
+        "seo",
+        "json-generator",
+        "localwp",
+        "theatre-js",
+        "divitheatre",
+        "animation"
+      ]
+    }
+  ]
+}
