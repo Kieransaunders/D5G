@@ -1,5 +1,36 @@
 # Chat-driven Divi 5 Generator — Implementation Plan
 
+## Execution Status
+
+**Last updated:** 2026-06-22
+
+| Area | State |
+|---|---|
+| Design doc | ✅ Approved + committed (`5b0376d`) |
+| Implementation plan | ✅ Written + committed (`77899bd`) |
+| Implementation tasks (30) | ⏸ All pending — none started |
+| Blocker | The `Task` tool (subagent dispatch) returns `Error` in the session that produced this plan, so `superpowers:subagent-driven-development` could not execute. Verified by a trivial probe prompt. |
+
+**How to resume:**
+
+1. **In a session with working subagent dispatch** — open this file, follow `superpowers:executing-plans` (parallel session) or `superpowers:subagent-driven-development` (same session). Task list lives in this file below; full task text is inline (no need to re-derive).
+2. **Direct manual execution** — work the tasks top-to-bottom using the TDD steps already written. Each task lists Files / Step 1 (failing test) / Step 2 (run to fail) / Step 3 (implement, code included) / Step 4 (run to pass) / Step 5 (commit, message included). Suggested order: linear by phase; Phases 2/3/4 can parallelise after Phase 1 lands.
+3. **Branch strategy** — user approved working on `main` for this round. A feature branch (`feat/chat-driven-brand-designs`) is a reasonable safer alternative for resumption.
+
+**Decisions locked (from brainstorming):**
+- Chat-primary UX; form demoted to a "Structured brief" drawer.
+- Auto-promote Design Project after the 2nd page sharing brand + export.
+- Previews render inline in chat with pop-out to a side drawer.
+- Full scope: app + workflow + skills + plugin.
+- Chat-triggered generations require a confirm click (no auto-fire).
+- Brand Profile entity, sourced from URL / Divi export / image / chat / manual, with per-field manual tweaks; `manual`/`locked` fields are sticky across re-extraction.
+
+**Completed commits on `main`:**
+- `5b0376d` — design doc
+- `77899bd` — implementation plan (this file)
+
+---
+
 > **For Claude:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task.
 
 **Goal:** Make the Divi 5 Generator app chat-primary, with explicit Brand Profiles (extractable from URL / Divi export / image / chat / manual), Design Projects that group pages on the same brand+tokens, inline chat previews, and importer plugin support for listing/deleting drafts.
