@@ -1,121 +1,112 @@
-# Divi 5 Tools
+# Divi5Generate
 
-Claude Code skills for generating production-ready Divi 5 pages as importable JSON — SEO-optimised, preset-driven, validated before delivery.
+Claude Code plugin for generating production-ready Divi 5 pages as importable JSON — SEO-optimised, preset-driven, validated before delivery. Includes a local browser app with Claude chat, one-click import to any WordPress site, and a full QA gate system.
+
+## Install
+
+```bash
+claude plugin marketplace add Kieransaunders/Divi5Generate
+claude plugin install divi5generate@divi5generate
+```
+
+Restart Claude Code Desktop — it picks up the install automatically. Node.js must be on your PATH.
+
+---
 
 ## Skills
 
 | Skill | What it does |
 |-------|-------------|
-| `/divi5-tools:divi5-page-generator` | Generate a complete Divi 5 page from a brief — full SEO, presets, HTML preview gate, validated JSON |
-| `/divi5-tools:divi5-extract-style` | Extract the design system from an existing Divi export OR convert brand guidelines into Divi 5 Global Variables |
-| `/divi5-tools:divi5-style-check` | **QA gate** — compare a generated page JSON against the original designer export to verify preset, colour, and font inheritance before import |
-| `/divi5-tools:design-review` | Audit any Divi 5 export: structure, SEO, design checklist. Also **spec compliance mode**: compare an imported page against the original brief or mockup |
-| `/divi5-tools:import-to-local` | Import a generated page into a running Local WP site — draft, preview, publish on accept |
+| `divi5generate:divi5-page-generator` | Generate a complete Divi 5 page from a brief — full SEO, presets, HTML preview gate, validated JSON |
+| `divi5generate:divi5-extract-style` | Extract the design system from an existing Divi export OR convert brand guidelines into Divi 5 Global Variables |
+| `divi5generate:divi5-style-check` | QA gate — compare a generated page against the original designer export to verify preset, colour, and font inheritance |
+| `divi5generate:design-review` | Audit any Divi 5 export: structure, SEO, design checklist. Also spec compliance mode: compare an imported page against the original brief |
+| `divi5generate:import-to-local` | Import a generated page into any WordPress site — draft, preview, publish on accept |
+| `divi5generate:divi5-plugin-dev` | Scaffold, build, and debug custom Divi 5 modules and plugins |
+| `divi5generate:divitheatre-engine` | Theatre.js motion engine reference for DiviTheatre animation presets |
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `/divi5generate:launch` | Start the local generator app and open it at http://localhost:3747 |
+| `/divi5generate:help` | Setup guide — install the WordPress importer plugin and get your API key |
+
+---
+
+## Local App
+
+The plugin ships a browser-based generator app with a Claude chat interface.
+
+```bash
+/divi5generate:launch
+```
+
+Opens at **http://localhost:3747** with:
+- **Generate tab** — fill in a brief, aesthetic, CTA, and optional designer export → streams a live generation log
+- **Chat tab** — ask Claude anything about your Divi pages, get section ideas, refine output
+- **Settings tab** — configure your WordPress site URL and API key for one-click import
+- Import to WordPress directly from the app
+- Generation history with re-run and revision notes
 
 ---
 
 ## Full workflow with QA gates
 
-Every generated page passes through two QA gates before delivery:
-
 ```
-/divi5-tools:divi5-extract-style  →  ClientBrand.tokens.js
+divi5-extract-style  →  ClientBrand.tokens.js
          ↓
-/divi5-tools:divi5-page-generator →  new-page.json
+divi5-page-generator →  new-page.json
          ↓
-/divi5-tools:divi5-style-check  original-export.json  new-page.json
-         ↓  (must be CONSISTENT before proceeding)
-/divi5-tools:import-to-local    →  live WordPress page
+divi5-style-check  original-export.json  new-page.json
+         ↓  (must be CONSISTENT)
+import-to-local    →  live WordPress draft
          ↓
 Export from Divi  →  exported-page.json
          ↓
-/divi5-tools:design-review  exported-page.json  --spec brief.md
-         ↓  (must be COMPLIANT before delivery)
+design-review  exported-page.json  --spec brief.md
+         ↓  (must be COMPLIANT)
 ✓ Deliver
 ```
 
-**Gate 1 — `/divi5-style-check`** (pre-import, JSON level): verifies the generated page actually reuses the designer's preset IDs, palette colours, and fonts — not new IDs the generator invented. Exits CONSISTENT or INCONSISTENT.
+**Gate 1 — style-check** (pre-import): verifies the generated page reuses the designer's preset IDs, palette colours, and fonts.
 
-**Gate 2 — `/design-review --spec`** (post-import, content level): verifies the live page delivers what the brief specified — correct sections, CTAs, copy, section order. Exits COMPLIANT or NON-COMPLIANT.
-
-Both gates are required when a designer export and brief are present. Skipping them risks importing a page that silently diverges from the design system or misses required content.
+**Gate 2 — design-review --spec** (post-import): verifies the live page delivers what the brief specified — sections, CTAs, copy, section order.
 
 ---
 
 ## Which workflow do I need?
 
-### "I have an existing Divi page / design and want new pages in the same style"
-
-The designer exports their homepage (or any page) as Divi JSON, then:
+### Existing Divi design → new pages in the same style
 
 ```
-Step 1 — extract the design system
-/divi5-tools:divi5-extract-style homepage-export.json
+1. divi5-extract-style homepage-export.json
+   → ClientBrand.tokens.js + ClientBrand.variables.json
 
-  Outputs: ClientBrand.tokens.js  (preset IDs + colour refs)
-           ClientBrand.variables.json  (importable global variables for a fresh site)
+2. divi5-page-generator "About Us page for [brand] — use ./ClientBrand.tokens.js"
 
-Step 2 — generate new pages using those exact presets
-/divi5-tools:divi5-page-generator
-  "Build an About Us page for [brand] — use ./ClientBrand.tokens.js for the design system"
+3. divi5-style-check homepage-export.json about-us-page.json  (must be CONSISTENT)
 
-  The generator reads the tokens file and references the designer's existing preset IDs
-  instead of creating new ones — pages inherit the live site design system automatically.
-
-Step 3 — verify style inheritance before import (required)
-/divi5-tools:divi5-style-check homepage-export.json about-us-page.json
-
-  Must return CONSISTENT. Fix any FAILs in the generator script and regenerate.
-
-Step 4 — import and verify spec compliance
-/divi5-tools:import-to-local about-us-page.json
-  → export the live page from Divi
-/divi5-tools:design-review exported-about-us.json --spec brief.md
+4. import-to-local about-us-page.json → export → design-review --spec brief.md
 ```
 
-**On an existing site** (the designer's export is already imported there): nothing extra to import — the page binds to presets that already exist on the site.
-
-**On a fresh site**: import `ClientBrand.variables.json` first (Divi Library → Import Global Variables), then import the designer's original export with "Import Presets" checked, then import the generated pages.
-
----
-
-### "I need a style guide and pages generated from scratch"
-
-No existing Divi design. Start from a brand brief or design token table:
+### Brand guidelines → pages from scratch
 
 ```
-Step 1 — convert brand guidelines into Divi 5 global variables (optional but recommended)
-/divi5-tools:divi5-extract-style
-  "Convert these brand tokens into Divi 5 variables: Primary #1A2744, Accent #F97316,
-   heading font Space Grotesk, body Inter, button radius 6px"
+1. divi5-extract-style "Primary #1A2744, Accent #F97316, heading Space Grotesk, body Inter"
+   → Brand_Global-Variables.json
 
-  Outputs: Brand_Global-Variables.json  — import via Divi Library → Import Global Variables
+2. divi5-page-generator "Landing page for [brand], keyword [keyword]"
 
-Step 2 — generate the page
-/divi5-tools:divi5-page-generator
-  "Build a landing page for [brand], keyword [keyword], sections: Hero, Features, CTA"
-
-  The skill picks up the tokens file automatically if present in the working directory.
-
-Step 3 — spec compliance check after import
-/divi5-tools:design-review generated-page.json --spec brief.md
+3. design-review --spec brief.md  (post-import)
 ```
 
-No designer export = no style-check gate needed (there's nothing to compare against).
-
----
-
-### "I just want a page with no existing design"
-
-Skip Step 1 and the style-check gate entirely:
+### No existing design — just build it
 
 ```
-/divi5-tools:divi5-page-generator
-  "Build a landing page for Westcountry Pet Rescue, keyword 'adopt a rescue dog Devon',
-   sections: Hero, Stats, Directory, How It Works, CTA, Footer"
+divi5-page-generator "Landing page for Westcountry Pet Rescue,
+  keyword 'adopt a rescue dog Devon', sections: Hero, Stats, How It Works, CTA"
 ```
-
-The skill will ask for brand colours and aesthetic direction, build an HTML preview for approval, then generate validated JSON with fresh presets. Run `/design-review --spec` post-import if a written brief exists.
 
 ---
 
@@ -123,39 +114,20 @@ The skill will ask for brand colours and aesthetic direction, build an HTML prev
 
 | File | Purpose |
 |------|---------|
-| `[brand]-page.json` | Import via Divi Library (tick "Import Presets") or via plugin Layout Pack importer |
-| `[brand]-seo-meta.json` | Title tag, meta description, slug — paste into Yoast / RankMath |
-| `[brand]-schema.json` | FAQPage + Organization JSON-LD — paste into Divi Theme Options → Integration → head |
-| `[brand].tokens.js` | Reusable token map (preset IDs, colour refs) for generating additional pages |
+| `[brand]-page.json` | Import via Divi Library (tick "Import Presets") |
+| `[brand]-seo-meta.json` | Title, meta description, slug — paste into Yoast / RankMath |
+| `[brand]-schema.json` | JSON-LD — paste into Divi Theme Options → Integration → head |
+| `[brand].tokens.js` | Token map for generating additional pages in the same style |
 | `[brand].variables.json` | Importable Divi Global Variables for seeding a fresh site |
-
-## User flow diagram
-
-See [docs/user-flow.md](docs/user-flow.md) for a full Mermaid flowchart covering all three starting points (existing design / brand guide / from scratch), both QA gates, and fix loops.
-
-## Installation
-
-### The Claude Code plugin
-
-```
-/plugin marketplace add Kieransaunders/iconnectit-claude-plugins
-/plugin install divi5-tools@iconnectit-claude-plugins
-```
-
-Restart Claude Code and the skills are available as `/divi5-tools:<skill>`. Node.js must be on your PATH — the builder and validator scripts use it.
-
-### The WordPress importer plugin
-
-`import-to-local` pushes pages into WordPress through the **Divi Tools Importer** plugin. Build the installable zip any time:
-
-```
-/divi5-tools:help
-```
-
-That writes `divi-tools-importer.zip` to `~/Downloads`. In WordPress: **Plugins → Add New → Upload Plugin → Activate**, then copy your site URL and API key from **Settings → Divi Tools Importer**. _(Coming soon to the WordPress.org plugin directory — then it's a one-click install.)_
 
 ---
 
-## For developers
+## WordPress Importer Plugin
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for project structure, environment setup, build/deploy flows, and current development state.
+`import-to-local` pushes pages into WordPress via the **Divi Tools Importer** plugin.
+
+```
+/divi5generate:help
+```
+
+Builds `divi-tools-importer.zip` → install via **WP Admin → Plugins → Add New → Upload Plugin → Activate** → copy your Site URL and API key from **Settings → Divi Tools Importer**.
