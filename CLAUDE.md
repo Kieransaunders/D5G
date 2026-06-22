@@ -18,6 +18,15 @@ Divi5Generate/
 └── plugin/                  # WordPress importer plugin (PHP)
 ```
 
+## Install on a new machine
+
+```bash
+claude plugin marketplace add Kieransaunders/Divi5Generate
+claude plugin install divi5generate@divi5generate
+```
+
+Then open Claude Code Desktop — it picks up the install automatically from `~/.claude`.
+
 ## Plugin registration (settings.json)
 
 ```json
