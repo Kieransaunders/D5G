@@ -299,6 +299,32 @@ app.post('/settings', (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── POST /chat — stream a Claude response ───────────────────────────────────
+app.post('/chat', (req, res) => {
+  const { message, history = [] } = req.body;
+  const context = history.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+  const prompt  = context ? `${context}\nUser: ${message}` : message;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.flushHeaders();
+
+  const claudeBin = findClaude();
+  if (!claudeBin) {
+    res.write(`data: ${JSON.stringify({ chunk: 'ERROR: claude CLI not found.' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    return res.end();
+  }
+
+  const proc = spawn(claudeBin, ['-p', '--dangerously-skip-permissions', '--plugin-dir', PLUGIN_DIR, prompt], {
+    cwd: PLUGIN_DIR, stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  proc.stdin.end();
+  proc.stdout.on('data', chunk => res.write(`data: ${JSON.stringify({ chunk: chunk.toString() })}\n\n`));
+  proc.stderr.on('data', chunk => res.write(`data: ${JSON.stringify({ chunk: chunk.toString() })}\n\n`));
+  proc.on('close', () => { res.write(`data: ${JSON.stringify({ done: true })}\n\n`); res.end(); });
+});
+
 // ─── GET /prereqs — check claude is installed ────────────────────────────────
 app.get('/prereqs', (req, res) => {
   const claudeBin = findClaude();

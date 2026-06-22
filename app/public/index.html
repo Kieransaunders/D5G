@@ -18,6 +18,7 @@
 
     <div class="tab-bar">
       <button type="button" class="tab active" data-tab="generate">Generate</button>
+      <button type="button" class="tab" data-tab="chat">Chat</button>
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
@@ -230,6 +231,17 @@
       </div>
 
     </div><!-- /tab-settings -->
+
+    <!-- ── Chat tab ── -->
+    <div id="tab-chat" hidden style="display:flex;flex-direction:column;flex:1;gap:8px">
+      <div class="section-label">Ask Claude about your Divi page</div>
+      <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0;padding-right:4px"></div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot…" style="flex:1;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
+        <button type="button" class="btn-generate" id="chatSend" style="height:72px;min-width:64px">Send</button>
+      </div>
+      <button type="button" class="btn-link" id="chatClear" style="font-size:0.75rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;text-align:left">Clear conversation</button>
+    </div>
 
   </aside>
 

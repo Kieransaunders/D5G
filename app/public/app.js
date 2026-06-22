@@ -315,7 +315,73 @@ document.querySelectorAll('.tab').forEach(btn => {
     const target = btn.dataset.tab;
     document.getElementById('tab-generate').hidden = target !== 'generate';
     document.getElementById('tab-settings').hidden  = target !== 'settings';
+    document.getElementById('tab-chat').hidden       = target !== 'chat';
   });
+});
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+const chatHistory = [];
+
+function appendChatMsg(role, text) {
+  const el = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.style.cssText = `padding:10px 12px;border-radius:8px;font-size:0.8125rem;line-height:1.5;white-space:pre-wrap;max-width:92%;${role === 'user' ? 'align-self:flex-end;background:var(--accent);color:#fff;' : 'align-self:flex-start;background:var(--surface);border:1px solid var(--border);'}`;
+  div.textContent = text;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  input.style.height = '72px';
+  document.getElementById('chatSend').disabled = true;
+
+  appendChatMsg('user', message);
+  const replyEl = appendChatMsg('assistant', '…');
+  let reply = '';
+
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history: chatHistory }),
+    });
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const d = JSON.parse(line.slice(6));
+        if (d.chunk) { reply += d.chunk; replyEl.textContent = reply; document.getElementById('chatMessages').scrollTop = 99999; }
+      }
+    }
+  } catch (e) {
+    reply = `Error: ${e.message}`;
+    replyEl.textContent = reply;
+  }
+
+  chatHistory.push({ role: 'user', content: message });
+  chatHistory.push({ role: 'assistant', content: reply });
+  document.getElementById('chatSend').disabled = false;
+}
+
+document.getElementById('chatSend').addEventListener('click', sendChat);
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+document.getElementById('chatClear').addEventListener('click', () => {
+  chatHistory.length = 0;
+  document.getElementById('chatMessages').innerHTML = '';
 });
 
 // ─── Settings load / save ─────────────────────────────────────────────────────
