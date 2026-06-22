@@ -4,12 +4,53 @@ Claude Code plugin for generating production-ready Divi 5 pages as importable JS
 
 ## Install
 
+**Step 1 — add the marketplace and install (run in your terminal):**
+
 ```bash
 claude plugin marketplace add Kieransaunders/Divi5Generate
 claude plugin install divi5generate@divi5generate
 ```
 
-Restart Claude Code Desktop — it picks up the install automatically. Node.js must be on your PATH.
+**Step 2 — open Claude Code Desktop.** It picks up the install automatically from `~/.claude`. Node.js must be on your PATH.
+
+> **Tip:** After installing, run `/divi5generate:launch` to open the browser app, or say *"launch the generator"* and Claude will start it for you.
+
+---
+
+## How it works
+
+```mermaid
+flowchart TD
+    A([🚀 Start]) --> B{Do you have\nan existing\nDivi design?}
+
+    B -- Yes --> C[divi5-extract-style\nextract design tokens\nfrom export JSON]
+    B -- Brand guide only --> D[divi5-extract-style\nconvert brand tokens →\nDivi Global Variables]
+    B -- No, build fresh --> E[divi5-page-generator\nbuild from brief\npick aesthetic + sections]
+
+    C --> F[divi5-page-generator\ngenerate page using\ndesigner preset IDs]
+    D --> E
+
+    F --> G{Gate 1\ndivi5-style-check}
+    E --> H[divi5-page-generator\noutputs page.json\nseo-meta.json\nschema.json]
+
+    G -- CONSISTENT ✅ --> H
+    G -- INCONSISTENT ❌ --> F
+
+    H --> I[import-to-local\npush to WordPress\nas draft page]
+    I --> J[Preview in Divi\naccept or refine]
+    J -- Refine --> H
+    J -- Accept → Publish --> K[Export page from Divi]
+
+    K --> L{Gate 2\ndesign-review --spec}
+    L -- COMPLIANT ✅ --> M([✅ Deliver])
+    L -- NON-COMPLIANT ❌ --> N[fix & re-import]
+    N --> K
+
+    style G fill:#f59e0b,color:#000
+    style L fill:#f59e0b,color:#000
+    style M fill:#10b981,color:#fff
+    style A fill:#6366f1,color:#fff
+```
 
 ---
 
