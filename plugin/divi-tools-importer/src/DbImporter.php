@@ -46,17 +46,31 @@ class DTI_DbImporter {
 		}
 
 		// 5. Restore this site's identity + our own API key so we don't lock out.
-		update_option( 'home', $keep_home );
-		update_option( 'siteurl', $keep_site );
+		//    Write straight to the table: the options table was just dropped and
+		//    recreated, so the in-memory options cache is stale and update_option()
+		//    would skip the write when the new value matches the cached one. The
+		//    exporter omits the key row entirely, so it must be re-inserted here.
+		self::restore_option( 'home', $keep_home );
+		self::restore_option( 'siteurl', $keep_site );
 		if ( $keep_key ) {
-			update_option( DTI_Auth::KEY_OPTION, $keep_key, false );
+			self::restore_option( DTI_Auth::KEY_OPTION, $keep_key, 'no' );
 		}
+		wp_cache_flush();
 
 		return array(
 			'tables_imported' => $ran,
 			'replacements'    => $replacements,
 			'backup_file'     => $backup,
 		);
+	}
+
+	/** Force an option value into the table, bypassing the stale options cache. */
+	private static function restore_option( string $name, string $value, string $autoload = 'yes' ): void {
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare(
+			"REPLACE INTO `{$wpdb->options}` (option_name, option_value, autoload) VALUES (%s, %s, %s)",
+			$name, $value, $autoload
+		) );
 	}
 
 	/** Dump current DB to uploads/dti-backups so a bad import is recoverable. */
