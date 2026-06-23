@@ -1605,10 +1605,96 @@ document.querySelectorAll('[data-brand-new]').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
     const mode = btn.dataset.brandNew;
-    if (mode === 'url') { extractFromUrl(); return; }
+    if (mode === 'url')    { extractFromUrl(); return; }
+    if (mode === 'export') { extractFromDiviFile(); return; }
+    if (mode === 'image')  { extractFromImageFile(); return; }
     openBrandEditor(null);
   });
 });
+
+// From Divi export — read an uploaded Divi 5 export JSON and pull its palette.
+function extractFromDiviFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    let doc;
+    try { doc = JSON.parse(await file.text()); }
+    catch { alert('That file is not valid JSON — pick a Divi export (.json).'); return; }
+
+    openBrandEditor(null);
+    if (!brandEditing) return;
+
+    // Divi export shapes: global_colors as [{id,color,label}] or tuple [[id,{color}]].
+    const gc = doc.global_colors || doc.variables?.global_colors || [];
+    const colors = [];
+    for (const c of gc) {
+      if (Array.isArray(c) && c[1]?.color) colors.push({ role: c[1].label || c[0], hex: c[1].color, source: 'divi' });
+      else if (c?.color)                   colors.push({ role: c.label || c.id || '', hex: c.color, source: 'divi' });
+    }
+    // Fallback: scrape unique hexes out of presets if no global colours.
+    if (!colors.length) {
+      [...new Set(JSON.stringify(doc.presets || {}).match(/#[0-9a-fA-F]{6}\b/g) || [])]
+        .slice(0, 8).forEach((hex, i) => colors.push({ role: `color-${i + 1}`, hex, source: 'divi' }));
+    }
+    brandEditing.data.colors = colors;
+    if (doc.variables) brandEditing.data.variables = doc.variables;     // keep for brand-deploy
+    if (doc.presets)   brandEditing.data.presets   = { presets: doc.presets };
+    brandEditing.name = brandEditing.name || file.name.replace(/\.json$/i, '');
+    paintBrandEditor();
+    renderBrandCanvas();
+    if (!colors.length) alert('No colours found in that export — it may not contain global colours or presets.');
+  };
+  input.click();
+}
+
+// From image — sample a dominant palette client-side via canvas quantisation.
+function extractFromImageFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = () => {
+    const file = input.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      const W = 96, H = Math.max(1, Math.round(96 * img.height / img.width));
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+      const { data } = ctx.getImageData(0, 0, W, H);
+
+      // Bucket colours into a coarse 3-bit-per-channel grid, average each bucket.
+      const buckets = {};
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128) continue; // skip transparent
+        const key = (data[i] & 0xE0) << 16 | (data[i + 1] & 0xE0) << 8 | (data[i + 2] & 0xE0);
+        const b = buckets[key] || (buckets[key] = { n: 0, r: 0, g: 0, b: 0 });
+        b.n++; b.r += data[i]; b.g += data[i + 1]; b.b += data[i + 2];
+      }
+      const toHex = v => v.toString(16).padStart(2, '0');
+      const colors = Object.values(buckets).sort((a, b) => b.n - a.n).slice(0, 6).map((b, i) => ({
+        role: `color-${i + 1}`,
+        hex: '#' + toHex(Math.round(b.r / b.n)) + toHex(Math.round(b.g / b.n)) + toHex(Math.round(b.b / b.n)),
+        source: 'image',
+      }));
+      URL.revokeObjectURL(img.src);
+
+      openBrandEditor(null);
+      if (!brandEditing) return;
+      brandEditing.data.colors = colors;
+      brandEditing.name = brandEditing.name || file.name.replace(/\.[^.]+$/, '');
+      paintBrandEditor();
+      renderBrandCanvas();
+    };
+    img.onerror = () => alert('Could not read that image.');
+    img.src = URL.createObjectURL(file);
+  };
+  input.click();
+}
 document.getElementById('brandEditorClose').addEventListener('click', closeBrandEditor);
 document.getElementById('brandAddColor').addEventListener('click', () => addBrandColorRow());
 document.getElementById('brandSave').addEventListener('click', saveBrandProfile);
