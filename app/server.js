@@ -12,6 +12,7 @@ const {
   updateBrandProfile, deleteBrandProfile,
   createDesignProject, getDesignProject, listDesignProjects,
   linkGenerationToDesign, deleteDesignProject,
+  promoteIfEligible,
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
 
@@ -230,6 +231,15 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
 
     const status = code === 0 ? 'complete' : 'failed';
     db.prepare(`UPDATE generations SET status=?, style_check=? WHERE id=?`).run(status, styleCheck, genId);
+
+    // Auto-promote to a Design Project when a sibling generation shares the
+    // same brand + export_path (i.e. this is the 2nd page on one design system).
+    const newDesignId = promoteIfEligible(genId);
+    if (newDesignId) {
+      const msg = `\n--- DESIGN PROJECT ---\nPromoted to design project #${newDesignId}. See Designs tab.\n`;
+      appendLog.run(msg, genId);
+      sendSSE(genId, 'design_promoted', { designId: newDesignId });
+    }
 
     // Detect HTML preview file
     const allFiles = fs.readdirSync(outputPath);
