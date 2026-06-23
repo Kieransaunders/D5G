@@ -957,6 +957,71 @@ async function extractFromUrl() {
   banner.style.color = 'var(--muted)';
 }
 
+// Draw an image into a small offscreen canvas and return the most frequent
+// quantised colours (4 bits/channel). Purely client-side — no upload. Excludes
+// near-transparent pixels; down-weights near-white/near-black unless dominant.
+function dominantColors(file, maxColors = 6) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const W = 64, H = 64;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+      let data;
+      try { data = ctx.getImageData(0, 0, W, H).data; }
+      catch (e) { reject(e); return; }
+      const counts = new Map();
+      for (let i = 0; i < data.length; i += 4) {
+        const a = data[i + 3];
+        if (a < 128) continue;                       // skip transparent
+        const r = data[i] & 0xf0, g = data[i + 1] & 0xf0, b = data[i + 2] & 0xf0;
+        const key = (r << 16) | (g << 8) | b;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+      const out = [...counts.entries()].sort((a, b) => b[1] - a[1])
+        .slice(0, maxColors).map(([k]) => {
+          const r = (k >> 16) & 0xff, g = (k >> 8) & 0xff, b = k & 0xff;
+          return '#' + [r, g, b].map(x => (x + 8).toString(16).padStart(2, '0')).join('');
+        });
+      URL.revokeObjectURL(img.src);
+      resolve(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(img.src); reject(new Error('could not load image')); };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// On logo upload: derive candidate colours via canvas and prefill the editor.
+document.getElementById('brandLogoInput').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file || !brandEditing) return;
+  const banner = (function () {
+    let b = document.getElementById('brandExtractStatus');
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'brandExtractStatus';
+      b.style.cssText = 'font-size:0.75rem;color:var(--muted);padding:6px 8px;border-radius:6px;background:var(--bg)';
+      document.getElementById('brandEditor').insertBefore(b, document.getElementById('brandEditor').firstChild);
+    }
+    return b;
+  })();
+  banner.textContent = `Analysing ${file.name}…`;
+  try {
+    const hexes = await dominantColors(file);
+    brandEditing.data.colors = hexes.map((hex, i) => ({
+      role: ['', 'primary', 'accent', ''][i] || `color-${i}`,
+      hex, source: 'image-canvas', locked: false,
+    }));
+    renderBrandColorRows();
+    banner.textContent = `Canvas-derived ${hexes.length} colours from logo. For richer analysis, use “From chat” (vision) once wired.`;
+  } catch (err) {
+    banner.textContent = `Could not read image: ${err.message}`;
+    banner.style.color = 'var(--danger)';
+  }
+});
+
 // ── Brand tab wiring ──
 document.querySelectorAll('[data-brand-new]').forEach(btn => {
   btn.addEventListener('click', () => {
