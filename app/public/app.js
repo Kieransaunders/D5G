@@ -435,6 +435,28 @@ window.addEventListener('hashchange', () => applyHash(location.hash));
 // ── Migrate tab — DB pull / push ──────────────────────────────────────────
 function migrateVal(id) { return document.getElementById(id).value.trim(); }
 
+// Persist migrate fields so you don't re-type 4 URLs + keys every run.
+// Local-only dev tool; same trust level as the stored settings API key.
+const MIGRATE_FIELDS = ['pullRemote','pullRemoteKey','pullLocal','pullLocalKey',
+                        'pushLocal','pushLocalKey','pushRemote','pushRemoteKey'];
+function saveMigrateFields() {
+  const store = {};
+  for (const id of MIGRATE_FIELDS) store[id] = document.getElementById(id)?.value || '';
+  try { localStorage.setItem('d5g.migrate', JSON.stringify(store)); } catch {}
+}
+function restoreMigrateFields() {
+  let store;
+  try { store = JSON.parse(localStorage.getItem('d5g.migrate') || '{}'); } catch { return; }
+  for (const id of MIGRATE_FIELDS) {
+    const el = document.getElementById(id);
+    if (el && store[id]) el.value = store[id];
+  }
+}
+MIGRATE_FIELDS.forEach(id => {
+  document.getElementById(id)?.addEventListener('change', saveMigrateFields);
+});
+restoreMigrateFields();
+
 async function runMigrate(url, body, btn, resultEl) {
   btn.disabled = true;
   resultEl.style.color = 'var(--muted)';
@@ -460,6 +482,7 @@ async function runMigrate(url, body, btn, resultEl) {
 }
 
 document.getElementById('runPull').addEventListener('click', () => {
+  saveMigrateFields();
   runMigrate('/migrate/pull', {
     remote:    migrateVal('pullRemote'),
     remoteKey: migrateVal('pullRemoteKey'),
@@ -479,6 +502,7 @@ document.getElementById('runPush').addEventListener('click', () => {
     return;
   }
   if (!confirm(`Overwrite the database at ${host}? The remote is backed up first, but all its content will be replaced.`)) return;
+  saveMigrateFields();
   runMigrate('/migrate/push', {
     local:      migrateVal('pushLocal'),
     localKey:   migrateVal('pushLocalKey'),
