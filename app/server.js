@@ -83,7 +83,7 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
     brand, whatItDoes, keyword, secondaryKeywords,
     sections, aesthetic, ctaLabel, ctaUrl,
     motion, outputDir, exportLabel, savedExportId, revisionNotes,
-    etTemplate,
+    etTemplate, brandId,
   } = req.body;
 
   const sectionsArr = Array.isArray(sections) ? sections : (sections ? [sections] : []);
@@ -132,7 +132,7 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
   }
 
   const prompt = [
-    `/divi5-tools:divi5-page-generator`,
+    `/divi5generate:divi5-page-generator`,
     `Build a landing page for ${brand}. ${whatItDoes || ''}`,
     `Primary keyword: ${keyword}.${secondary}`,
     etTemplateLine || `Sections: ${sectionList}.`,
@@ -146,7 +146,7 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
   const genId = db.prepare(`
     INSERT INTO generations (brand, keyword, sections, aesthetic, cta_label, cta_url, output_dir, export_path, what_it_does, secondary_keywords, et_template)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(brand, keyword, JSON.stringify(sectionsArr), aesthetic, ctaLabel, ctaUrl, outputPath, exportPath, whatItDoes || '', secondaryKeywords || '', etTemplate || null).lastInsertRowid;
+  `).run(brand || '', keyword || '', JSON.stringify(sectionsArr), aesthetic || '', ctaLabel || '', ctaUrl || '', outputPath, exportPath, whatItDoes || '', secondaryKeywords || '', etTemplate || null).lastInsertRowid;
 
   res.json({ id: genId });
 
@@ -165,6 +165,21 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
         if (allHex.length) paletteHint = `Brand colour palette extracted from the designer export — use ONLY these colours: ${allHex.join(', ')}. Do NOT invent new colours.`;
       }
     } catch (_) {}
+  }
+
+  // A picked brand profile injects its exact palette + fonts (overrides the
+  // looser export-scraped hint above).
+  if (brandId && !paletteHint) {
+    const b = getBrandProfile(parseInt(brandId));
+    if (b && b.data) {
+      const colors = (b.data.colors || []).map(c => c.role ? `${c.hex} (${c.role})` : c.hex).join(', ');
+      const fonts = [b.data.fonts?.heading?.family && `headings ${b.data.fonts.heading.family}`,
+                     b.data.fonts?.body?.family && `body ${b.data.fonts.body.family}`].filter(Boolean).join(', ');
+      const bits = [];
+      if (colors) bits.push(`use ONLY these brand colours, do not invent new ones: ${colors}`);
+      if (fonts)  bits.push(`brand fonts: ${fonts}`);
+      if (bits.length) paletteHint = `Brand "${b.name}" — ${bits.join('; ')}.`;
+    }
   }
 
   const fullPrompt = paletteHint ? `${prompt} ${paletteHint}` : prompt;

@@ -334,6 +334,7 @@ function switchTab(name, { updateHash = true } = {}) {
   updateMainForTab(name);
   if (name === 'brand') loadBrandGrid();
   if (name === 'designs') loadDesignsList();
+  if (name === 'generate') loadGenBrandOptions();
   if (updateHash) history.replaceState(null, '', `#${name}`);
 }
 
@@ -1796,6 +1797,19 @@ async function deleteDesign(id) {
   if (!confirm('Delete this design project? Linked generations are kept (unlinked).')) return;
   await fetch(`/designs/${id}?keepPages=true`, { method: 'DELETE' });
   await loadDesignsList();
+}
+
+// Fill the Brief form's brand-profile dropdown, preserving the current pick.
+async function loadGenBrandOptions() {
+  const sel = document.getElementById('genBrand');
+  if (!sel) return;
+  const keep = sel.value;
+  try {
+    const profiles = await fetch('/brand').then(r => r.json());
+    sel.innerHTML = '<option value="">— none —</option>' +
+      (profiles || []).map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+    if (keep) sel.value = keep;
+  } catch {}
 }
 
 function openDesignModal() {
