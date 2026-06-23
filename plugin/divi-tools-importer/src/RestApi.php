@@ -307,6 +307,17 @@ class DTI_RestApi {
 		$schema  = $request->get_param( 'schema' ) ?: array();
 		$publish = (bool) $request->get_param( 'publish' );
 
+		// Allow top-level title/slug as convenience aliases — merge into $seo so
+		// PageImporter::import() picks them up from the canonical location.
+		$top_title = sanitize_text_field( (string) ( $request->get_param( 'title' ) ?? '' ) );
+		$top_slug  = sanitize_title( (string) ( $request->get_param( 'slug' )  ?? '' ) );
+		if ( $top_title && empty( $seo['title'] ) && empty( $seo['titleTag'] ) ) {
+			$seo['title'] = $top_title;
+		}
+		if ( $top_slug && empty( $seo['slug'] ) ) {
+			$seo['slug'] = $top_slug;
+		}
+
 		// Validate layout is an array (REST converts object → assoc array).
 		if ( ! is_array( $layout ) || empty( $layout ) ) {
 			return new WP_Error( 'invalid_layout', 'layout must be a non-empty JSON object.', array( 'status' => 400 ) );
