@@ -1,13 +1,21 @@
 ---
 name: design-sync
 description: "Sync a Divi5Generate brand profile to a claude.ai/design Design System project, pushing colour-palette, typography, and voice reference cards so Claude Design has the brand ready when mocking up pages. Also pushes existing section/page preview HTML as reference cards. Reverse flow: accept a Claude Design HTML export as a visual brief for the page generator. Triggers: design sync, sync brand to claude design, claude design mockup, push brand to design, design system, brand cards, mockup brief."
-argument-hint: "[brand-name-or-id] [--project <uuid>|new] [--port 4321]"
+argument-hint: "[brand-name-or-id] [--project <uuid>|new] [--port 3747]"
 allowed-tools: Bash, Read, Write, DesignSync
 ---
 
 # Design Sync — Brand Profile ↔ Claude Design
 
 Bridges the Divi5Generate brand profile system with `claude.ai/design` Design System projects.
+
+## Prerequisite — design-system auth (read first)
+
+`DesignSync` talks to `claude.ai/design` through the user's **claude.ai login**. It does **not** work on an API-key or provider-token session — every call returns `DesignSync needs design-system authorization`. There is **no `/design-login` command in most environments**, despite what the error text suggests.
+
+The only reliable way to get design scopes: relaunch Claude Code and pick **`/login` → "Claude account with subscription"** (a Pro/Max claude.ai account). If `/design-login` happens to exist in the user's build, that also works.
+
+So before touching the push flow: if the first `DesignSync method=list_projects` call returns the auth error, **stop and tell the user to relaunch with a subscription login** — do not loop retrying. You can still build the card bundle (steps 1-3) on any session; only the push (step 4) needs auth. The pull-brief flow needs no auth at all.
 
 ## Two directions
 
@@ -23,7 +31,7 @@ Bridges the Divi5Generate brand profile system with `claude.ai/design` Design Sy
 ### 1. Resolve the brand
 
 ```bash
-curl -s http://localhost:${PORT:-4321}/brand
+curl -s http://localhost:${PORT:-3747}/brand
 ```
 
 If `args` names a brand, match by name (case-insensitive) or id. If multiple brands exist and none is specified, list them and ask the user to pick one.
@@ -72,11 +80,11 @@ Replace `BRAND_NAME` with `brand.name`. Replace `SWATCH_HTML` with one `<div cla
   .body-sample{font-family:'BODY_FAMILY',sans-serif;font-size:15px;color:#444;line-height:1.6;margin-top:8px}
 </style></head><body>
 <div class="spec">
-  <div class="meta">Heading — HEADING_FAMILY</div>
+  <div class="meta">Heading - HEADING_FAMILY</div>
   <div class="heading-sample">The quick brown fox</div>
 </div>
 <div class="spec">
-  <div class="meta">Body — BODY_FAMILY</div>
+  <div class="meta">Body - BODY_FAMILY</div>
   <div class="body-sample">Pack my box with five dozen liquor jugs. The five boxing wizards jump quickly.</div>
 </div>
 </body></html>
@@ -109,14 +117,14 @@ Replace `TAGLINE` and `VOICE` from `brand.tagline` / `brand.voice`. If either is
 ### 3. Optionally add page preview cards
 
 ```bash
-curl -s http://localhost:${PORT:-4321}/generations | \
+curl -s http://localhost:${PORT:-3747}/generations | \
   node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
   d.filter(g=>g.status==='done' && g.brand==='BRAND_NAME').slice(0,5).forEach(g=>console.log(g.id,g.keyword));"
 ```
 
 For each matching generation, fetch its preview HTML:
 ```bash
-curl -s http://localhost:${PORT:-4321}/preview-html/ID > /tmp/divi5-ds-<brand-slug>/page-ID.html
+curl -s http://localhost:${PORT:-3747}/preview-html/ID > /tmp/divi5-ds-<brand-slug>/page-ID.html
 ```
 
 Then prepend `<!-- @dsCard group="Pages" -->\n` to each fetched file.

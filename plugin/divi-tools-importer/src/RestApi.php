@@ -17,7 +17,7 @@ class DTI_RestApi {
 				'layout'  => array( 'required' => true,  'type' => 'object' ),
 				'seo'     => array( 'required' => false, 'type' => 'object', 'default' => array() ),
 				'schema'  => array( 'required' => false, 'type' => 'object', 'default' => array() ),
-				'publish' => array( 'required' => false, 'type' => 'boolean', 'default' => false ),
+				'publish' => array( 'required' => false, 'type' => 'boolean', 'default' => true ),
 			),
 		) );
 
