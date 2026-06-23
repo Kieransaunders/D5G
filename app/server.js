@@ -56,8 +56,12 @@ app.get('/stream/:id', (req, res) => {
 
   // Send existing log on connect
   const gen = db.prepare('SELECT * FROM generations WHERE id = ?').get(id);
-  if (gen?.log) res.write(`event: log\ndata: ${JSON.stringify({ chunk: gen.log })}\n\n`);
-  if (gen?.status !== 'running') {
+  if (!gen) {
+    res.write(`event: done\ndata: ${JSON.stringify({ status: 'not_found' })}\n\n`);
+    return res.end();
+  }
+  if (gen.log) res.write(`event: log\ndata: ${JSON.stringify({ chunk: gen.log })}\n\n`);
+  if (gen.status !== 'running') {
     const files = db.prepare('SELECT * FROM output_files WHERE generation_id=?').all(id);
     const hasPreview = gen.output_dir ? (() => { try { return fs.readdirSync(gen.output_dir).some(f => f.endsWith('.html')); } catch { return false; } })() : false;
     res.write(`event: done\ndata: ${JSON.stringify({ status: gen.status, styleCheck: gen.style_check, files, hasPreview })}\n\n`);
@@ -84,7 +88,11 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
 
   const sectionsArr = Array.isArray(sections) ? sections : (sections ? [sections] : []);
   const outputPath  = outputDir || path.join(os.homedir(), 'Desktop', 'divi-output');
-  fs.mkdirSync(outputPath, { recursive: true });
+  try {
+    fs.mkdirSync(outputPath, { recursive: true });
+  } catch (e) {
+    return res.status(400).json({ error: `Cannot write to output folder "${outputPath}": ${e.message}` });
+  }
 
   // Resolve designer export: saved selection takes priority over new upload
   let exportPath = null;
@@ -670,7 +678,7 @@ app.post('/brand/:id/deploy', async (req, res) => {
 
   const base = siteUrl.origin + '/wp-json/divi-tools/v1';
   const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
-  const { variables, presets } = profile.data ? JSON.parse(profile.data) : {};
+  const { variables, presets } = profile.data || {}; // getBrandProfile already parsed it
 
   if (!variables && !presets) {
     return res.status(422).json({ error: 'brand profile has no variables or presets data' });
@@ -682,9 +690,15 @@ app.post('/brand/:id/deploy', async (req, res) => {
       const r = await fetch(`${base}/global-variables`, { method: 'POST', headers, body: JSON.stringify(variables) });
       results.variables = await r.json();
     }
-    if (presets?.presets) {
+    // Skip when there are no presets — an empty list would 400 on the import endpoint.
+    const presetCount = presets?.presets
+      ? (Array.isArray(presets.presets) ? presets.presets.length : Object.keys(presets.presets).length)
+      : 0;
+    if (presetCount > 0) {
       const r = await fetch(`${base}/presets/import`, { method: 'POST', headers, body: JSON.stringify({ presets: presets.presets }) });
       results.presets = await r.json();
+    } else {
+      results.presets = { skipped: 'no presets in profile' };
     }
   } catch (e) {
     return res.status(502).json({ error: `deploy failed: ${e.message}` });
@@ -692,6 +706,10 @@ app.post('/brand/:id/deploy', async (req, res) => {
 
   res.json({ ok: true, site: siteUrl.origin, ...results });
 });
+
+// A whole-DB transfer can be large; cap each leg so a hung WP endpoint can't
+// leave the migrate request (and the UI) waiting forever.
+const MIGRATE_TIMEOUT_MS = 120000;
 
 // ─── POST /migrate/pull — copy a remote site's DB into a local dev site ───────
 // Body: { remote, remoteKey, local, localKey }
@@ -718,6 +736,7 @@ app.post('/migrate/pull', async (req, res) => {
     // 1. Pull the dump from the remote.
     const exp = await fetch(`${remoteApi}/db/export`, {
       headers: { 'X-Divi-Tools-Key': remoteKey },
+      signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
     if (!exp.ok) return res.status(502).json({ error: `remote export failed: ${exp.status}` });
     const dump = await exp.json();
@@ -727,6 +746,7 @@ app.post('/migrate/pull', async (req, res) => {
       method: 'POST',
       headers: { 'X-Divi-Tools-Key': localKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ sql: dump.sql, from_url: dump.home_url, to_url: localUrl.origin }),
+      signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
     const result = await imp.json();
     if (!imp.ok) return res.status(502).json({ error: `local import failed: ${imp.status}`, detail: result });
@@ -765,6 +785,7 @@ app.post('/migrate/push', async (req, res) => {
     // 1. Export the local dev DB.
     const exp = await fetch(`${localApi}/db/export`, {
       headers: { 'X-Divi-Tools-Key': localKey },
+      signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
     if (!exp.ok) return res.status(502).json({ error: `local export failed: ${exp.status}` });
     const dump = await exp.json();
@@ -774,6 +795,7 @@ app.post('/migrate/push', async (req, res) => {
       method: 'POST',
       headers: { 'X-Divi-Tools-Key': remoteKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ sql: dump.sql, from_url: dump.home_url, to_url: remoteUrl.origin }),
+      signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
     const result = await imp.json();
     if (!imp.ok) return res.status(502).json({ error: `remote import failed: ${imp.status}`, detail: result });

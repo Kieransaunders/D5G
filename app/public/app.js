@@ -422,7 +422,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 // Hash routing — #brand, #brand/42, #designs, #chat, #generate
 function applyHash(hash) {
   const [tab, id] = (hash.replace('#', '') || 'chat').split('/');
-  const validTabs = ['chat', 'generate', 'brief', 'brand', 'designs', 'migrate'];
+  const validTabs = ['chat', 'generate', 'brand', 'designs', 'migrate', 'settings'];
   switchTab(validTabs.includes(tab) ? tab : 'chat', { updateHash: false });
   if (tab === 'brand' && id) {
     // wait for grid to render, then open the editor
@@ -721,8 +721,8 @@ async function chatImport(genId, btn) {
   if (status) status.textContent = 'Importing…';
   try {
     const r = await fetch(`/import/${genId}`, { method: 'POST' }).then(r => r.json());
-    if (status) status.innerHTML = r.ok && r.permalink
-      ? `✅ Imported — <a href="${r.permalink}" target="_blank">view</a>`
+    if (status) status.innerHTML = r.ok && r.previewUrl
+      ? `✅ Imported — <a href="${r.previewUrl}" target="_blank">view</a>`
       : `⚠️ ${escapeHtml(r.error || 'import failed')}`;
   } catch (e) {
     if (status) status.textContent = `⚠️ ${e.message}`;
@@ -1179,8 +1179,8 @@ document.getElementById('canvasImport')?.addEventListener('click', async (e) => 
   btn.disabled = true; status.textContent = 'Importing…';
   try {
     const r = await fetch(`/import/${canvasGenId}`, { method: 'POST' }).then(r => r.json());
-    status.innerHTML = r.ok && r.permalink
-      ? `✅ Imported as a draft — <a href="${r.permalink}" target="_blank" style="color:var(--accent)">view in WordPress ↗</a>`
+    status.innerHTML = r.ok && r.previewUrl
+      ? `✅ Imported as a draft — <a href="${r.previewUrl}" target="_blank" style="color:var(--accent)">view in WordPress ↗</a>`
       : `⚠️ ${escapeHtml(r.error || 'import failed')}`;
   } catch (err) { status.textContent = `⚠️ ${err.message}`; }
   btn.disabled = false;
