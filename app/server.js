@@ -11,6 +11,7 @@ const {
   createBrandProfile, getBrandProfile, listBrandProfiles,
   updateBrandProfile, deleteBrandProfile,
 } = require('./db');
+const { isSafeHost } = require('./lib/ssrf-guard');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -498,6 +499,54 @@ app.get('/brand', (_req, res) => {
   res.json(listBrandProfiles());
 });
 
+// ─── GET /brand/extract-url — fetch + parse a public page ────────────────────
+// Registered BEFORE /brand/:id so the literal path wins over the :id param.
+// Returns a "page bundle": title, meta, og image, favicon, candidate colours,
+// font families, and stylesheet hrefs. The bundle prefills the Brand editor;
+// richer AI analysis arrives in Phase 3.6/7.
+app.get('/brand/extract-url', async (req, res) => {
+  const raw = req.query.url;
+  if (!raw) return res.status(400).json({ error: 'url query param required' });
+  let url;
+  try { url = new URL(raw); }
+  catch { return res.status(400).json({ error: 'invalid url' }); }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return res.status(400).json({ error: 'only http/https allowed' });
+  }
+  if (!(await isSafeHost(url.hostname))) {
+    return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  let upstream;
+  try {
+    upstream = await fetch(raw, {
+      redirect: 'follow',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Divi5Generator/1.0 (brand-extractor)' },
+    });
+  } catch (e) {
+    return res.status(502).json({ error: `fetch failed: ${e.message}` });
+  } finally { clearTimeout(timeout); }
+
+  // Cap the response at 1 MiB to bound memory; flag truncation.
+  const MAX = 1024 * 1024;
+  const reader = upstream.body.getReader();
+  let buf = Buffer.alloc(0);
+  let truncated = false;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf = Buffer.concat([buf, value]);
+    if (buf.length > MAX) { truncated = true; buf = buf.slice(0, MAX); break; }
+  }
+  const html = buf.toString('utf8');
+
+  const bundle = extractPageBundle(html, url);
+  res.json({ ...bundle, truncated, sourceUrl: raw });
+});
+
 app.get('/brand/:id', (req, res) => {
   const row = getBrandProfile(parseInt(req.params.id));
   if (!row) return res.status(404).json({ error: 'Not found' });
@@ -523,6 +572,28 @@ app.delete('/brand/:id', (req, res) => {
   deleteBrandProfile(parseInt(req.params.id));
   res.json({ ok: true });
 });
+
+// ─── bundle parser (pure, exported for unit testing) ─────────────────────────
+function extractPageBundle(html, url) {
+  const pickAttr = (re) => (html.match(re) || [])[1] || '';
+  const title    = pickAttr(/<title[^>]*>([^<]*)<\/title>/i).trim();
+  const metaDesc = pickAttr(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
+  const ogImage  = pickAttr(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']*)["']/i);
+  const favicon  = pickAttr(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]+href=["']([^"']*)["']/i);
+
+  const colors = [...new Set((html.match(/#[0-9a-fA-F]{6}\b/g) || []).map(s => s.toLowerCase()))].slice(0, 20);
+  const fonts = [...new Set(
+    [...html.matchAll(/font-family\s*:\s*([^;"']+)/gi)]
+      .map(m => m[1].split(',')[0].trim().replace(/["']/g, ''))
+      .filter(Boolean)
+  )].slice(0, 10);
+
+  const stylesheets = [...html.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']*)["']/gi)]
+    .map(m => m[1]).slice(0, 5)
+    .map(href => { try { return new URL(href, url).href; } catch { return href; } });
+
+  return { title, metaDesc, ogImage, favicon, colors, fonts, stylesheets };
+}
 
 // ─── GET /pick-folder — Native macOS folder picker ────────────────────────────
 app.get('/pick-folder', (req, res) => {
@@ -564,6 +635,12 @@ app.post('/rerun/:id', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Divi 5 Generator running at http://localhost:${PORT}`);
-});
+// Only bind the port when run as the main module, so test code can require()
+// this file (to grab extractPageBundle) without starting a second server.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Divi 5 Generator running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { extractPageBundle };

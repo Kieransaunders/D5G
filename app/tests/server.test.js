@@ -200,3 +200,32 @@ test('DELETE /brand/:id removes the profile', async () => {
   const get = await request('GET', `/brand/${id}`);
   assert.equal(get.status, 404);
 });
+
+// ─── /brand/extract-url — fetch + parse a public page ────────────────────────
+test('GET /brand/extract-url rejects missing url param', async () => {
+  const r = await request('GET', '/brand/extract-url');
+  assert.equal(r.status, 400);
+});
+
+test('GET /brand/extract-url rejects private IPs', async () => {
+  const r = await request('GET', '/brand/extract-url?url=http://127.0.0.1/');
+  assert.equal(r.status, 400);
+  assert.ok(/blocked|private|loopback/i.test(JSON.stringify(r.body)),
+    `expected a block message, got ${JSON.stringify(r.body)}`);
+});
+
+test('GET /brand/extract-url rejects non-http schemes', async () => {
+  const r = await request('GET', '/brand/extract-url?url=ftp://example.com/');
+  assert.equal(r.status, 400);
+});
+
+test('GET /brand/extract-url returns a bundle for a public URL', async () => {
+  // example.com is a stable IANA-reserved public page. Assert shape, not content.
+  const r = await request('GET', '/brand/extract-url?url=https://example.com');
+  assert.equal(r.status, 200);
+  const body = r.body;
+  assert.ok(body.title !== undefined, 'bundle should have a title key');
+  assert.ok(Array.isArray(body.colors) || Array.isArray(body.fonts),
+    'bundle should have a colors or fonts array');
+  assert.equal(body.sourceUrl, 'https://example.com');
+});
