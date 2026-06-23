@@ -66,6 +66,38 @@ db.exec(`
   );
 `);
 
+// ─── Brand Profiles / Design Projects (chat-driven brand-design layer) ───────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS brand_profiles (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    name        TEXT NOT NULL,
+    data        TEXT NOT NULL,
+    source_type TEXT,
+    source_ref  TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS design_projects (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    name            TEXT NOT NULL,
+    brand_id        INTEGER REFERENCES brand_profiles(id),
+    export_id       INTEGER REFERENCES designer_exports(id),
+    tokens_path     TEXT,
+    variables_path  TEXT,
+    notes           TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS design_pages (
+    design_id     INTEGER REFERENCES design_projects(id),
+    generation_id INTEGER REFERENCES generations(id),
+    page_type     TEXT,
+    sort_order    INTEGER DEFAULT 0,
+    PRIMARY KEY (design_id, generation_id)
+  );
+`);
+
 // ─── Migrations: add new columns if they don't exist ────────────────────────
 const migrations = [
   `ALTER TABLE generations ADD COLUMN import_status TEXT`,
@@ -76,6 +108,8 @@ const migrations = [
   `ALTER TABLE generations ADD COLUMN secondary_keywords TEXT`,
   `ALTER TABLE generations ADD COLUMN has_preview INTEGER DEFAULT 0`,
   `ALTER TABLE generations ADD COLUMN et_template TEXT`,
+  `ALTER TABLE generations ADD COLUMN design_id INTEGER`,
+  `ALTER TABLE generations ADD COLUMN page_type TEXT`,
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (_) {}
