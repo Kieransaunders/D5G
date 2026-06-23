@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DTI_VERSION', '1.4.0' );
+define( 'DTI_VERSION', '1.5.0' );
 define( 'DTI_FILE', __FILE__ );
 define( 'DTI_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -30,6 +30,8 @@ require_once DTI_DIR . 'src/LibraryImporter.php';
 require_once DTI_DIR . 'src/PresetManager.php';
 require_once DTI_DIR . 'src/GlobalVariablesImporter.php';
 require_once DTI_DIR . 'src/PagesLister.php';
+require_once DTI_DIR . 'src/DbExporter.php';
+require_once DTI_DIR . 'src/DbImporter.php';
 require_once DTI_DIR . 'src/RestApi.php';
 require_once DTI_DIR . 'admin/SettingsPage.php';
 

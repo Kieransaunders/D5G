@@ -21,6 +21,7 @@
       <button type="button" class="tab" data-tab="brand">Brand</button>
       <button type="button" class="tab" data-tab="designs">Designs</button>
       <button type="button" class="tab" data-tab="generate">Brief</button>
+      <button type="button" class="tab" data-tab="migrate">Migrate</button>
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
@@ -177,6 +178,65 @@
     </div>
 
     </div><!-- /tab-generate -->
+
+    <!-- ── Migrate tab ── -->
+    <div id="tab-migrate" hidden>
+
+      <div class="section-label">Pull database — remote → local</div>
+      <p style="font-size:0.78rem;color:var(--muted);margin:0 0 10px">
+        Copies a live site's database into a local dev site. URLs are rewritten automatically.
+        The local site is backed up first.
+      </p>
+
+      <div class="field">
+        <label>Remote site URL (source)</label>
+        <input type="text" id="pullRemote" placeholder="https://test.yoursite.com" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Remote API key</label>
+        <input type="password" id="pullRemoteKey" placeholder="dtik_…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Local site URL (target)</label>
+        <input type="text" id="pullLocal" placeholder="http://localhost:10024" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Local API key</label>
+        <input type="password" id="pullLocalKey" placeholder="dtik_…" autocomplete="off">
+      </div>
+      <button type="button" class="btn-generate" id="runPull">Pull into local ↓</button>
+      <div id="pullResult" style="margin-top:10px;font-size:0.8125rem"></div>
+
+      <div class="section-label" style="margin-top:24px;color:#c0392b">Push database — local → remote ⚠</div>
+      <p style="font-size:0.78rem;color:var(--muted);margin:0 0 10px">
+        <strong>Overwrites the remote site's database.</strong> The remote is backed up first,
+        but this replaces all its content. Type the remote hostname to confirm.
+      </p>
+
+      <div class="field">
+        <label>Local site URL (source)</label>
+        <input type="text" id="pushLocal" placeholder="http://localhost:10024" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Local API key</label>
+        <input type="password" id="pushLocalKey" placeholder="dtik_…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Remote site URL (target)</label>
+        <input type="text" id="pushRemote" placeholder="https://test.yoursite.com" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Remote API key</label>
+        <input type="password" id="pushRemoteKey" placeholder="dtik_…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Confirm — type the remote hostname</label>
+        <input type="text" id="pushConfirm" placeholder="test.yoursite.com" autocomplete="off">
+      </div>
+      <button type="button" class="btn-secondary" id="runPush" style="border-color:#c0392b;color:#c0392b">Push to remote ↑</button>
+      <div id="pushResult" style="margin-top:10px;font-size:0.8125rem"></div>
+
+    </div><!-- /tab-migrate -->
 
     <!-- ── Settings tab ── -->
     <div id="tab-settings" hidden>

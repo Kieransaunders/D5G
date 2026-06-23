@@ -338,7 +338,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 // Hash routing — #brand, #brand/42, #designs, #chat, #generate
 function applyHash(hash) {
   const [tab, id] = (hash.replace('#', '') || 'chat').split('/');
-  const validTabs = ['chat', 'generate', 'brief', 'brand', 'designs'];
+  const validTabs = ['chat', 'generate', 'brief', 'brand', 'designs', 'migrate'];
   switchTab(validTabs.includes(tab) ? tab : 'chat', { updateHash: false });
   if (tab === 'brand' && id) {
     // wait for grid to render, then open the editor
@@ -347,6 +347,62 @@ function applyHash(hash) {
 }
 
 window.addEventListener('hashchange', () => applyHash(location.hash));
+
+// ── Migrate tab — DB pull / push ──────────────────────────────────────────
+function migrateVal(id) { return document.getElementById(id).value.trim(); }
+
+async function runMigrate(url, body, btn, resultEl) {
+  btn.disabled = true;
+  resultEl.style.color = 'var(--muted)';
+  resultEl.textContent = 'Working… (large sites can take a minute)';
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    resultEl.style.color = 'var(--accent)';
+    resultEl.innerHTML = `✓ ${data.from} → ${data.to}<br>` +
+      `${data.tables_imported} statements, ${data.replacements} URL replacements` +
+      (data.backup_file ? `<br>Backup: <code>${data.backup_file}</code>` : '');
+  } catch (e) {
+    resultEl.style.color = '#c0392b';
+    resultEl.textContent = '✗ ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('runPull').addEventListener('click', () => {
+  runMigrate('/migrate/pull', {
+    remote:    migrateVal('pullRemote'),
+    remoteKey: migrateVal('pullRemoteKey'),
+    local:     migrateVal('pullLocal'),
+    localKey:  migrateVal('pullLocalKey'),
+  }, document.getElementById('runPull'), document.getElementById('pullResult'));
+});
+
+document.getElementById('runPush').addEventListener('click', () => {
+  const remote = migrateVal('pushRemote');
+  let host = '';
+  try { host = new URL(remote).hostname; } catch {}
+  if (!host || migrateVal('pushConfirm') !== host) {
+    const el = document.getElementById('pushResult');
+    el.style.color = '#c0392b';
+    el.textContent = `✗ Type "${host || 'the remote hostname'}" in the confirm box to push.`;
+    return;
+  }
+  if (!confirm(`Overwrite the database at ${host}? The remote is backed up first, but all its content will be replaced.`)) return;
+  runMigrate('/migrate/push', {
+    local:      migrateVal('pushLocal'),
+    localKey:   migrateVal('pushLocalKey'),
+    remote,
+    remoteKey:  migrateVal('pushRemoteKey'),
+    confirmHost: host,
+  }, document.getElementById('runPush'), document.getElementById('pushResult'));
+});
 
 // Sync on load — hash wins over the HTML active class
 (function syncActiveTabOnLoad() {

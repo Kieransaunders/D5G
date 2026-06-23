@@ -693,6 +693,97 @@ app.post('/brand/:id/deploy', async (req, res) => {
   res.json({ ok: true, site: siteUrl.origin, ...results });
 });
 
+// ─── POST /migrate/pull — copy a remote site's DB into a local dev site ───────
+// Body: { remote, remoteKey, local, localKey }
+// remote = public source (SSRF-checked); local = your dev target (loopback OK).
+app.post('/migrate/pull', async (req, res) => {
+  const { remote, remoteKey, local, localKey } = req.body;
+  if (!remote || !remoteKey || !local || !localKey) {
+    return res.status(400).json({ error: 'remote, remoteKey, local, localKey all required' });
+  }
+
+  let remoteUrl, localUrl;
+  try { remoteUrl = new URL(remote); localUrl = new URL(local); }
+  catch { return res.status(400).json({ error: 'invalid remote or local url' }); }
+
+  // Guard the public source only; the local target is meant to be a dev host.
+  if (!(await isSafeHost(remoteUrl.hostname))) {
+    return res.status(400).json({ error: 'blocked: remote is a private/loopback host' });
+  }
+
+  const remoteApi = remoteUrl.origin + '/wp-json/divi-tools/v1';
+  const localApi  = localUrl.origin  + '/wp-json/divi-tools/v1';
+
+  try {
+    // 1. Pull the dump from the remote.
+    const exp = await fetch(`${remoteApi}/db/export`, {
+      headers: { 'X-Divi-Tools-Key': remoteKey },
+    });
+    if (!exp.ok) return res.status(502).json({ error: `remote export failed: ${exp.status}` });
+    const dump = await exp.json();
+
+    // 2. Push it into the local site, rewriting remote URL → local URL.
+    const imp = await fetch(`${localApi}/db/import`, {
+      method: 'POST',
+      headers: { 'X-Divi-Tools-Key': localKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql: dump.sql, from_url: dump.home_url, to_url: localUrl.origin }),
+    });
+    const result = await imp.json();
+    if (!imp.ok) return res.status(502).json({ error: `local import failed: ${imp.status}`, detail: result });
+
+    res.json({ ok: true, from: remoteUrl.origin, to: localUrl.origin, ...result });
+  } catch (e) {
+    return res.status(502).json({ error: `pull failed: ${e.message}` });
+  }
+});
+
+// ─── POST /migrate/push — copy a local dev site's DB up to a remote site ──────
+// Body: { local, localKey, remote, remoteKey, confirmHost }
+// Overwrites the remote's DB, so confirmHost must match the remote hostname.
+app.post('/migrate/push', async (req, res) => {
+  const { local, localKey, remote, remoteKey, confirmHost } = req.body;
+  if (!local || !localKey || !remote || !remoteKey) {
+    return res.status(400).json({ error: 'local, localKey, remote, remoteKey all required' });
+  }
+
+  let remoteUrl, localUrl;
+  try { remoteUrl = new URL(remote); localUrl = new URL(local); }
+  catch { return res.status(400).json({ error: 'invalid remote or local url' }); }
+
+  // Typed-confirmation guard — this overwrites a live site.
+  if (confirmHost !== remoteUrl.hostname) {
+    return res.status(412).json({ error: `confirmHost must equal "${remoteUrl.hostname}" to push` });
+  }
+  if (!(await isSafeHost(remoteUrl.hostname))) {
+    return res.status(400).json({ error: 'blocked: remote is a private/loopback host' });
+  }
+
+  const remoteApi = remoteUrl.origin + '/wp-json/divi-tools/v1';
+  const localApi  = localUrl.origin  + '/wp-json/divi-tools/v1';
+
+  try {
+    // 1. Export the local dev DB.
+    const exp = await fetch(`${localApi}/db/export`, {
+      headers: { 'X-Divi-Tools-Key': localKey },
+    });
+    if (!exp.ok) return res.status(502).json({ error: `local export failed: ${exp.status}` });
+    const dump = await exp.json();
+
+    // 2. Import into the remote, rewriting local URL → remote URL.
+    const imp = await fetch(`${remoteApi}/db/import`, {
+      method: 'POST',
+      headers: { 'X-Divi-Tools-Key': remoteKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql: dump.sql, from_url: dump.home_url, to_url: remoteUrl.origin }),
+    });
+    const result = await imp.json();
+    if (!imp.ok) return res.status(502).json({ error: `remote import failed: ${imp.status}`, detail: result });
+
+    res.json({ ok: true, from: localUrl.origin, to: remoteUrl.origin, ...result });
+  } catch (e) {
+    return res.status(502).json({ error: `push failed: ${e.message}` });
+  }
+});
+
 app.get('/brand/:id', (req, res) => {
   const row = getBrandProfile(parseInt(req.params.id));
   if (!row) return res.status(404).json({ error: 'Not found' });

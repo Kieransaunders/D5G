@@ -77,6 +77,23 @@ class DTI_RestApi {
 			'permission_callback' => array( __CLASS__, 'authenticate' ),
 		) );
 
+		register_rest_route( self::NAMESPACE, '/db/export', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_db_export' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/db/import', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'handle_db_import' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+			'args'                => array(
+				'sql'      => array( 'required' => true,  'type' => 'string' ),
+				'from_url' => array( 'required' => false, 'type' => 'string', 'default' => '' ),
+				'to_url'   => array( 'required' => false, 'type' => 'string', 'default' => '' ),
+			),
+		) );
+
 		register_rest_route( self::NAMESPACE, '/ping', array(
 			'methods'             => 'GET',
 			'callback'            => array( __CLASS__, 'handle_ping' ),
@@ -215,6 +232,30 @@ class DTI_RestApi {
 			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
 		}
 
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_db_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		try {
+			$result = DTI_DbExporter::export();
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'export_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_db_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$sql      = (string) $request->get_param( 'sql' );
+		$from_url = esc_url_raw( (string) $request->get_param( 'from_url' ) );
+		$to_url   = esc_url_raw( (string) $request->get_param( 'to_url' ) );
+
+		try {
+			$result = DTI_DbImporter::import( $sql, $from_url, $to_url );
+		} catch ( InvalidArgumentException $e ) {
+			return new WP_Error( 'invalid_payload', $e->getMessage(), array( 'status' => 400 ) );
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
 		return new WP_REST_Response( $result, 200 );
 	}
 
