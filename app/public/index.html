@@ -19,6 +19,7 @@
     <div class="tab-bar">
       <button type="button" class="tab active" data-tab="generate">Generate</button>
       <button type="button" class="tab" data-tab="chat">Chat</button>
+      <button type="button" class="tab" data-tab="brand">Brand</button>
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
@@ -231,6 +232,74 @@
       </div>
 
     </div><!-- /tab-settings -->
+
+    <!-- ── Brand tab ── -->
+    <div id="tab-brand" hidden style="display:flex;flex-direction:column;flex:1;gap:10px;min-height:0">
+      <div class="section-label">Brand Profiles</div>
+
+      <div class="brand-toolbar" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="btn-secondary" data-brand-new="blank">＋ Blank</button>
+        <button type="button" class="btn-secondary" data-brand-new="url" disabled title="Wired in Phase 3">From URL</button>
+        <button type="button" class="btn-secondary" data-brand-new="export" disabled title="Wired in Phase 3">From Divi export</button>
+        <button type="button" class="btn-secondary" data-brand-new="image" disabled title="Wired in Phase 3">From image</button>
+        <button type="button" class="btn-secondary" data-brand-new="chat" disabled title="Wired in Phase 3">From chat</button>
+      </div>
+
+      <div id="brandGrid" class="brand-grid" style="overflow-y:auto;flex:1;min-height:0">
+        <div class="empty">No brand profiles yet — create one with ＋ Blank.</div>
+      </div>
+
+      <!-- Brand editor (inline panel, hidden until opened) -->
+      <div id="brandEditor" hidden class="brand-editor">
+        <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span id="brandEditorTitle">New brand profile</span>
+          <button type="button" class="btn-link" id="brandEditorClose" style="color:var(--muted)">Close</button>
+        </div>
+
+        <div class="field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="brandName" placeholder="Acme Corp">
+        </div>
+
+        <div class="field">
+          <label>Logo</label>
+          <input type="file" id="brandLogoInput" accept="image/*">
+          <span class="field-hint">Used for reference + canvas colour extraction (Phase 3).</span>
+        </div>
+
+        <div class="field">
+          <label>Colours</label>
+          <div id="brandColors" style="display:flex;flex-direction:column;gap:6px"></div>
+          <button type="button" class="btn-link" id="brandAddColor" style="font-size:0.75rem;color:var(--accent);margin-top:4px">＋ Add colour</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field">
+            <label>Heading font</label>
+            <select id="brandHeadingFont"></select>
+          </div>
+          <div class="field">
+            <label>Body font</label>
+            <select id="brandBodyFont"></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tagline</label>
+          <input type="text" id="brandTagline" placeholder="We make invoicing effortless">
+        </div>
+
+        <div class="field">
+          <label>Voice &amp; tone</label>
+          <textarea id="brandVoice" placeholder="Friendly, confident, jargon-free…" style="resize:none;height:60px"></textarea>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button type="button" class="btn-generate" id="brandSave">Save</button>
+          <button type="button" class="btn-secondary" id="brandDelete" hidden>Delete</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ── Chat tab ── -->
     <div id="tab-chat" hidden style="display:flex;flex-direction:column;flex:1;gap:8px">

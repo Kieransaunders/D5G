@@ -459,3 +459,82 @@ select option { background: var(--surface); }
   box-sizing: border-box;
 }
 .revision-textarea:focus { outline: none; border-color: var(--accent); }
+
+/* ── Brand tab ──────────────────────────────────────────────────────────────── */
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+.brand-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brand-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.brand-card-src {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+.brand-card-swatches { display: flex; gap: 4px; min-height: 18px; align-items: center; }
+.brand-card-swatch {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.brand-card-no-swatches { font-size: 0.7rem; color: var(--muted); }
+.brand-card-meta { font-size: 0.75rem; color: var(--muted); }
+.brand-card-edit { font-size: 0.75rem; color: var(--accent); align-self: flex-start; }
+
+.brand-editor {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-row input[type="color"] {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+.color-row input[type="text"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-family: inherit;
+}
+.color-source {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 48px;
+}
+.color-row input:focus { outline: none; border-color: var(--accent); }

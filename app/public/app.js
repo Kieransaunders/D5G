@@ -313,9 +313,11 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     const target = btn.dataset.tab;
-    document.getElementById('tab-generate').hidden = target !== 'generate';
-    document.getElementById('tab-settings').hidden  = target !== 'settings';
-    document.getElementById('tab-chat').hidden       = target !== 'chat';
+    // Generic: hide every tab-<name> panel, show the chosen one.
+    document.querySelectorAll('[id^="tab-"]').forEach(panel => {
+      panel.hidden = panel.id !== `tab-${target}`;
+    });
+    if (target === 'brand') loadBrandGrid();
   });
 });
 
@@ -582,11 +584,8 @@ async function rerunGeneration(id, event) {
     etSel.value = data.et_template || '';
     etSel.dispatchEvent(new Event('change'));
 
-    // Switch to generate tab
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('.tab[data-tab=generate]').classList.add('active');
-    document.getElementById('tab-generate').hidden = false;
-    document.getElementById('tab-settings').hidden  = true;
+    // Switch to generate tab (reuse the generic tab switcher)
+    document.querySelector('.tab[data-tab=generate]').click();
 
     if (revisionNotes) {
       document.getElementById('revisionNotesField').style.display = '';
@@ -717,3 +716,210 @@ loadSettings();
 loadExports();
 loadBriefs();
 loadEtPages();
+
+// ─── Brand Profiles ───────────────────────────────────────────────────────────
+// Brand Profile `data` shape (canonical across app + skills):
+//   { name, colors:[{role,hex,source,locked}], fonts:{heading:{family},body:{family}},
+//     logo, voice, tagline }
+
+const BRAND_FONT_OPTIONS = [
+  '', 'Inter', 'Poppins', 'Montserrat', 'Roboto', 'Open Sans', 'Lato',
+  'Playfair Display', 'Merriweather', 'Lora', 'Source Sans Pro', 'Nunito',
+  'Work Sans', 'Raleway', 'DM Sans', 'Archivo', 'Oswald', 'IBM Plex Sans',
+];
+
+// Mutable working copy of the profile currently open in the editor (null = closed).
+let brandEditing = null;
+
+function emptyBrandData() {
+  return { colors: [], fonts: {}, logo: null, voice: '', tagline: '' };
+}
+
+async function loadBrandGrid() {
+  const grid = document.getElementById('brandGrid');
+  let profiles;
+  try {
+    profiles = await fetch('/brand').then(r => r.json());
+  } catch {
+    grid.innerHTML = '<div class="empty">Could not load brand profiles.</div>';
+    return;
+  }
+  if (!Array.isArray(profiles) || profiles.length === 0) {
+    grid.innerHTML = '<div class="empty">No brand profiles yet — create one with ＋ Blank.</div>';
+    return;
+  }
+  grid.innerHTML = profiles.map(renderBrandCard).join('');
+  grid.querySelectorAll('[data-brand-edit]').forEach(btn => {
+    btn.addEventListener('click', () => openBrandEditor(parseInt(btn.dataset.brandEdit)));
+  });
+}
+
+function renderBrandCard(p) {
+  const data = p.data || {};
+  const swatches = (data.colors || []).slice(0, 6).map(c =>
+    `<span class="brand-card-swatch" style="background:${c.hex}" title="${escapeHtml(c.role || c.hex)}:${c.hex}"></span>`
+  ).join('');
+  const fontLine = [data.fonts?.heading?.family, data.fonts?.body?.family]
+    .filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(' / ');
+  const meta = [fontLine, data.tagline].filter(Boolean).join(' · ');
+  return `
+    <div class="brand-card" data-brand-card="${p.id}">
+      <div class="brand-card-head">
+        <strong>${escapeHtml(p.name)}</strong>
+        <span class="brand-card-src">${escapeHtml(p.source_type || 'manual')}</span>
+      </div>
+      <div class="brand-card-swatches">${swatches || '<span class="brand-card-no-swatches">no colours</span>'}</div>
+      ${meta ? `<div class="brand-card-meta">${escapeHtml(meta)}</div>` : ''}
+      <button type="button" class="btn-link brand-card-edit" data-brand-edit="${p.id}">Edit</button>
+    </div>`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function fillFontSelects() {
+  const heading = document.getElementById('brandHeadingFont');
+  const body = document.getElementById('brandBodyFont');
+  for (const sel of [heading, body]) {
+    sel.innerHTML = BRAND_FONT_OPTIONS.map(f => `<option value="${f}">${f || '— none —'}</option>`).join('');
+  }
+}
+
+function openBrandEditor(id) {
+  const editor = document.getElementById('brandEditor');
+  const title = document.getElementById('brandEditorTitle');
+  const delBtn = document.getElementById('brandDelete');
+
+  fillFontSelects();
+  editor.hidden = false;
+  editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (id == null) {
+    brandEditing = { id: null, name: '', source_type: 'manual', data: emptyBrandData() };
+    title.textContent = 'New brand profile';
+    delBtn.hidden = true;
+  } else {
+    brandEditing = { id, name: '', source_type: 'manual', data: emptyBrandData(), _loading: true };
+    title.textContent = 'Edit brand profile';
+    delBtn.hidden = false;
+    fetch(`/brand/${id}`).then(r => r.json()).then(p => {
+      if (!p || p.error) return;
+      brandEditing = { id: p.id, name: p.name, source_type: p.source_type || 'manual', data: p.data || emptyBrandData() };
+      paintBrandEditor();
+    });
+  }
+  paintBrandEditor();
+}
+
+function paintBrandEditor() {
+  if (!brandEditing) return;
+  const d = brandEditing.data;
+  document.getElementById('brandName').value = brandEditing.name || '';
+  document.getElementById('brandTagline').value = d.tagline || '';
+  document.getElementById('brandVoice').value = d.voice || '';
+  document.getElementById('brandHeadingFont').value = d.fonts?.heading?.family || '';
+  document.getElementById('brandBodyFont').value = d.fonts?.body?.family || '';
+  renderBrandColorRows();
+}
+
+function renderBrandColorRows() {
+  const wrap = document.getElementById('brandColors');
+  const colors = brandEditing?.data?.colors || [];
+  if (colors.length === 0) {
+    wrap.innerHTML = '<span class="field-hint">No colours yet.</span>';
+    return;
+  }
+  wrap.innerHTML = colors.map((c, i) => `
+    <div class="color-row" data-color-idx="${i}">
+      <input type="color" value="${c.hex}" data-color-hex="${i}">
+      <input type="text" value="${escapeHtml(c.role || '')}" placeholder="role" data-color-role="${i}" style="flex:1">
+      <span class="color-source">${escapeHtml(c.source || 'manual')}</span>
+      <button type="button" class="btn-link color-remove" data-color-remove="${i}" style="color:var(--danger)">✕</button>
+    </div>`).join('');
+}
+
+function addBrandColorRow(role = '', hex = '#6366f1', source = 'manual') {
+  if (!brandEditing) return;
+  brandEditing.data.colors.push({ role, hex, source, locked: false });
+  renderBrandColorRows();
+}
+
+function collectBrandEditor() {
+  if (!brandEditing) return null;
+  const d = brandEditing.data;
+  d.tagline = document.getElementById('brandTagline').value.trim();
+  d.voice = document.getElementById('brandVoice').value.trim();
+  const heading = document.getElementById('brandHeadingFont').value;
+  const body = document.getElementById('brandBodyFont').value;
+  d.fonts = {};
+  if (heading) d.fonts.heading = { family: heading };
+  if (body) d.fonts.body = { family: body };
+  // colours read live from their inputs
+  document.querySelectorAll('#brandColors .color-row').forEach(row => {
+    const i = parseInt(row.dataset.colorIdx);
+    const c = d.colors[i];
+    if (!c) return;
+    c.hex = row.querySelector('[data-color-hex]').value;
+    c.role = row.querySelector('[data-color-role]').value.trim();
+  });
+  const name = document.getElementById('brandName').value.trim();
+  return { name, data: d, source_type: brandEditing.source_type };
+}
+
+async function saveBrandProfile() {
+  const payload = collectBrandEditor();
+  if (!payload) return;
+  if (!payload.name) {
+    alert('Brand name is required.');
+    return;
+  }
+  const method = brandEditing.id ? 'PUT' : 'POST';
+  const url = brandEditing.id ? `/brand/${brandEditing.id}` : '/brand';
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).then(r => r.json());
+  if (res.error) { alert(res.error); return; }
+  closeBrandEditor();
+  await loadBrandGrid();
+}
+
+async function deleteBrandProfileUI() {
+  if (!brandEditing?.id) return;
+  if (!confirm(`Delete brand profile "${brandEditing.name}"? This cannot be undone.`)) return;
+  const res = await fetch(`/brand/${brandEditing.id}`, { method: 'DELETE' }).then(r => r.json());
+  if (res.error) { alert(res.error); return; }
+  closeBrandEditor();
+  await loadBrandGrid();
+}
+
+function closeBrandEditor() {
+  brandEditing = null;
+  document.getElementById('brandEditor').hidden = true;
+}
+
+// ── Brand tab wiring ──
+document.querySelectorAll('[data-brand-new]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.disabled) return;
+    // Only "blank" is enabled in Phase 2; extraction paths arrive in Phase 3.
+    openBrandEditor(null);
+  });
+});
+document.getElementById('brandEditorClose').addEventListener('click', closeBrandEditor);
+document.getElementById('brandAddColor').addEventListener('click', () => addBrandColorRow());
+document.getElementById('brandSave').addEventListener('click', saveBrandProfile);
+document.getElementById('brandDelete').addEventListener('click', deleteBrandProfileUI);
+// delegate remove-color clicks
+document.getElementById('brandColors').addEventListener('click', e => {
+  const btn = e.target.closest('[data-color-remove]');
+  if (!btn) return;
+  const i = parseInt(btn.dataset.colorRemove);
+  if (brandEditing) {
+    brandEditing.data.colors.splice(i, 1);
+    renderBrandColorRows();
+  }
+});
