@@ -70,6 +70,21 @@ class DTI_RestApi {
 			'callback'            => array( __CLASS__, 'handle_ping' ),
 			'permission_callback' => array( __CLASS__, 'authenticate' ),
 		) );
+
+		register_rest_route( self::NAMESPACE, '/pages', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_pages_list' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/pages/(?P<slug>[a-z0-9-]+)', array(
+			'methods'             => 'DELETE',
+			'callback'            => array( __CLASS__, 'handle_pages_delete' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+			'args'                => array(
+				'slug' => array( 'required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_title' ),
+			),
+		) );
 	}
 
 	public static function authenticate( WP_REST_Request $request ): bool|WP_Error {
@@ -181,6 +196,36 @@ class DTI_RestApi {
 			'rankmath'    => class_exists( 'RankMath' ),
 			'dti_version' => DTI_VERSION,
 		), 200 );
+	}
+
+	public static function handle_pages_list( WP_REST_Request $request ): WP_REST_Response {
+		return new WP_REST_Response( DTI_PagesLister::list(), 200 );
+	}
+
+	public static function handle_pages_delete( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$slug = sanitize_title( (string) $request->get_param( 'slug' ) );
+
+		$query = new WP_Query( array(
+			'name'           => $slug,
+			'post_type'      => 'page',
+			'post_status'    => array( 'draft', 'publish', 'pending', 'private', 'trash' ),
+			'posts_per_page' => 1,
+			'no_found_rows'  => true,
+			'meta_key'       => '_dti_imported',
+		) );
+
+		if ( empty( $query->posts ) ) {
+			return new WP_Error( 'not_found', "No DTI-imported page found with slug: {$slug}", array( 'status' => 404 ) );
+		}
+
+		$post_id = $query->posts[0]->ID;
+		$deleted = wp_delete_post( $post_id, true );
+
+		if ( ! $deleted ) {
+			return new WP_Error( 'delete_failed', 'WordPress refused to delete the page.', array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( array( 'deleted' => $slug, 'id' => $post_id ), 200 );
 	}
 
 	public static function handle_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
