@@ -5,12 +5,15 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 
-const DATA_DIR = path.join(os.homedir(), 'Library', 'Application Support', 'Divi5Generator');
+// ponytail: DIVI5_DATA_DIR override exists for test isolation; prod uses the default.
+const DATA_DIR = process.env.DIVI5_DATA_DIR || path.join(os.homedir(), 'Library', 'Application Support', 'Divi5Generator');
 const EXPORTS_DIR = path.join(DATA_DIR, 'exports');
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(EXPORTS_DIR, { recursive: true });
 
 const db = new Database(path.join(DATA_DIR, 'history.db'));
+db.pragma('journal_mode = WAL');   // concurrent reads while writing (app + any helper process)
+db.pragma('busy_timeout = 5000');  // wait out transient locks instead of throwing
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS settings (

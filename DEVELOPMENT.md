@@ -177,7 +177,38 @@ All endpoints at `/wp-json/divi-tools/v1/*`. **All require** `X-Divi-Tools-Key` 
 | GET | `/export?slug=<slug>` | Export a page with presets + global colours |
 | POST | `/presets/import` | Import a preset pack independently |
 | GET | `/presets` | List all presets as name → ID map |
+| POST | `/global-variables` | Import a Global Variables JSON bundle |
+| GET | `/pages` | List pages this plugin imported (keyed off the `_dti_imported` meta stamp) |
+| DELETE | `/pages/{slug}` | Delete a DTI-imported page by slug (refuses non-DTI pages) |
 | GET | `/ping` | Health check — verify plugin is active and key is valid |
+
+`/pages` only ever lists/deletes pages this plugin created: `PageImporter` stamps
+`_dti_imported = 1` on import, and both endpoints filter on that meta key so they
+never touch hand-built Divi pages.
+
+## App data model (`app/db.js`)
+
+SQLite at `~/Library/Application Support/Divi5Generator/history.db` (WAL mode).
+Override the dir with `DIVI5_DATA_DIR` (used by the e2e test for isolation).
+
+| Table | Holds | Key links |
+|-------|-------|-----------|
+| `generations` | One page-build run: brief, status, output dir, export path | `design_id` → `design_projects` |
+| `output_files` | Files a generation produced (page / seo-meta / schema) | `generation_id` |
+| `designer_exports` | Saved Divi exports reused across pages | — |
+| `brand_profiles` | Palette/fonts/voice JSON in `data`; `source_type` = url\|image\|export\|manual | — |
+| `design_projects` | Groups pages built on one brand + export | `brand_id`, `export_id` |
+| `design_pages` | Join: which generations belong to a project | `(design_id, generation_id)` |
+
+**Auto-promotion (`promoteIfEligible`)**: when a generation completes and a
+sibling shares the same `brand` + `export_path`, the two are promoted into a new
+`design_project` (idempotent — a 3rd page on the same key won't spawn a second
+project). Wired in the `/generate` close handler in `server.js`.
+
+**Chat → generation (`/chat`)**: the chat stream scans Claude's stdout for a
+`<!-- GEN_INTENT: {...} -->` marker (see `app/lib/intent-marker.js`), emits a
+`gen_intent` SSE event for the proposal card, and strips the marker from the
+visible prose.
 
 ## Current development state
 

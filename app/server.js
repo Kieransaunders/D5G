@@ -408,6 +408,7 @@ app.get('/prereqs', (req, res) => {
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 function findClaude() {
+  if (process.env.CLAUDE_BIN) return process.env.CLAUDE_BIN; // ponytail: test/override hook
   const candidates = [
     'claude',
     '/usr/local/bin/claude',
