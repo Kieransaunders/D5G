@@ -4,7 +4,7 @@ Tags: divi, divi 5, landing page, seo, import
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,10 @@ Pass `"publish": true` in the request body. Default is always draft so you can r
 Settings → Divi Tools Importer → Regenerate Key. Your old key stops working immediately.
 
 == Changelog ==
+
+= 1.4.0 =
+* Export endpoints for global variables and presets (GET /global-variables/export, GET /presets/export)
+* Brand extract and deploy routes in the companion app
 
 = 1.0.0 =
 * Initial release
