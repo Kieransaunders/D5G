@@ -8,4 +8,11 @@ app/node_modules/
 skills/**/.playwright-mcp/
 skills/**/golden/*-diff.png
 
+# opencode tooling/swarm state — local only
+.opencode/
+
+# Large Divi 5 design-system reference data (96MB) — loaded locally, not shipped in git.
+# Source: ElegantThemes "Black Friday 2025 Divi 5 Freebie" design-system export.
+skills/divi5-page-generator/references/Divi-5-Design-System/
+
 .DS_Store
