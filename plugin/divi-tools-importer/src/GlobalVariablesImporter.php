@@ -70,11 +70,34 @@ class DTI_GlobalVariablesImporter {
 			throw new RuntimeException( 'Divi 5 GlobalData class not available.' );
 		}
 
-		$data = $data_class::get_data();
+		// get_global_colors() → { gcid: {color,label,status,...}, ... }
+		// Reshape to the [ [gcid, {...}], ... ] tuple format the import side wants.
+		$colors_map = method_exists( $data_class, 'get_global_colors' )
+			? (array) $data_class::get_global_colors()
+			: [];
+		$global_colors = [];
+		foreach ( $colors_map as $gcid => $meta ) {
+			$global_colors[] = array( $gcid, $meta );
+		}
+
+		// get_global_variables() → { numbers:{}, strings:{}, fonts:{ id:{...} }, ... }
+		// Flatten to a single list of {type, id, ...} objects (import format).
+		$vars_by_type = method_exists( $data_class, 'get_global_variables' )
+			? (array) $data_class::get_global_variables()
+			: [];
+		$global_variables = [];
+		foreach ( $vars_by_type as $type => $entries ) {
+			foreach ( (array) $entries as $id => $entry ) {
+				$entry = (array) $entry;
+				$entry['type'] = $type;
+				$entry['id']   = $entry['id'] ?? $id;
+				$global_variables[] = $entry;
+			}
+		}
 
 		return [
-			'global_colors'    => $data['global_colors'] ?? [],
-			'global_variables' => array_values( $data['global_variables'] ?? [] ),
+			'global_colors'    => $global_colors,
+			'global_variables' => $global_variables,
 		];
 	}
 }
