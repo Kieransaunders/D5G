@@ -68,6 +68,16 @@ class DTI_PresetManager {
 	 * @param bool   $with_attrs  Include stored preset attrs in the response.
 	 * @return array{ presets: array<string, array<string, mixed>> }
 	 */
+	public static function export_presets(): array {
+		$preset_class = 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset';
+
+		if ( ! class_exists( $preset_class ) || ! method_exists( $preset_class, 'get_data' ) ) {
+			throw new RuntimeException( 'Divi 5 GlobalPreset class not available.' );
+		}
+
+		return [ 'presets' => $preset_class::get_data() ];
+	}
+
 	public static function list_presets( string $module = '', bool $with_attrs = false ): array {
 		$preset_class = 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset';
 

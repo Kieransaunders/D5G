@@ -59,9 +59,21 @@ class DTI_RestApi {
 			),
 		) );
 
+		register_rest_route( self::NAMESPACE, '/presets/export', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_presets_export' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
 		register_rest_route( self::NAMESPACE, '/global-variables', array(
 			'methods'             => 'POST',
 			'callback'            => array( __CLASS__, 'handle_global_variables_import' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/global-variables/export', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_global_variables_export' ),
 			'permission_callback' => array( __CLASS__, 'authenticate' ),
 		) );
 
@@ -162,6 +174,26 @@ class DTI_RestApi {
 			$result = DTI_PresetManager::list_presets( $module, $with_attrs );
 		} catch ( RuntimeException $e ) {
 			return new WP_Error( 'list_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_presets_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		try {
+			$result = DTI_PresetManager::export_presets();
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'export_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_global_variables_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		try {
+			$result = DTI_GlobalVariablesImporter::export();
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'export_failed', $e->getMessage(), array( 'status' => 500 ) );
 		}
 
 		return new WP_REST_Response( $result, 200 );

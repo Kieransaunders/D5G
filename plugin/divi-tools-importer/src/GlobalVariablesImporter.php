@@ -5,11 +5,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Import Divi 5 global colours and variables from a Global Variables JSON payload.
+ * Import and export Divi 5 global colours and variables.
  *
  * POST /wp-json/divi-tools/v1/global-variables
- *   body: the full LoudMouth_Global-Variables.json (or any file produced by divi5-extract-style)
+ *   body: { global_colors: [...], global_variables: [...] }
  *   Returns: { colors_imported, variables_imported, warnings[] }
+ *
+ * GET /wp-json/divi-tools/v1/global-variables
+ *   Returns: { global_colors: [...], global_variables: [...] }
  */
 class DTI_GlobalVariablesImporter {
 
@@ -57,6 +60,21 @@ class DTI_GlobalVariablesImporter {
 			'colors_imported'    => $colors_imported,
 			'variables_imported' => $variables_imported,
 			'warnings'           => $warnings,
+		];
+	}
+
+	public static function export(): array {
+		$data_class = 'ET\\Builder\\Packages\\GlobalData\\GlobalData';
+
+		if ( ! class_exists( $data_class ) ) {
+			throw new RuntimeException( 'Divi 5 GlobalData class not available.' );
+		}
+
+		$data = $data_class::get_data();
+
+		return [
+			'global_colors'    => $data['global_colors'] ?? [],
+			'global_variables' => array_values( $data['global_variables'] ?? [] ),
 		];
 	}
 }
