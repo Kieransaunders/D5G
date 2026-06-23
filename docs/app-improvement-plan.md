@@ -52,35 +52,46 @@ in `/brand/:id/deploy` and `/migrate/*`; this connects it end-to-end.
 
 ## Phase 6 — Claude Design ingest (visual authoring → Divi)
 [Claude Design](https://www.anthropic.com/news/claude-design-anthropic-labs)
-(Anthropic Labs, launched April 2026) turns prompts into design-system-aware
-visuals and exports to standalone HTML, PDF/PPTX, **Canva**, or a Claude Code
-**handoff bundle**. The app can be the bridge that lands those designs on a live
-Divi site, reusing the entire preview → import → cleanup pipeline.
+(Anthropic Labs, April 2026) turns prompts into design-system-aware visuals. Two
+mechanisms matter for us, both confirmed in the
+[Get started](https://support.claude.com/en/articles/14604416-get-started-with-claude-design)
+docs:
+- **Handoff bundle** — when a design is ready to build, Claude Design packages
+  *design intent, component structure, and styling context* and sends it to
+  **Claude Code** (local agent against the real repo, or **Claude Code Web**)
+  with a single instruction. This app *is* a Claude Code project, so the handoff
+  lands natively — structured input, not scraped HTML.
+- **`/design-sync`** — Claude Design imports a design system from **GitHub, an
+  uploaded file, or a local codebase**, building from real tokens and component
+  names. It is two-way.
 
-Direction A — **design → Divi page** (primary):
-- New skill `claude-design-to-divi` consumes a Claude Design export (standalone
-  HTML or handoff bundle) as the generation *input* instead of a text brief, and
-  converts it to Divi 5 module JSON.
-- New app ingest route accepts the export; everything downstream already exists.
+Direction A — **design → Divi page** (primary): a `claude-design-to-divi` skill
+consumes the handoff bundle (component structure + styling context) as the
+generation *input* instead of a text brief, and emits Divi 5 module JSON.
+Everything downstream — preview → `/import` → imported-pages cleanup — already
+exists. (Standalone-HTML export is a fallback input when no bundle is available.)
 
-Direction B — **design-system ↔ brand-profile sync**: feed the app's extracted
-Divi brand into Claude Design's design system (and/or vice-versa) so generated
-designs match the live site, pushed via `/brand/:id/deploy`.
+Direction B — **design-system sync**: publish the app's extracted Divi brand
+(tokens + component names) into the repo in a `/design-sync`-friendly shape, so
+Claude Design builds from the live site's real brand; and consume a synced design
+system back into a brand profile, pushed via `/brand/:id/deploy`. Two-way, mirrors
+Claude Design's own `/design-sync`.
 
 Direction C — **live round-trip** (depends on Phase 1 `GET /export`): pull a live
-WP page → edit in Claude Design → re-export → re-import.
+WP page → edit in Claude Design → hand off → re-import.
 
 Integration paths, easiest first:
-1. **Export-file ingest** — user exports standalone HTML / handoff bundle, drops
-   it in the app, skill converts HTML→Divi JSON. Works today, no external API.
+1. **Handoff bundle → Claude Code** — the official, structured path; native to
+   this Claude Code project. No unconfirmed API. Build `claude-design-to-divi`
+   to read the bundle.
 2. **Claude Design → Canva → app** — Claude Design exports to Canva, and the
    Canva MCP is already connected in this environment (`export-design` returns
-   HTML/PDF). A live bridge with no unconfirmed Claude Design API.
-3. **Direct Claude Design MCP/API** — only once a stable surface ships; it is
-   still research preview, so don't build on it yet.
+   HTML/PDF). A live bridge for users who route through Canva.
+3. **Direct Claude Design MCP/API** — only once a stable programmatic surface
+   ships; treat as research preview until then.
 
-Recommended start: path 1 + Direction A — a self-contained "design in Claude
-Design, publish to Divi" slice that bets on a file export, not a preview API.
+Recommended start: path 1 + Direction A — a self-contained "hand off from Claude
+Design, publish to Divi" slice built on the official handoff bundle.
 
 ## Cross-cutting: the contract-test pattern
 Every plugin endpoint the app consumes should have a `lib/` helper whose shape is
