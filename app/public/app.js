@@ -1411,11 +1411,23 @@ function renderBrandColorRows() {
   }
   wrap.innerHTML = colors.map((c, i) => `
     <div class="color-row" data-color-idx="${i}">
-      <input type="color" value="${c.hex}" data-color-hex="${i}">
-      <input type="text" value="${escapeHtml(c.role || '')}" placeholder="role" data-color-role="${i}" style="flex:1">
+      <input type="color" value="${pickerHex(c.hex)}" data-color-hex="${i}" title="${escapeHtml(c.hex)}">
+      <input type="text" value="${escapeHtml(c.role || '')}" placeholder="role" data-color-role="${i}">
       <span class="color-source">${escapeHtml(c.source || 'manual')}</span>
-      <button type="button" class="btn-link color-remove" data-color-remove="${i}" style="color:var(--danger)">✕</button>
+      <button type="button" class="color-remove" data-color-remove="${i}" aria-label="Remove colour" title="Remove">✕</button>
     </div>`).join('');
+}
+
+// <input type=color> only accepts #RRGGBB; coerce rgb()/rgba() so the picker
+// shows the right swatch instead of falling back to black.
+function pickerHex(c) {
+  if (typeof c !== 'string') return '#000000';
+  if (/^#[0-9a-f]{6}$/i.test(c)) return c;
+  const m = c.match(/\d+/g);
+  if (m && m.length >= 3) {
+    return '#' + m.slice(0, 3).map(v => Math.min(255, +v).toString(16).padStart(2, '0')).join('');
+  }
+  return '#000000';
 }
 
 function addBrandColorRow(role = '', hex = '#f75d00', source = 'manual') {
