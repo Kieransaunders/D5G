@@ -1,6 +1,6 @@
 ---
 name: import-to-local
-description: "Import Divi 5 landing page JSON into any WordPress site (local or hosted) as a draft page via the Divi Tools Importer plugin REST API, then open the preview and run the accept/refine loop."
+description: "Import Divi 5 landing page JSON into any WordPress site (local or hosted) as a published page via the Divi Tools Importer plugin REST API, screenshot it live, and run the accept/refine loop."
 when_to_use: "Importing or deploying a generated Divi 5 page into WordPress and previewing it. Triggers: import divi page, import to local, localwp import, preview divi page, publish divi landing page, divi local site, import divi hosted, deploy divi page."
 argument-hint: "[site-url] [api-key]  — or omit to be prompted"
 ---
@@ -27,12 +27,13 @@ After activation they go to **Settings → Divi Tools Importer** to copy their s
 
 ## Non-negotiable rules
 
-1. **Draft first, always.** Never pass `"publish": true` unless the user explicitly says "publish" or "go live".
-2. **Never touch any page other than the draft keyed to this import's slug.**
-3. **Validator FAILs block import** — run `landing-page`'s `scripts/validate.js` first; fix all FAILs before sending. WARNs are reported but don't block.
-4. **Refinements amend the run's `generate-*.js` and regenerate** — never hand-edit the JSON.
-5. **Re-runs with the same slug update the same draft.** No page litter.
-6. **Never log or store the API key.** Use it only in the request header.
+1. **Publish on import, always.** Always pass `"status": "publish"` — never draft. Divi draft previews require WP login and do not fully render presets or CSS. The only way to verify a page is designed correctly is to see it live. After the quality loop is complete, the user can unpublish manually if needed.
+2. **Screenshot immediately after import.** Use Playwright MCP to take a full-page screenshot of the live URL. Compare it against the Stage 2 HTML mockup and fix any render errors before reporting success.
+3. **Never touch any page other than the one keyed to this import's slug.**
+4. **Validator FAILs block import** — run `landing-page`'s `scripts/validate.js` first; fix all FAILs before sending. WARNs are reported but don't block.
+5. **Refinements amend the run's `generate-*.js` and regenerate** — never hand-edit the JSON.
+6. **Re-runs with the same slug update the same page in place.** No page litter.
+7. **Never log or store the API key.** Use it only in the request header.
 
 ---
 
@@ -124,7 +125,7 @@ Assemble `payload.json` in the working directory:
   "layout":  <contents of layout JSON>,
   "seo":     <contents of seo-meta JSON, or {}>,
   "schema":  <contents of schema JSON, or {}>,
-  "publish": false
+  "status":  "publish"
 }
 ```
 
@@ -143,24 +144,40 @@ Parse the JSON response. On error:
 - `429` → rate limited, wait 60s and retry
 - `500` → server error (show `message`)
 
-### 5. Present the report
+### 5. Screenshot and verify
+
+Immediately after a successful import, take a full-page screenshot of the live URL using Playwright:
+
+```
+mcp__plugin_playwright_playwright__browser_navigate → <permalink>
+mcp__plugin_playwright_playwright__browser_take_screenshot → fullPage: true
+```
+
+Compare against the Stage 2 HTML mockup. Look for:
+- Correct section order and background colours
+- Buttons styled (not default blue)
+- Grid rendering correctly (not stacked/broken)
+- Images loading
+- Fonts applying
+
+Fix any hard FAILs (see Stage 4 in `divi5-page-generator` for root causes and fixes) before reporting to the user.
+
+### 6. Present the report
 
 Show the user:
-- Page action (created / updated), slug, status (draft/published)
+- Page action (created / updated), slug, status
+- Screenshot of the live page
 - What was imported: presets, global colours, global variables
-- SEO plugin used (or warning if none)
-- Schema saved: yes/no
-- Any warnings from the plugin
-- Preview URL (open it: `open <previewUrl>` on macOS)
-- ~~Schema reminder~~ — **not needed**, the plugin handles it automatically
+- Any render issues found and fixed
+- Live URL: `<site-url>/<slug>/`
 
-### 6. Decide
+### 7. Decide
 
 | Verdict | Action |
 |---|---|
-| **Accept** | Re-send with `"publish": true`. Confirm the live URL from `slug`. |
-| **Refine** | Take feedback, amend `generate-*.js`, regenerate, re-validate, re-import. |
-| **Re-import** | User edited the script: validate then import again (same slug → same draft). |
+| **Looks good** | Done — live URL delivered. User can unpublish manually if needed. |
+| **Refine** | Take feedback, amend `generate-*.js`, regenerate, re-validate, re-import, re-screenshot. |
+| **Re-import** | User edited the script: validate then import again (same slug → updates in place). |
 | **Rewrite** | Hand back to `landing-page` skill with amended brief. |
 
 ---
