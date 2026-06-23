@@ -173,3 +173,44 @@ curl -s -X POST "<site-url>/wp-json/divi-tools/v1/import" \
 ```
 
 Confirm the live URL: `<site-url>/<slug>/`
+
+---
+
+## Iterate without litter — list & delete draft pages
+
+When refining a page across several rounds, drafts pile up on the site. Two endpoints (plugin ≥ 1.3.0) let you list and delete previously-imported pages so you can keep iterating on one clean draft.
+
+### List imported pages
+
+```bash
+curl -s "<site-url>/wp-json/divi-tools/v1/pages" \
+  -H "X-Divi-Tools-Key: <api-key>"
+```
+
+Returns an array:
+
+```json
+[
+  { "slug": "invoice-software", "title": "Invoice Software for Small Business",
+    "status": "draft", "modified": "2026-06-23 10:14:00",
+    "permalink": "<site-url>/?page_id=42", "design_hint": "Acme" }
+]
+```
+
+`design_hint` is the brand/keyword from the page's SEO meta (Yoast/RankMath) if present — handy for spotting which drafts belong to which brand.
+
+### Delete a draft page
+
+```bash
+curl -s -X DELETE "<site-url>/wp-json/divi-tools/v1/pages?slug=invoice-software" \
+  -H "X-Divi-Tools-Key: <api-key>"
+```
+
+Returns `{ "ok": true, "deleted": "invoice-software" }`. **Safety:** the endpoint refuses with HTTP `409` if the page is `publish`ed — it never deletes a live page. Trash a published page manually in WP Admin if you really mean to.
+
+### Suggested workflow
+
+1. `GET /pages` → see your drafts (+ their `design_hint`).
+2. Re-import your refined layout against the same `slug` → updates the existing draft in place (no new page created).
+3. Only delete when you want to start clean for that slug: `DELETE /pages?slug=…`.
+4. `GET /pages` again to confirm.
