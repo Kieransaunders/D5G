@@ -1,0 +1,60 @@
+{
+  "_comment": "ILLUSTRATIVE shape of a Claude Design → Claude Code hand-off bundle. The contents (design intent, component structure, styling context) are per Anthropic's docs; the exact on-disk schema is NOT an official public contract yet. Parse defensively and adapt to the real bundle you receive.",
+  "manifest": {
+    "tool": "claude-design",
+    "version": "0",
+    "designTitle": "Acme Onboarding Landing Page",
+    "designId": "dsn_example",
+    "exportedAt": "2026-06-23T00:00:00Z"
+  },
+  "intent": {
+    "purpose": "Convert free-trial signups for Acme's onboarding tool",
+    "audience": "Ops leads at mid-market SaaS companies",
+    "primaryMessage": "Onboard new hires in a day, not a month",
+    "primaryCta": { "label": "Start free trial", "href": "/signup" },
+    "primaryKeyword": "employee onboarding software"
+  },
+  "components": [
+    {
+      "type": "hero",
+      "heading": "Onboard new hires in a day, not a month",
+      "subhead": "Acme turns scattered checklists into one guided flow.",
+      "cta": { "label": "Start free trial", "href": "/signup" },
+      "media": { "kind": "image", "alt": "Onboarding dashboard" }
+    },
+    {
+      "type": "featureGrid",
+      "columns": 3,
+      "items": [
+        { "icon": "bolt", "heading": "Fast setup", "text": "Live in under an hour." },
+        { "icon": "shield", "heading": "Secure", "text": "SOC 2 Type II." },
+        { "icon": "chart", "heading": "Measurable", "text": "Track time-to-productive." }
+      ]
+    },
+    {
+      "type": "testimonial",
+      "quote": "Our ramp time dropped 60%.",
+      "person": { "name": "Dana Lee", "role": "Head of People, Northwind" }
+    },
+    {
+      "type": "cta",
+      "heading": "Ready to onboard faster?",
+      "cta": { "label": "Start free trial", "href": "/signup" }
+    }
+  ],
+  "styling": {
+    "colors": {
+      "primary": "#1f6feb",
+      "accent": "#0b3d91",
+      "text": "#0d1117",
+      "background": "#ffffff"
+    },
+    "typography": {
+      "headingFont": "Inter",
+      "bodyFont": "Inter",
+      "baseSizePx": 16,
+      "scale": 1.25
+    },
+    "spacing": { "sectionPaddingPx": 80, "rowGapPx": 24 }
+  }
+}

@@ -16,6 +16,8 @@ const {
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
 const { extractIntent, stripIntent } = require('./lib/intent-marker');
+const { buildImportPayload } = require('./lib/import-payload');
+const { normalizePagesList, isValidSlug } = require('./lib/wp-pages');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -184,6 +186,13 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
 
   const fullPrompt = paletteHint ? `${prompt} ${paletteHint}` : prompt;
 
+  runClaudeGeneration(genId, outputPath, fullPrompt, exportPath);
+});
+
+// ── Run the divi5 generator via the claude CLI, streaming logs over SSE ──────
+// Shared by /generate and /design-handoff. exportPath is optional and only
+// drives the post-run style check (skipped when null).
+function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
   // ── Spawn claude ────────────────────────────────────────────────────────
   const claudeBin = findClaude();
   if (!claudeBin) {
@@ -297,6 +306,49 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
     (sseClients.get(genId) || []).forEach(r => r.end());
     sseClients.delete(genId);
   });
+}
+
+// ─── POST /design-handoff — ingest a Claude Design hand-off bundle ───────────
+// Accepts a Claude Design hand-off bundle (.zip or .json) and runs the
+// claude-design-to-divi skill, which converts it into an importable Divi 5 page
+// via the page generator. Streams progress over the same SSE channel as
+// /generate, so the UI can reuse the existing generation view.
+app.post('/design-handoff', upload.single('bundle'), (req, res) => {
+  const { brand, brandId, outputDir, publish } = req.body;
+  if (!req.file) return res.status(400).json({ error: 'No hand-off bundle uploaded' });
+
+  const outputPath = outputDir || path.join(os.homedir(), 'Desktop', 'divi-output');
+  try {
+    fs.mkdirSync(outputPath, { recursive: true });
+  } catch (e) {
+    return res.status(400).json({ error: `Cannot write to output folder "${outputPath}": ${e.message}` });
+  }
+
+  // Store the uploaded bundle (zip or json) alongside other exports.
+  const safeName   = (req.file.originalname || 'bundle').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const bundlePath = path.join(EXPORTS_DIR, `${Date.now()}-${safeName}`);
+  fs.renameSync(req.file.path, bundlePath);
+
+  const genId = db.prepare(`
+    INSERT INTO generations (brand, keyword, sections, aesthetic, cta_label, cta_url, output_dir, export_path, what_it_does)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(brand || 'claude-design', '', '[]', '', '', '', outputPath, bundlePath,
+         'Imported from a Claude Design hand-off bundle').lastInsertRowid;
+
+  res.json({ id: genId });
+
+  // Build the skill prompt. brand/brandId become the --brand flag; quotes are
+  // stripped so the value can't break the surrounding prompt token.
+  const brandArg   = (brand || brandId || '').toString().replace(/["\\]/g, '');
+  const brandFlag  = brandArg ? ` --brand "${brandArg}"` : '';
+  const publishFlag = (publish === 'true' || publish === true) ? ' --publish' : '';
+  const prompt = [
+    `/divi5generate:claude-design-to-divi`,
+    `${bundlePath}${brandFlag}${publishFlag}`,
+    `Convert this Claude Design hand-off bundle into an importable Divi 5 page, then preview it.`,
+  ].join(' ');
+
+  runClaudeGeneration(genId, outputPath, prompt, null);
 });
 
 // ─── GET /generations — history list ────────────────────────────────────────
@@ -508,6 +560,9 @@ app.post('/import/:id', async (req, res) => {
     const seo    = seoFile   && fs.existsSync(seoFile.filepath)   ? JSON.parse(fs.readFileSync(seoFile.filepath,   'utf8')) : null;
     const schema = schemaFile&& fs.existsSync(schemaFile.filepath) ? JSON.parse(fs.readFileSync(schemaFile.filepath,'utf8')) : null;
 
+    // The plugin defaults to draft; pass publish:true to go live immediately.
+    const publish = req.body?.publish === true;
+
     db.prepare(`UPDATE generations SET import_status='importing' WHERE id=?`).run(id);
 
     const controller = new AbortController();
@@ -520,7 +575,7 @@ app.post('/import/:id', async (req, res) => {
           'Content-Type': 'application/json',
           'X-Divi-Tools-Key': apiKey,
         },
-        body: JSON.stringify({ layout, seo, schema, draft: true }),
+        body: JSON.stringify(buildImportPayload({ layout, seo, schema, publish })),
         signal: controller.signal,
       });
     } finally {
@@ -567,6 +622,62 @@ app.get('/test-connection', async (req, res) => {
 
     if (!wpRes.ok) return res.json({ ok: false, error: `HTTP ${wpRes.status}` });
     res.json({ ok: true, message: 'Connected' });
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
+    res.json({ ok: false, error: msg });
+  }
+});
+
+// Load the saved WordPress connection (site URL + API key) from settings.
+function wpConnection() {
+  const rows = db.prepare('SELECT key, value FROM settings').all();
+  const s = {};
+  rows.forEach(r => { s[r.key] = r.value; });
+  return { siteUrl: s.siteUrl, apiKey: s.apiKey };
+}
+
+// Call a plugin endpoint on the configured site with the saved key + a timeout.
+async function wpFetch(pathname, { method = 'GET', apiKey, siteUrl, timeoutMs = 15000 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(`${siteUrl}/wp-json/divi-tools/v1${pathname}`, {
+      method,
+      headers: { 'X-Divi-Tools-Key': apiKey },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── GET /wp-pages — list DTI-imported pages on the connected site ───────────
+app.get('/wp-pages', async (req, res) => {
+  const { siteUrl, apiKey } = wpConnection();
+  if (!siteUrl || !apiKey) return res.status(400).json({ error: 'WordPress settings not configured' });
+  try {
+    const wpRes = await wpFetch('/pages', { siteUrl, apiKey });
+    if (!wpRes.ok) return res.json({ ok: false, error: `WordPress returned ${wpRes.status}` });
+    const pages = normalizePagesList(await wpRes.json());
+    res.json({ ok: true, pages });
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
+    res.json({ ok: false, error: msg });
+  }
+});
+
+// ─── DELETE /wp-pages/:slug — remove one DTI-imported page (no-litter) ───────
+app.delete('/wp-pages/:slug', async (req, res) => {
+  const { slug } = req.params;
+  if (!isValidSlug(slug)) return res.status(400).json({ error: 'invalid slug' });
+  const { siteUrl, apiKey } = wpConnection();
+  if (!siteUrl || !apiKey) return res.status(400).json({ error: 'WordPress settings not configured' });
+  try {
+    const wpRes = await wpFetch(`/pages/${slug}`, { method: 'DELETE', siteUrl, apiKey });
+    if (wpRes.status === 404) return res.json({ ok: false, error: 'No imported page with that slug' });
+    if (!wpRes.ok) return res.json({ ok: false, error: `WordPress returned ${wpRes.status}` });
+    const data = await wpRes.json();
+    res.json({ ok: true, deleted: data.deleted || slug, id: data.id ?? null });
   } catch (err) {
     const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
     res.json({ ok: false, error: msg });

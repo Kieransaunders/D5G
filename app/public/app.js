@@ -1043,6 +1043,127 @@ document.getElementById('testConnection').addEventListener('click', async () => 
   }
 });
 
+// ─── Imported pages: list + delete (no-litter cleanup) ────────────────────────
+async function loadWpPages() {
+  const box = document.getElementById('wpPagesList');
+  box.textContent = 'Loading…';
+  let data;
+  try {
+    data = await fetch('/wp-pages').then(r => r.json());
+  } catch (err) {
+    box.innerHTML = `<span class="style-fail">Error: ${err.message}</span>`;
+    return;
+  }
+  if (!data.ok) {
+    box.innerHTML = `<span class="style-fail">${data.error}</span>`;
+    return;
+  }
+  box.textContent = '';
+  if (!data.pages.length) {
+    box.innerHTML = '<span class="field-hint">No imported pages yet.</span>';
+    return;
+  }
+  for (const page of data.pages) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--border,#2a2a2a)';
+
+    const info = document.createElement('div');
+    const title = document.createElement('div');
+    title.textContent = page.title;
+    const meta = document.createElement('div');
+    meta.className = 'field-hint';
+    meta.textContent = `${page.slug} · ${page.status}`;
+    info.append(title, meta);
+
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;align-items:center;gap:8px;white-space:nowrap';
+    if (page.permalink) {
+      const view = document.createElement('a');
+      view.href = page.permalink;
+      view.target = '_blank';
+      view.rel = 'noopener';
+      view.textContent = 'View ↗';
+      view.style.color = 'var(--accent)';
+      actions.append(view);
+    }
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn-secondary';
+    del.textContent = 'Delete';
+    del.addEventListener('click', () => deleteWpPage(page.slug, page.title, del));
+    actions.append(del);
+
+    row.append(info, actions);
+    box.append(row);
+  }
+}
+
+async function deleteWpPage(slug, title, btn) {
+  if (!confirm(`Delete "${title}" from the connected site? This permanently removes the page.`)) return;
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+  try {
+    const data = await fetch(`/wp-pages/${encodeURIComponent(slug)}`, { method: 'DELETE' }).then(r => r.json());
+    if (data.ok) {
+      loadWpPages();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Delete';
+      alert(`Could not delete: ${data.error}`);
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Delete';
+    alert(`Error: ${err.message}`);
+  }
+}
+
+document.getElementById('refreshPages').addEventListener('click', loadWpPages);
+
+// ─── Import a Claude Design hand-off bundle ───────────────────────────────────
+document.getElementById('dhImportBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('dhBundle');
+  const status = document.getElementById('dhStatus');
+  const btn = document.getElementById('dhImportBtn');
+  const file = fileInput.files[0];
+  if (!file) { status.innerHTML = '<span class="style-fail">Choose a bundle file first.</span>'; return; }
+
+  const data = new FormData();
+  data.append('bundle', file);
+  data.append('brand', document.getElementById('dhBrand').value.trim());
+  if (document.getElementById('dhPublish').checked) data.append('publish', 'true');
+
+  btn.disabled = true;
+  btn.textContent = 'Building…';
+  status.textContent = 'Uploading bundle…\n';
+
+  try {
+    const res = await fetch('/design-handoff', { method: 'POST', body: data });
+    const out = await res.json();
+    if (!res.ok || !out.id) {
+      status.innerHTML = `<span class="style-fail">${out.error || 'Upload failed'}</span>`;
+      btn.disabled = false; btn.textContent = 'Build from bundle';
+      return;
+    }
+
+    const es = new EventSource(`/stream/${out.id}`);
+    es.addEventListener('log', ev => { status.textContent += JSON.parse(ev.data).chunk; });
+    es.addEventListener('done', ev => {
+      es.close();
+      const { status: s } = JSON.parse(ev.data);
+      const ok = s === 'complete';
+      status.innerHTML += `\n<span class="${ok ? 'style-pass' : 'style-fail'}">Finished: ${s}</span>`;
+      btn.disabled = false; btn.textContent = 'Build from bundle';
+      loadWpPages();
+      if (typeof loadHistory === 'function') loadHistory();
+    });
+    es.onerror = () => { es.close(); btn.disabled = false; btn.textContent = 'Build from bundle'; };
+  } catch (err) {
+    status.innerHTML = `<span class="style-fail">Error: ${err.message}</span>`;
+    btn.disabled = false; btn.textContent = 'Build from bundle';
+  }
+});
+
 // ─── Re-run a past generation ─────────────────────────────────────────────────
 function viewMockup(id, event) {
   event.stopPropagation();

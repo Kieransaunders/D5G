@@ -249,6 +249,27 @@
       <button type="button" class="btn-secondary" id="testConnection" style="margin-top:8px">Test Connection</button>
       <div id="connectionResult" style="margin-top:8px;font-size:0.8125rem"></div>
 
+      <div class="section-label" style="margin-top:20px">Imported Pages</div>
+      <p class="field-hint" style="margin-bottom:8px">Pages this app has imported into the connected site. Delete drafts you no longer need to keep things tidy.</p>
+      <button type="button" class="btn-secondary" id="refreshPages">Refresh list</button>
+      <div id="wpPagesList" style="margin-top:10px;font-size:0.8125rem"></div>
+
+      <div class="section-label" style="margin-top:20px">Import a Claude Design bundle</div>
+      <p class="field-hint" style="margin-bottom:8px">Hand off a design from Claude Design, then drop the bundle (<code>.zip</code> or <code>.json</code>) here to build it as a Divi 5 page.</p>
+      <div class="field">
+        <label>Hand-off bundle</label>
+        <input type="file" id="dhBundle" accept=".zip,.json">
+      </div>
+      <div class="field">
+        <label>Brand (optional)</label>
+        <input type="text" id="dhBrand" placeholder="Match an existing brand profile" autocomplete="off">
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.8125rem;margin-bottom:8px">
+        <input type="checkbox" id="dhPublish"> Publish immediately (default: import as draft)
+      </label>
+      <button type="button" class="btn-generate" id="dhImportBtn">Build from bundle</button>
+      <div id="dhStatus" style="margin-top:10px;font-size:0.8125rem;white-space:pre-wrap"></div>
+
       <div class="section-label" style="margin-top:20px">
         Install the Import Plugin
         <button type="button" class="info-toggle" id="pluginInfoToggle" aria-expanded="false">How to install</button>
