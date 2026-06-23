@@ -80,3 +80,47 @@ test('deleteBrandProfile removes the row', () => {
   deleteBrandProfile(id);
   assert.equal(getBrandProfile(id), undefined);
 });
+
+// ─── Design Project CRUD + auto-promotion ────────────────────────────────────
+const {
+  createDesignProject, getDesignProject, listDesignProjects,
+  linkGenerationToDesign, findDesignByBrandExport, promoteIfEligible,
+} = require('../db');
+
+// Insert a generations row directly (only requires brand + export_path for the
+// promotion logic). All db tests share one DB, so this is the test fixture.
+function genFixture({ brand, export_path }) {
+  return db.prepare(
+    `INSERT INTO generations (brand, keyword, sections, aesthetic, output_dir, export_path) VALUES (?, 'k', '[]', '', '/tmp', ?)`
+  ).run(brand, export_path).lastInsertRowid;
+}
+
+test('promoteIfEligible creates a project when a 2nd gen shares brand+export', () => {
+  const g1 = genFixture({ brand: 'Floria', export_path: '/x/a.json' });
+  const g2 = genFixture({ brand: 'Floria', export_path: '/x/a.json' });
+  const projectId = promoteIfEligible(g2);
+  assert.ok(projectId, 'should return a project id');
+  const proj = getDesignProject(projectId);
+  assert.equal(proj.brand_id, null); // no brand profile yet
+  const pages = db.prepare('SELECT * FROM design_pages WHERE design_id=?').all(projectId);
+  assert.equal(pages.length, 2);
+});
+
+test('promoteIfEligible returns null when brand differs', () => {
+  const g1 = genFixture({ brand: 'Floria', export_path: '/x/a.json' });
+  const g2 = genFixture({ brand: 'Other', export_path: '/x/a.json' });
+  assert.equal(promoteIfEligible(g2), null);
+});
+
+test('promoteIfEligible returns null when a project already exists', () => {
+  const g1 = genFixture({ brand: 'Floria', export_path: '/x/a.json' });
+  const existing = createDesignProject({ name: 'Floria design', export_id: null });
+  linkGenerationToDesign(existing, g1, 'home');
+  const g2 = genFixture({ brand: 'Floria', export_path: '/x/a.json' });
+  assert.equal(promoteIfEligible(g2), null); // caller should explicitly link instead
+});
+
+test('promoteIfEligible returns null when only one generation exists', () => {
+  const g = genFixture({ brand: 'Floria', export_path: '/x/a.json' });
+  assert.equal(promoteIfEligible(g), null);
+});

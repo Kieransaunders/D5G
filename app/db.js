@@ -151,8 +151,76 @@ function deleteBrandProfile(id) {
   db.prepare('DELETE FROM brand_profiles WHERE id=?').run(id);
 }
 
+// ─── Design Project helpers + auto-promotion ─────────────────────────────────
+function createDesignProject({ name, brand_id = null, export_id = null, tokens_path = null, variables_path = null, notes = null }) {
+  return db.prepare(
+    `INSERT INTO design_projects (name, brand_id, export_id, tokens_path, variables_path, notes) VALUES (?, ?, ?, ?, ?, ?)`
+  ).run(name, brand_id, export_id, tokens_path, variables_path, notes).lastInsertRowid;
+}
+
+function getDesignProject(id) {
+  return db.prepare('SELECT * FROM design_projects WHERE id=?').get(id);
+}
+
+function listDesignProjects() {
+  return db.prepare(`
+    SELECT p.*, b.name AS brand_name,
+           (SELECT COUNT(*) FROM design_pages dp WHERE dp.design_id = p.id) AS page_count
+    FROM design_projects p
+    LEFT JOIN brand_profiles b ON b.id = p.brand_id
+    ORDER BY p.id DESC
+  `).all();
+}
+
+function linkGenerationToDesign(designId, generationId, pageType, sortOrder = 0) {
+  db.prepare(
+    `INSERT INTO design_pages (design_id, generation_id, page_type, sort_order) VALUES (?, ?, ?, ?)
+     ON CONFLICT(design_id, generation_id) DO UPDATE SET page_type=excluded.page_type`
+  ).run(designId, generationId, pageType, sortOrder);
+  db.prepare('UPDATE generations SET design_id=? WHERE id=?').run(designId, generationId);
+}
+
+function findDesignByBrandExport(brand, exportPath) {
+  // A design is anchored by (brand_id OR brand name on a generation) + (export_id
+  // OR export_path on a generation). For auto-promotion we match on the raw brand
+  // string + export_path of linked generations.
+  return db.prepare(`
+    SELECT dp.* FROM design_projects dp
+    JOIN design_pages dpv ON dpv.design_id = dp.id
+    JOIN generations g ON g.id = dpv.generation_id
+    WHERE g.brand = ? AND g.export_path = ?
+    LIMIT 1
+  `).get(brand, exportPath) || null;
+}
+
+/**
+ * Returns the new project id if a generation qualifies for auto-promotion, else null.
+ * Qualifies when: another generation exists with the same brand + same export_path
+ * AND no design project yet groups that brand+export pair.
+ */
+function promoteIfEligible(generationId) {
+  const gen = db.prepare('SELECT brand, export_path FROM generations WHERE id=?').get(generationId);
+  if (!gen || !gen.brand || !gen.export_path) return null;
+
+  const sibling = db.prepare(`
+    SELECT id FROM generations
+    WHERE brand=? AND export_path=? AND id != ?
+    LIMIT 1
+  `).get(gen.brand, gen.export_path, generationId);
+  if (!sibling) return null;
+
+  if (findDesignByBrandExport(gen.brand, gen.export_path)) return null;
+
+  const projectId = createDesignProject({ name: `${gen.brand} design` });
+  linkGenerationToDesign(projectId, generationId, 'home', 0);
+  linkGenerationToDesign(projectId, sibling.id, 'home', 0); // sibling page_type resolved later by user
+  return projectId;
+}
+
 module.exports = {
   db, DATA_DIR, EXPORTS_DIR,
   createBrandProfile, getBrandProfile, listBrandProfiles,
   updateBrandProfile, deleteBrandProfile,
+  createDesignProject, getDesignProject, listDesignProjects,
+  linkGenerationToDesign, findDesignByBrandExport, promoteIfEligible,
 };
