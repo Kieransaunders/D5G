@@ -29,6 +29,7 @@ require_once DTI_DIR . 'src/PageExporter.php';
 require_once DTI_DIR . 'src/LibraryImporter.php';
 require_once DTI_DIR . 'src/PresetManager.php';
 require_once DTI_DIR . 'src/GlobalVariablesImporter.php';
+require_once DTI_DIR . 'src/PagesLister.php';
 require_once DTI_DIR . 'src/RestApi.php';
 require_once DTI_DIR . 'admin/SettingsPage.php';
 
