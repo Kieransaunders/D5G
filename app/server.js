@@ -17,6 +17,7 @@ const {
 const { isSafeHost } = require('./lib/ssrf-guard');
 const { extractIntent, stripIntent } = require('./lib/intent-marker');
 const { buildImportPayload } = require('./lib/import-payload');
+const { normalizePagesList, isValidSlug } = require('./lib/wp-pages');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -571,6 +572,62 @@ app.get('/test-connection', async (req, res) => {
 
     if (!wpRes.ok) return res.json({ ok: false, error: `HTTP ${wpRes.status}` });
     res.json({ ok: true, message: 'Connected' });
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
+    res.json({ ok: false, error: msg });
+  }
+});
+
+// Load the saved WordPress connection (site URL + API key) from settings.
+function wpConnection() {
+  const rows = db.prepare('SELECT key, value FROM settings').all();
+  const s = {};
+  rows.forEach(r => { s[r.key] = r.value; });
+  return { siteUrl: s.siteUrl, apiKey: s.apiKey };
+}
+
+// Call a plugin endpoint on the configured site with the saved key + a timeout.
+async function wpFetch(pathname, { method = 'GET', apiKey, siteUrl, timeoutMs = 15000 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(`${siteUrl}/wp-json/divi-tools/v1${pathname}`, {
+      method,
+      headers: { 'X-Divi-Tools-Key': apiKey },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── GET /wp-pages — list DTI-imported pages on the connected site ───────────
+app.get('/wp-pages', async (req, res) => {
+  const { siteUrl, apiKey } = wpConnection();
+  if (!siteUrl || !apiKey) return res.status(400).json({ error: 'WordPress settings not configured' });
+  try {
+    const wpRes = await wpFetch('/pages', { siteUrl, apiKey });
+    if (!wpRes.ok) return res.json({ ok: false, error: `WordPress returned ${wpRes.status}` });
+    const pages = normalizePagesList(await wpRes.json());
+    res.json({ ok: true, pages });
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
+    res.json({ ok: false, error: msg });
+  }
+});
+
+// ─── DELETE /wp-pages/:slug — remove one DTI-imported page (no-litter) ───────
+app.delete('/wp-pages/:slug', async (req, res) => {
+  const { slug } = req.params;
+  if (!isValidSlug(slug)) return res.status(400).json({ error: 'invalid slug' });
+  const { siteUrl, apiKey } = wpConnection();
+  if (!siteUrl || !apiKey) return res.status(400).json({ error: 'WordPress settings not configured' });
+  try {
+    const wpRes = await wpFetch(`/pages/${slug}`, { method: 'DELETE', siteUrl, apiKey });
+    if (wpRes.status === 404) return res.json({ ok: false, error: 'No imported page with that slug' });
+    if (!wpRes.ok) return res.json({ ok: false, error: `WordPress returned ${wpRes.status}` });
+    const data = await wpRes.json();
+    res.json({ ok: true, deleted: data.deleted || slug, id: data.id ?? null });
   } catch (err) {
     const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
     res.json({ ok: false, error: msg });
