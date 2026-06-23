@@ -338,6 +338,18 @@ document.querySelectorAll('.tab').forEach(btn => {
   if (active) active.click();
 })();
 
+// One-time toast: tell existing users the form moved to the "Brief" tab.
+(function chatPrimaryToast() {
+  if (localStorage.getItem('d5g.seenChatPrimaryToast')) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = '💬 Chat is now the home screen. The form moved to the <strong>Brief</strong> tab (or “Structured brief →” in Chat).';
+  toast.style.cursor = 'pointer';
+  toast.addEventListener('click', () => { toast.remove(); localStorage.setItem('d5g.seenChatPrimaryToast', '1'); });
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) localStorage.setItem('d5g.seenChatPrimaryToast', '1'); }, 100);
+})();
+
 // "Structured brief" link inside Chat → jump to the demoted Generate form.
 const briefLink = document.getElementById('chatOpenBrief');
 if (briefLink) {

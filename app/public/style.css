@@ -659,3 +659,20 @@ select option { background: var(--surface); }
 }
 .slash-item:hover { background: var(--bg); }
 .slash-item span { color: var(--muted); font-size: 0.7rem; }
+
+/* ── Toast (one-time chat-primary notice) ───────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 100;
+  max-width: 90vw;
+}
