@@ -111,7 +111,9 @@ Check the response:
 - HTTP 404 → plugin not active, ask user to activate it
 - Connection refused / timeout → site is down or URL is wrong
 
-Report what was detected: Divi 5, Yoast, RankMath. If no SEO plugin, warn the user they'll need to set meta manually.
+> **Where this runs:** every call below curls the target site. If you're in an environment that can't reach `localhost` (e.g. a sandboxed/Cowork session, which can't reach the user's Mac at `localhost:10024`), target a **public** URL or drive the site via the browser extension instead. Under Claude Code on the Mac, `localhost` works fine.
+
+Report what was detected: Divi 5, Yoast, RankMath. **If no SEO plugin is present, DTI still persists SEO to post meta** (`dti_seo_title` / `dti_seo_description`) and stores/injects schema by slug — nothing is lost. "Set meta manually" only means surfacing it in an SEO plugin later if the user installs one.
 
 ### 4. Build the payload and import
 

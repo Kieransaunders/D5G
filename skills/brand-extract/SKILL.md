@@ -13,6 +13,7 @@ Pull the complete Divi 5 design system (global colours, variables, presets) from
 
 - **Divi Tools Importer v1.4+** must be installed and active on the source site.
 - The **Divi5Generator app** must be running locally (`http://localhost:3747`). If it isn't, tell the user to double-click `app/launch.command`.
+- This flow curls `localhost`. In an environment that can't reach the user's Mac (e.g. a sandboxed/Cowork session), `localhost:3747` is refused — run under Claude Code on the Mac, or target a public URL / the browser extension.
 
 ## Steps
 
@@ -78,3 +79,16 @@ Tell the user:
 | Module presets (buttons, text, cards) | `GET /wp-json/divi-tools/v1/presets/export` |
 
 Typography (font family names) is captured if set as a variable. If the theme uses hardcoded font stacks, suggest the user add them as variables first.
+
+### When the export endpoints fail
+
+These endpoints can fail on a real site even when the data plainly exists:
+
+- `global-variables/export` returns **non-200** (seen: HTTP 500 when named semantic slots resolve as references rather than carrying their own hex).
+- `presets/export` returns `{"presets":[]}` (empty).
+
+Fallbacks:
+
+- **Colours:** recover from the migrator's `GET /wp-json/divi-tools/v1/db/export` — grep the dump for `gcid-*` slugs and the adjacent hex values (this is how `gcid-primary/-secondary/-heading/-body/-link` were recovered).
+- **Always report counts explicitly** (e.g. "0 presets", "10 colours"). When presets come back empty, do **not** silently accept `[]` — tell the user to confirm in the Divi UI that presets exist.
+- If `global-variables/export` 500s, tell the user to enable `WP_DEBUG` / `WP_DEBUG_LOG` and re-run so the trace is captured for the plugin fix.
