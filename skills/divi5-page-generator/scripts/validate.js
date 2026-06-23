@@ -121,10 +121,12 @@ let blockCount = 0;
 // the existing content loop below so a future render-safety module can re-walk
 // the tokens without re-parsing (spec §4 "Required tweak to validate.js").
 const tokensByKey = {};
+const allTokens = []; // all parsed block tokens across all content keys
 
 for (const { key, content } of contents) {
   const tokens = parseBlocks(content);
   tokensByKey[key] = tokens; // (T1) retain parsed tokens for downstream re-walks
+  allTokens.push(...tokens);
   if (!tokens.length) { err(`data["${key}"]: no Divi blocks found`); continue; }
   if (tokens[0].name !== 'placeholder') err(`data["${key}"]: content must start with wp:divi/placeholder`);
   if (/<!--\s*<!--/.test(content)) err(`data["${key}"]: double-comment pattern <!--<!-- detected — malformed block comment`);
@@ -573,6 +575,35 @@ if (metaFile) {
     else if (meta.description) pass(`SEO: meta description length ok (${meta.description.length})`);
     if (keyword && meta.title && !meta.title.toLowerCase().includes(keyword.toLowerCase())) warn('SEO: keyword not in title tag');
   } catch (e) { warn(`could not read meta file: ${e.message}`); }
+}
+
+// ─── Animation check ────────────────────────────────────────────────────────
+// Count modules that have a Divi built-in animation defined.
+// This is informational (PASS/WARN) — not a FAIL gate.
+const VALID_ANIM_STYLES = new Set(['fade', 'slide', 'zoom', 'flip', 'roll', 'none']);
+const VALID_DIRECTIONS   = new Set(['top', 'bottom', 'left', 'right', 'center']);
+const animModules = [];
+const animInvalid = [];
+
+for (const t of allTokens) {
+  if (!t.attrs) continue;
+  const animVal = t.attrs?.module?.decoration?.animation?.desktop?.value;
+  if (!animVal) continue;
+  animModules.push(animVal);
+  if (animVal.style && !VALID_ANIM_STYLES.has(animVal.style)) {
+    animInvalid.push(`unknown style "${animVal.style}" on ${t.name}`);
+  }
+  if (animVal.direction && !VALID_DIRECTIONS.has(animVal.direction)) {
+    animInvalid.push(`unknown direction "${animVal.direction}" on ${t.name}`);
+  }
+}
+
+if (animInvalid.length) {
+  err(`ANIMATION: invalid values — ${animInvalid.join(', ')}. Valid styles: fade|slide|zoom|flip|roll|none. Valid directions: top|bottom|left|right|center`);
+} else if (animModules.length > 0) {
+  pass(`ANIMATION: ${animModules.length} module(s) have Divi built-in entrance animations`);
+} else {
+  warn('ANIMATION: no entrance animations found — consider adding anim() helpers for a polished feel');
 }
 
 // ─── report ─────────────────────────────────────────────────────────────────

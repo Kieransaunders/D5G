@@ -393,6 +393,61 @@ D.overlaySection({
 
 Emits a `divi/section` with a two-layer background (image bottom, colour top). All other `section()` options (`theatre`, `preset`, etc.) pass through. The overlay colour, blend mode, and opacity are optional.
 
+## Built-in Divi animations (no plugin required)
+
+Divi 5 has a native entrance animation system that works without DiviTheatre. Use it whenever the user asks for animations and DiviTheatre is not installed.
+
+### Animation helper pattern
+
+```js
+const anim = (style, direction = 'bottom', delay = '0ms', duration = '700ms') => ({
+  attrs: { module: { decoration: { animation: { desktop: { value: {
+    style, direction, duration, delay,
+    intensity: { slide: '10', fade: '10', flip: '10', zoom: '10', roll: '10' },
+    speedCurve: 'ease-in-out',
+    repeat: 'once',
+    startingOpacity: '0',
+  } } } } } }
+});
+```
+
+Pass as a spread into any module opts — the `attrs` key is merged via `withTheatre → normaliseCustomAttrs → merge`:
+
+```js
+D.heading({ text: 'Hero headline', level: 'h1', preset: P.heroH1, ...anim('slide', 'bottom', '0ms') })
+D.text({ html: '<p>Body copy</p>', preset: P.bodyLight, ...anim('fade', 'bottom', '150ms') })
+D.button({ text: 'CTA', url: '#', preset: P.btnPrimary, ...anim('fade', 'bottom', '300ms') })
+D.image({ src: '...', alt: '...', ...anim('slide', 'left', '0ms', '800ms') })
+D.blurb({ title: '...', body: '...', ...anim('slide', 'bottom', '150ms', '600ms') })
+```
+
+### Animation field reference (ET API — `Module/Settings/Group/Library/Animation/GroupProps`)
+
+| Field | Type | Notes |
+|---|---|---|
+| `style` | string | `fade`, `slide`, `zoom`, `flip`, `roll`, `none` |
+| `direction` | string | `top`, `bottom`, `left`, `right`, `center` |
+| `duration` | string | e.g. `700ms`, `1s` |
+| `delay` | string | e.g. `0ms`, `150ms`, `300ms` |
+| `repeat` | string | `once`, `loop` |
+| `speedCurve` | string | `ease`, `ease-in`, `ease-out`, `ease-in-out`, `linear` |
+| `startingOpacity` | string | `0`–`100` |
+| `intensity` | object | Per-style intensity — `{ slide:'10', fade:'10', flip:'10', zoom:'10', roll:'10' }` |
+
+### Recommended stagger patterns
+
+**Hero (on load):** eyebrow 0ms → h1 150ms → body 300ms → button 450ms — all `fade` or `slide bottom`
+
+**Card grid (on scroll):** col1 0ms, col2 150ms, col3 300ms — `slide bottom`, 600ms duration
+
+**Split section:** image `slide left` 0ms, text `slide right` 0ms — simultaneous from opposite sides
+
+**CTA band:** heading `slide left` 0ms, body `fade bottom` 150ms, button `fade bottom` 300ms
+
+### Gotcha: `attrs` not `module`
+
+The animation must be passed as `attrs: { module: { decoration: { animation: ... } } }` — **not** as a top-level `module` key. The builder functions don't pick up a raw `module` key from opts; only `attrs` gets deep-merged via `withTheatre`.
+
 ## Divi 5 gotchas (hard-won)
 
 These bugs are silent — Divi drops the module or ignores the style with no error. Check them before writing any generator.
