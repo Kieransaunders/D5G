@@ -229,3 +229,40 @@ test('GET /brand/extract-url returns a bundle for a public URL', async () => {
     'bundle should have a colors or fonts array');
   assert.equal(body.sourceUrl, 'https://example.com');
 });
+
+// ─── /designs — Design Projects ──────────────────────────────────────────────
+// Helper: create a design project directly via the API.
+async function makeDesign(name = `D-${Date.now()}`) {
+  const r = await request('POST', '/designs', { name });
+  assert.equal(r.status, 200);
+  return r.body.id;
+}
+
+test('POST /designs creates a project; GET /designs lists it', async () => {
+  const id = await makeDesign(`Listed-${Date.now()}`);
+  const list = await request('GET', '/designs');
+  assert.equal(list.status, 200);
+  assert.ok(Array.isArray(list.body));
+  assert.ok(list.body.some(d => d.id === id), 'created design should appear in list');
+});
+
+test('GET /designs/:id returns the project with a pages array', async () => {
+  const id = await makeDesign();
+  const r = await request('GET', `/designs/${id}`);
+  assert.equal(r.status, 200);
+  assert.equal(r.body.id, id);
+  assert.ok(Array.isArray(r.body.pages), 'should include a pages array');
+});
+
+test('GET /designs/:id 404s for unknown id', async () => {
+  const r = await request('GET', '/designs/9999999');
+  assert.equal(r.status, 404);
+});
+
+test('DELETE /designs/:id removes the project (keepPages default)', async () => {
+  const id = await makeDesign();
+  const del = await request('DELETE', `/designs/${id}`);
+  assert.equal(del.status, 200);
+  const get = await request('GET', `/designs/${id}`);
+  assert.equal(get.status, 404);
+});

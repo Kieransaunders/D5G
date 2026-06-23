@@ -217,10 +217,29 @@ function promoteIfEligible(generationId) {
   return projectId;
 }
 
+/**
+ * Delete a design project. When keepPages is false, also delete the linked
+ * generations (and their output_files). When true (default), just unlink them.
+ */
+function deleteDesignProject(id, keepPages = true) {
+  const genIds = db.prepare('SELECT generation_id FROM design_pages WHERE design_id=?')
+    .all(id).map(r => r.generation_id).filter(Boolean);
+  if (!keepPages && genIds.length) {
+    const placeholders = genIds.map(() => '?').join(',');
+    db.prepare(`DELETE FROM output_files WHERE generation_id IN (${placeholders})`).run(...genIds);
+    db.prepare(`DELETE FROM generations WHERE id IN (${placeholders})`).run(...genIds);
+  } else {
+    db.prepare('UPDATE generations SET design_id=NULL WHERE design_id=?').run(id);
+  }
+  db.prepare('DELETE FROM design_pages WHERE design_id=?').run(id);
+  db.prepare('DELETE FROM design_projects WHERE id=?').run(id);
+}
+
 module.exports = {
   db, DATA_DIR, EXPORTS_DIR,
   createBrandProfile, getBrandProfile, listBrandProfiles,
   updateBrandProfile, deleteBrandProfile,
   createDesignProject, getDesignProject, listDesignProjects,
   linkGenerationToDesign, findDesignByBrandExport, promoteIfEligible,
+  deleteDesignProject,
 };

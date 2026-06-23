@@ -10,6 +10,8 @@ const { db, EXPORTS_DIR } = require('./db');
 const {
   createBrandProfile, getBrandProfile, listBrandProfiles,
   updateBrandProfile, deleteBrandProfile,
+  createDesignProject, getDesignProject, listDesignProjects,
+  linkGenerationToDesign, deleteDesignProject,
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
 
@@ -570,6 +572,38 @@ app.put('/brand/:id', (req, res) => {
 
 app.delete('/brand/:id', (req, res) => {
   deleteBrandProfile(parseInt(req.params.id));
+  res.json({ ok: true });
+});
+
+// ─── /designs — Design Projects ──────────────────────────────────────────────
+app.get('/designs', (_req, res) => {
+  res.json(listDesignProjects());
+});
+
+app.post('/designs', (req, res) => {
+  const { name, brand_id, export_id, tokens_path, variables_path, notes } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const id = createDesignProject({ name, brand_id, export_id, tokens_path, variables_path, notes });
+  res.json({ id });
+});
+
+app.get('/designs/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const proj = getDesignProject(id);
+  if (!proj) return res.status(404).json({ error: 'Not found' });
+  const pages = db.prepare(`
+    SELECT dp.page_type, dp.sort_order, g.id AS generation_id, g.brand, g.keyword, g.status
+    FROM design_pages dp
+    JOIN generations g ON g.id = dp.generation_id
+    WHERE dp.design_id=? ORDER BY dp.sort_order, g.id
+  `).all(id);
+  res.json({ ...proj, pages });
+});
+
+app.delete('/designs/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const keepPages = req.query.keepPages !== 'false'; // default: keep generations
+  deleteDesignProject(id, keepPages);
   res.json({ ok: true });
 });
 
