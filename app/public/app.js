@@ -365,9 +365,42 @@ const chatHistory = [];
 // an ACTIVE BRAND/DESIGN/PAGE preamble. Chips to display/clear it land in 5.7.
 const chatCtx = { brandId: null, designId: null, generationId: null };
 
+// Onboarding empty-state shown when the chat has no messages. Example prompts
+// are clickable — they fill the input so a first-time user knows what to type.
+const CHAT_EXAMPLES = [
+  'Build a landing page for a coffee roastery — keyword "specialty coffee beans", sections Hero, Features, CTA',
+  'Make me an About page for a dental clinic, warm and reassuring tone',
+  'Create a pricing page for a SaaS invoicing tool with 3 tiers',
+];
+function renderChatEmptyState() {
+  const el = document.getElementById('chatMessages');
+  if (!el || el.querySelector('.msg')) return; // real messages present → no empty state
+  el.innerHTML = `
+    <div id="chatEmpty" class="chat-empty">
+      <div class="chat-empty-title">Describe the page you want</div>
+      <div class="chat-empty-sub">Tell Claude what to build and it'll propose a page you can generate, preview, and import — all from here. Try one:</div>
+      <div class="chat-empty-examples">
+        ${CHAT_EXAMPLES.map(p => `<button type="button" class="chat-example" data-prompt="${escapeHtml(p)}">${escapeHtml(p)}</button>`).join('')}
+      </div>
+      <div class="chat-empty-hint">Type <code>/</code> for shortcuts · attach a <strong>Brand</strong> or <strong>Design</strong> from their tabs for on-brand output</div>
+    </div>`;
+  el.querySelectorAll('.chat-example').forEach(b => {
+    b.addEventListener('click', () => {
+      const input = document.getElementById('chatInput');
+      input.value = b.dataset.prompt;
+      input.focus();
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+    });
+  });
+}
+
 function appendChatMsg(role, text) {
   const el = document.getElementById('chatMessages');
+  const empty = document.getElementById('chatEmpty');
+  if (empty) empty.remove();
   const div = document.createElement('div');
+  div.className = 'msg';
   div.style.cssText = `padding:10px 12px;border-radius:8px;font-size:0.8125rem;line-height:1.5;white-space:pre-wrap;max-width:92%;${role === 'user' ? 'align-self:flex-end;background:var(--accent);color:#fff;' : 'align-self:flex-start;background:var(--surface);border:1px solid var(--border);'}`;
   div.textContent = text;
   el.appendChild(div);
@@ -384,7 +417,7 @@ async function sendChat() {
   document.getElementById('chatSend').disabled = true;
 
   appendChatMsg('user', message);
-  const replyEl = appendChatMsg('assistant', '…');
+  const replyEl = appendChatMsg('assistant', 'Thinking… (first reply can take ~30s while Claude spins up)');
   let reply = '';
 
   try {
@@ -544,6 +577,7 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
 document.getElementById('chatClear').addEventListener('click', () => {
   chatHistory.length = 0;
   document.getElementById('chatMessages').innerHTML = '';
+  renderChatEmptyState();
 });
 
 // ─── Chat context chips + slash hints (5.7) ──────────────────────────────────
@@ -978,6 +1012,7 @@ document.getElementById('clearRevision').addEventListener('click', () => {
 });
 
 // ─── Init ────────────────────────────────────────────────────────────────────
+renderChatEmptyState();
 checkPrereqs();
 loadHistory();
 loadSettings();

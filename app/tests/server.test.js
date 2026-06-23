@@ -12,9 +12,13 @@ const test   = require('node:test');
 const assert = require('node:assert/strict');
 const http   = require('node:http');
 const path   = require('node:path');
+const os     = require('node:os');
+const fs     = require('node:fs');
 const { spawn } = require('node:child_process');
 
 const SERVER_PATH = path.join(__dirname, '..', 'server.js');
+// Isolated DB so these tests never write brand/design rows into the real history.
+const DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'd5g-server-'));
 const PORT = 37470; // different from production to avoid conflicts
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -74,7 +78,7 @@ let serverProc;
 
 test.before(async () => {
   serverProc = spawn(process.execPath, [SERVER_PATH], {
-    env: { ...process.env, PORT: String(PORT) },
+    env: { ...process.env, PORT: String(PORT), DIVI5_DATA_DIR: DATA_DIR },
     stdio: 'pipe',
   });
   serverProc.stderr.on('data', () => {}); // suppress
@@ -84,6 +88,7 @@ test.before(async () => {
 
 test.after(() => {
   if (serverProc) serverProc.kill('SIGTERM');
+  fs.rmSync(DATA_DIR, { recursive: true, force: true });
 });
 
 // ─── Tests ──────────────────────────────────────────────────────────────────

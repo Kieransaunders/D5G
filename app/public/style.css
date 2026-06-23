@@ -18,6 +18,27 @@
 
 body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
+/* hidden must win over inline display:flex on tab panels — else they stack/overlap */
+[hidden] { display: none !important; }
+
+/* ── Chat empty-state / onboarding ── */
+.chat-empty { display: flex; flex-direction: column; gap: 12px; padding: 8px 2px; }
+.chat-empty-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.chat-empty-sub { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
+.chat-empty-examples { display: flex; flex-direction: column; gap: 8px; }
+.chat-example {
+  text-align: left; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 10px 12px; font-size: 0.8125rem; line-height: 1.4;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chat-example:hover { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+.chat-empty-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+.chat-empty-hint code {
+  font-family: var(--mono); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 0.7rem;
+}
+
 /* ── Layout ── */
 .app { display: grid; grid-template-columns: 420px 1fr; min-height: 100vh; }
 
