@@ -115,4 +115,44 @@ for (const sql of migrations) {
   try { db.exec(sql); } catch (_) {}
 }
 
-module.exports = { db, DATA_DIR, EXPORTS_DIR };
+// ─── Brand Profile helpers ───────────────────────────────────────────────────
+function createBrandProfile({ name, data, source_type = null, source_ref = null }) {
+  return db.prepare(
+    `INSERT INTO brand_profiles (name, data, source_type, source_ref) VALUES (?, ?, ?, ?)`
+  ).run(name, JSON.stringify(data), source_type, source_ref).lastInsertRowid;
+}
+
+function getBrandProfile(id) {
+  const row = db.prepare('SELECT * FROM brand_profiles WHERE id=?').get(id);
+  if (!row) return undefined;
+  return { ...row, data: JSON.parse(row.data) };
+}
+
+function listBrandProfiles() {
+  return db.prepare('SELECT * FROM brand_profiles ORDER BY id DESC').all()
+    .map(r => ({ ...r, data: JSON.parse(r.data) }));
+}
+
+function updateBrandProfile(id, { name, data, source_type, source_ref }) {
+  const existing = getBrandProfile(id);
+  if (!existing) throw new Error(`brand_profile ${id} not found`);
+  const merged = {
+    name:        name        ?? existing.name,
+    data:        data        ?? existing.data,
+    source_type: source_type ?? existing.source_type,
+    source_ref:  source_ref  ?? existing.source_ref,
+  };
+  db.prepare(
+    `UPDATE brand_profiles SET name=?, data=?, source_type=?, source_ref=?, updated_at=datetime('now') WHERE id=?`
+  ).run(merged.name, JSON.stringify(merged.data), merged.source_type, merged.source_ref, id);
+}
+
+function deleteBrandProfile(id) {
+  db.prepare('DELETE FROM brand_profiles WHERE id=?').run(id);
+}
+
+module.exports = {
+  db, DATA_DIR, EXPORTS_DIR,
+  createBrandProfile, getBrandProfile, listBrandProfiles,
+  updateBrandProfile, deleteBrandProfile,
+};

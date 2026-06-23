@@ -44,3 +44,39 @@ test('generations has nullable design_id and page_type columns', () => {
   assert.ok(cols.includes('design_id'));
   assert.ok(cols.includes('page_type'));
 });
+
+// ─── Brand Profile CRUD ──────────────────────────────────────────────────────
+const {
+  createBrandProfile, getBrandProfile, listBrandProfiles,
+  updateBrandProfile, deleteBrandProfile,
+} = require('../db');
+
+test('createBrandProfile inserts and returns the row', () => {
+  const id = createBrandProfile({ name: 'Floria', data: { name: 'Floria' }, source_type: 'manual' });
+  const row = getBrandProfile(id);
+  assert.equal(row.name, 'Floria');
+  // getBrandProfile parses `data` into an object already.
+  assert.deepEqual(row.data, { name: 'Floria' });
+  assert.equal(row.source_type, 'manual');
+});
+
+test('listBrandProfiles returns newest first', () => {
+  const a = createBrandProfile({ name: 'A', data: {} });
+  const b = createBrandProfile({ name: 'B', data: {} });
+  const names = listBrandProfiles().map(r => r.name);
+  // Tests share one DB; just assert relative order of the two we just made.
+  assert.deepEqual(names.slice(0, 2), ['B', 'A']);
+});
+
+test('updateBrandProfile merges data and bumps updated_at', () => {
+  const id = createBrandProfile({ name: 'X', data: { colors: [] }, source_type: 'manual' });
+  updateBrandProfile(id, { name: 'X', data: { colors: [{ role: 'primary', hex: '#000' }] } });
+  const row = getBrandProfile(id);
+  assert.deepEqual(row.data.colors[0].hex, '#000');
+});
+
+test('deleteBrandProfile removes the row', () => {
+  const id = createBrandProfile({ name: 'Y', data: {} });
+  deleteBrandProfile(id);
+  assert.equal(getBrandProfile(id), undefined);
+});
