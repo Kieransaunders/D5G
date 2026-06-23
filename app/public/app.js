@@ -322,6 +322,22 @@ document.querySelectorAll('.tab').forEach(btn => {
   });
 });
 
+// Sync visible panel to whichever tab is marked active in the HTML on load
+// (Chat is the default). Triggers the active tab's load hook too.
+(function syncActiveTabOnLoad() {
+  const active = document.querySelector('.tab.active');
+  if (active) active.click();
+})();
+
+// "Structured brief" link inside Chat → jump to the demoted Generate form.
+const briefLink = document.getElementById('chatOpenBrief');
+if (briefLink) {
+  briefLink.addEventListener('click', () => {
+    const genTab = document.querySelector('.tab[data-tab=generate]');
+    if (genTab) genTab.click();
+  });
+}
+
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 const chatHistory = [];
 

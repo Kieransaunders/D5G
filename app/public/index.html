@@ -17,15 +17,15 @@
     </div>
 
     <div class="tab-bar">
-      <button type="button" class="tab active" data-tab="generate">Generate</button>
-      <button type="button" class="tab" data-tab="chat">Chat</button>
+      <button type="button" class="tab active" data-tab="chat">Chat</button>
       <button type="button" class="tab" data-tab="brand">Brand</button>
       <button type="button" class="tab" data-tab="designs">Designs</button>
+      <button type="button" class="tab" data-tab="generate">Brief</button>
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
-    <!-- ── Generate tab ── -->
-    <div id="tab-generate">
+    <!-- ── Generate tab (demoted to "Brief" — accessible from Chat via Structured brief) ── -->
+    <div id="tab-generate" hidden>
     <form id="genForm">
 
       <div class="section-label">Brand &amp; Brief</div>
@@ -336,8 +336,11 @@
     </div>
 
     <!-- ── Chat tab ── -->
-    <div id="tab-chat" hidden style="display:flex;flex-direction:column;flex:1;gap:8px">
-      <div class="section-label">Ask Claude about your Divi page</div>
+    <div id="tab-chat" style="display:flex;flex-direction:column;flex:1;gap:8px">
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Ask Claude about your Divi page</span>
+        <button type="button" class="btn-link" id="chatOpenBrief" style="font-size:0.75rem;color:var(--accent)">Structured brief →</button>
+      </div>
       <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0;padding-right:4px"></div>
       <div style="display:flex;gap:8px;align-items:flex-end">
         <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot…" style="flex:1;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
