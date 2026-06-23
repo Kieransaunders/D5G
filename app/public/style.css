@@ -18,6 +18,64 @@
 
 body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
+/* hidden must win over inline display:flex on tab panels — else they stack/overlap */
+[hidden] { display: none !important; }
+
+/* ── Design canvas (Lovable-style live preview on the right) ── */
+.canvas-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column;
+  flex: 1 1 auto; min-height: 72vh;
+}
+.canvas-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.canvas-title { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.canvas-actions { display: flex; align-items: center; gap: 10px; }
+.viewport-toggle { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 2px; }
+.viewport-toggle button {
+  border: none; background: none; color: var(--muted); cursor: pointer;
+  font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 6px; transition: all 0.15s;
+}
+.viewport-toggle button.active { background: var(--accent); color: #fff; }
+.canvas-stage {
+  flex: 1; position: relative; overflow: auto;
+  display: flex; justify-content: center;
+  background: repeating-conic-gradient(#0b1322 0% 25%, #0e1626 0% 50%) 50% / 22px 22px;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+#canvasFrame { width: 100%; height: 100%; border: 0; background: #fff; transition: max-width 0.2s ease; }
+#canvasFrame.mobile { max-width: 390px; width: 390px; margin: 16px 0; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); height: calc(100% - 32px); }
+.canvas-empty {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 40px;
+}
+.canvas-empty-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.canvas-empty-sub { font-size: 0.8125rem; color: var(--muted); line-height: 1.6; max-width: 380px; }
+.canvas-status { padding: 0 16px; }
+.canvas-status:not(:empty) { padding: 10px 16px; font-size: 0.8125rem; border-top: 1px solid var(--border); }
+
+/* ── Chat empty-state / onboarding ── */
+.chat-empty { display: flex; flex-direction: column; gap: 12px; padding: 8px 2px; }
+.chat-empty-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.chat-empty-sub { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
+.chat-empty-examples { display: flex; flex-direction: column; gap: 8px; }
+.chat-example {
+  text-align: left; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 10px 12px; font-size: 0.8125rem; line-height: 1.4;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chat-example:hover { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+.chat-empty-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+.chat-empty-hint code {
+  font-family: var(--mono); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 0.7rem;
+}
+
 /* ── Layout ── */
 .app { display: grid; grid-template-columns: 420px 1fr; min-height: 100vh; }
 
@@ -459,3 +517,220 @@ select option { background: var(--surface); }
   box-sizing: border-box;
 }
 .revision-textarea:focus { outline: none; border-color: var(--accent); }
+
+/* ── Brand tab ──────────────────────────────────────────────────────────────── */
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+.brand-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brand-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.brand-card-src {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+.brand-card-swatches { display: flex; gap: 4px; min-height: 18px; align-items: center; }
+.brand-card-swatch {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.brand-card-no-swatches { font-size: 0.7rem; color: var(--muted); }
+.brand-card-meta { font-size: 0.75rem; color: var(--muted); }
+.brand-card-edit { font-size: 0.75rem; color: var(--accent); align-self: flex-start; }
+
+.brand-editor {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-row input[type="color"] {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+.color-row input[type="text"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-family: inherit;
+}
+.color-source {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 48px;
+}
+.color-row input:focus { outline: none; border-color: var(--accent); }
+
+/* ── Designs tab ────────────────────────────────────────────────────────────── */
+.design-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.design-card-head { display: flex; align-items: center; justify-content: space-between; }
+.design-page-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 4px 6px;
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+/* ── Chat intent card (GEN_INTENT proposal) ─────────────────────────────────── */
+.intent-card {
+  align-self: stretch;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.intent-card-title { font-weight: 600; }
+.intent-card-rows { display: flex; flex-direction: column; gap: 2px; color: var(--text); }
+.intent-card-actions { display: flex; justify-content: flex-end; gap: 10px; align-items: center; }
+
+/* ── Inline generation cards (chat) ─────────────────────────────────────────── */
+.gen-cards { display: flex; flex-direction: column; gap: 8px; align-self: stretch; }
+.gen-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+}
+.gen-card-title { font-weight: 600; margin-bottom: 6px; }
+.gen-card-preview iframe { width: 100%; height: 320px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+.gen-card-actions { margin-top: 6px; display: flex; justify-content: flex-end; }
+.gen-card-filelist { display: flex; flex-direction: column; gap: 2px; }
+.gen-card-file { color: var(--accent); font-size: 0.75rem; text-decoration: none; }
+.gen-card-file:hover { text-decoration: underline; }
+.gen-card-import { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gen-card-status { font-size: 0.75rem; color: var(--muted); }
+.gen-card-status a { color: var(--accent); }
+
+/* ── Preview side drawer ────────────────────────────────────────────────────── */
+.preview-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 50%;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+.preview-drawer[hidden] { display: none; }
+.preview-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.preview-drawer iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+@media (max-width: 720px) {
+  .preview-drawer { width: 100%; }
+}
+
+/* ── Chat context chips + slash menu (5.7) ──────────────────────────────────── */
+.ctx-chip {
+  font-size: 0.7rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.ctx-chip:hover { border-color: var(--danger); }
+.slash-menu {
+  position: absolute;
+  bottom: 78px;
+  left: 0;
+  right: 64px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  padding: 4px;
+  z-index: 20;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.slash-menu[hidden] { display: none; }
+.slash-item {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.slash-item:hover { background: var(--bg); }
+.slash-item span { color: var(--muted); font-size: 0.7rem; }
+
+/* ── Toast (one-time chat-primary notice) ───────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 100;
+  max-width: 90vw;
+}

@@ -1,0 +1,31 @@
+{
+  "context": "et_builder",
+  "data": {},
+  "presets": {
+    "module": {
+      "heading": {
+        "items": {
+          "preset-h1": {
+            "name": "h1",
+            "moduleName": "heading",
+            "attrs": { "font": { "family": "Playfair Display" } }
+          },
+          "preset-body": {
+            "name": "body",
+            "moduleName": "text",
+            "attrs": { "font": { "family": "Inter" } }
+          }
+        }
+      }
+    },
+    "group": {}
+  },
+  "global_colors": [
+    ["gcid-primary-color", { "color": "#2176ff", "status": "active", "label": "Primary Color" }],
+    ["gcid-secondary-color", { "color": "#ff5700", "status": "active", "label": "Secondary Color" }],
+    ["gcid-heading-color", { "color": "#000000", "status": "active", "label": "Heading Text Color" }]
+  ],
+  "global_variables": [],
+  "images": {},
+  "thumbnails": []
+}

@@ -10,6 +10,7 @@
  *   TASTE-AI-TELL  Corporate buzzwords in h1/h2 ("Unlock", "Leverage", etc.)
  *   TASTE-H1-VERB  h1 starts with a verb ("Build", "Get", "Discover", etc.)
  *   TASTE-3CARDS   3+ blurb modules in one section with body lengths within ±25%
+ *   TASTE-EYEBROW  Eyebrow count exceeds ceil(sections÷3) — too many section labels
  *
  * See: references/taste.md §10, §11, §14
  */
@@ -155,6 +156,16 @@ for (const sect of sections) {
   }
 }
 if (!threeCardHits) pass('TASTE-3CARDS: no equal-length three-card blurb rows detected');
+
+// ─── TASTE-EYEBROW: too many eyebrow labels ──────────────────────────────────
+
+const eyebrowModules = sections.flatMap(s => s.modules.filter(m => m.type === 'eyebrow'));
+const eyebrowMax = Math.ceil(sections.length / 3);
+if (eyebrowModules.length > eyebrowMax) {
+  warn(`TASTE-EYEBROW: ${eyebrowModules.length} eyebrow labels across ${sections.length} sections (max ${eyebrowMax}) — reads like a Divi demo. Remove eyebrows from most sections; keep only the hero's.`);
+} else {
+  pass(`TASTE-EYEBROW: ${eyebrowModules.length} eyebrow(s) within limit (max ${eyebrowMax})`);
+}
 
 // ─── report ──────────────────────────────────────────────────────────────────
 

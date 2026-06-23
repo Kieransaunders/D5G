@@ -17,13 +17,15 @@
     </div>
 
     <div class="tab-bar">
-      <button type="button" class="tab active" data-tab="generate">Generate</button>
-      <button type="button" class="tab" data-tab="chat">Chat</button>
+      <button type="button" class="tab active" data-tab="chat">Chat</button>
+      <button type="button" class="tab" data-tab="brand">Brand</button>
+      <button type="button" class="tab" data-tab="designs">Designs</button>
+      <button type="button" class="tab" data-tab="generate">Brief</button>
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
-    <!-- ── Generate tab ── -->
-    <div id="tab-generate">
+    <!-- ── Generate tab (demoted to "Brief" — accessible from Chat via Structured brief) ── -->
+    <div id="tab-generate" hidden>
     <form id="genForm">
 
       <div class="section-label">Brand &amp; Brief</div>
@@ -232,13 +234,119 @@
 
     </div><!-- /tab-settings -->
 
+    <!-- ── Brand tab ── -->
+    <div id="tab-brand" hidden style="display:flex;flex-direction:column;flex:1;gap:10px;min-height:0">
+      <div class="section-label">Brand Profiles</div>
+
+      <div class="brand-toolbar" style="display:flex;flex-wrap:wrap;gap:6px">
+        <button type="button" class="btn-secondary" data-brand-new="blank">＋ Blank</button>
+        <button type="button" class="btn-secondary" data-brand-new="url">From URL</button>
+        <button type="button" class="btn-secondary" data-brand-new="export" disabled title="Wired in Phase 3">From Divi export</button>
+        <button type="button" class="btn-secondary" data-brand-new="image" disabled title="Wired in Phase 3">From image</button>
+        <button type="button" class="btn-secondary" data-brand-new="chat" disabled title="Wired in Phase 3">From chat</button>
+      </div>
+
+      <div id="brandGrid" class="brand-grid" style="overflow-y:auto;flex:1;min-height:0">
+        <div class="empty">No brand profiles yet — create one with ＋ Blank.</div>
+      </div>
+
+      <!-- Brand editor (inline panel, hidden until opened) -->
+      <div id="brandEditor" hidden class="brand-editor">
+        <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span id="brandEditorTitle">New brand profile</span>
+          <button type="button" class="btn-link" id="brandEditorClose" style="color:var(--muted)">Close</button>
+        </div>
+
+        <div class="field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="brandName" placeholder="Acme Corp">
+        </div>
+
+        <div class="field">
+          <label>Logo</label>
+          <input type="file" id="brandLogoInput" accept="image/*">
+          <span class="field-hint">Used for reference + canvas colour extraction (Phase 3).</span>
+        </div>
+
+        <div class="field">
+          <label>Colours</label>
+          <div id="brandColors" style="display:flex;flex-direction:column;gap:6px"></div>
+          <button type="button" class="btn-link" id="brandAddColor" style="font-size:0.75rem;color:var(--accent);margin-top:4px">＋ Add colour</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field">
+            <label>Heading font</label>
+            <select id="brandHeadingFont"></select>
+          </div>
+          <div class="field">
+            <label>Body font</label>
+            <select id="brandBodyFont"></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tagline</label>
+          <input type="text" id="brandTagline" placeholder="We make invoicing effortless">
+        </div>
+
+        <div class="field">
+          <label>Voice &amp; tone</label>
+          <textarea id="brandVoice" placeholder="Friendly, confident, jargon-free…" style="resize:none;height:60px"></textarea>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button type="button" class="btn-generate" id="brandSave">Save</button>
+          <button type="button" class="btn-secondary" id="brandDelete" hidden>Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Designs tab ── -->
+    <div id="tab-designs" hidden style="display:flex;flex-direction:column;flex:1;gap:10px;min-height:0">
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Design Projects</span>
+        <button type="button" class="btn-secondary" id="designNewBtn">＋ New project</button>
+      </div>
+
+      <div id="designsList" style="overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px">
+        <div class="empty">No design projects yet. They auto-form after your 2nd page sharing a brand + export.</div>
+      </div>
+
+      <!-- New project modal -->
+      <div id="designModal" hidden class="brand-editor">
+        <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>New design project</span>
+          <button type="button" class="btn-link" id="designModalClose" style="color:var(--muted)">Close</button>
+        </div>
+        <div class="field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="designName" placeholder="Floria design">
+        </div>
+        <div class="field">
+          <label>Brand profile</label>
+          <select id="designBrand"><option value="">— none —</option></select>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="designNotes" style="resize:none;height:50px" placeholder="Optional notes…"></textarea>
+        </div>
+        <button type="button" class="btn-generate" id="designCreate">Create</button>
+      </div>
+    </div>
+
     <!-- ── Chat tab ── -->
-    <div id="tab-chat" hidden style="display:flex;flex-direction:column;flex:1;gap:8px">
-      <div class="section-label">Ask Claude about your Divi page</div>
+    <div id="tab-chat" style="display:flex;flex-direction:column;flex:1;gap:8px">
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Ask Claude about your Divi page</span>
+        <button type="button" class="btn-link" id="chatOpenBrief" style="font-size:0.75rem;color:var(--accent)">Structured brief →</button>
+      </div>
       <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0;padding-right:4px"></div>
-      <div style="display:flex;gap:8px;align-items:flex-end">
-        <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot…" style="flex:1;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
-        <button type="button" class="btn-generate" id="chatSend" style="height:72px;min-width:64px">Send</button>
+      <div id="chatContextChips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div style="display:flex;gap:8px;align-items:flex-end;position:relative">
+        <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot… (type / for shortcuts)" style="flex:1;min-width:0;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
+        <button type="button" class="btn-generate" id="chatSend" style="height:72px;width:auto;flex:none;min-width:64px;padding-left:16px;padding-right:16px">Send</button>
+        <div id="slashMenu" class="slash-menu" hidden></div>
       </div>
       <button type="button" class="btn-link" id="chatClear" style="font-size:0.75rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;text-align:left">Clear conversation</button>
     </div>
@@ -247,6 +355,29 @@
 
   <!-- ── Main panel ─────────────────────────────────────────────────── -->
   <main class="main">
+
+    <!-- Design canvas — persistent live preview of the latest generation -->
+    <div class="canvas-panel" id="canvasPanel">
+      <div class="canvas-head">
+        <div class="canvas-title" id="canvasTitle">Design preview</div>
+        <div class="canvas-actions">
+          <div class="viewport-toggle" id="viewportToggle">
+            <button type="button" data-vw="desktop" class="active">Desktop</button>
+            <button type="button" data-vw="mobile">Mobile</button>
+          </div>
+          <a id="canvasNewTab" class="btn-link" target="_blank" hidden style="font-size:0.78rem;color:var(--accent)">Open ↗</a>
+          <button type="button" class="btn-import" id="canvasImport" hidden>Import to WordPress</button>
+        </div>
+      </div>
+      <div class="canvas-stage" id="canvasStage">
+        <div class="canvas-empty" id="canvasEmpty">
+          <div class="canvas-empty-title">Your design preview will appear here</div>
+          <div class="canvas-empty-sub">Describe a page in the chat and hit <strong>Start</strong> — the generated layout renders here, then you can import it to WordPress.</div>
+        </div>
+        <iframe id="canvasFrame" hidden sandbox="allow-same-origin allow-scripts"></iframe>
+      </div>
+      <div class="canvas-status" id="canvasStatus"></div>
+    </div>
 
     <!-- Progress + log (hidden until generation starts) -->
     <div class="panel" id="progressPanel" style="display:none">
@@ -300,6 +431,18 @@
 
   </main>
 </div>
+
+<!-- ── Preview side drawer (chat pop-out) ── -->
+<aside id="previewDrawer" class="preview-drawer" hidden>
+  <div class="preview-drawer-head">
+    <span id="previewDrawerTitle">Preview</span>
+    <div style="display:flex;gap:8px">
+      <a id="previewDrawerNewTab" class="btn-link" target="_blank" style="font-size:0.75rem;color:var(--accent)">Open in new tab</a>
+      <button type="button" class="btn-link" id="previewDrawerClose" style="font-size:0.75rem;color:var(--muted)">✕</button>
+    </div>
+  </div>
+  <iframe id="previewDrawerFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+</aside>
 
 <script src="app.js"></script>
 </body>

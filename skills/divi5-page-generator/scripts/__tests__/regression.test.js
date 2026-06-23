@@ -23,6 +23,7 @@ const EXAMPLES = path.join(ROOT, 'examples');
 const GOLDEN = [
   { file: 'divitheatre-landing-page.json', label: 'DiviTheatre landing page' },
   { file: 'example-landing-page.json',     label: 'Example landing page'     },
+  // TODO: add iConnectITHomepage.json after Phase 5E refactor (currently fails validate: phantom presets, no h1, raw hex)
 ];
 
 let passed = 0;

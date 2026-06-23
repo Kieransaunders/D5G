@@ -7,6 +7,15 @@ const fs      = require('fs');
 const os      = require('os');
 const { spawn, execSync } = require('child_process');
 const { db, EXPORTS_DIR } = require('./db');
+const {
+  createBrandProfile, getBrandProfile, listBrandProfiles,
+  updateBrandProfile, deleteBrandProfile,
+  createDesignProject, getDesignProject, listDesignProjects,
+  linkGenerationToDesign, deleteDesignProject,
+  promoteIfEligible,
+} = require('./db');
+const { isSafeHost } = require('./lib/ssrf-guard');
+const { extractIntent, stripIntent } = require('./lib/intent-marker');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -224,6 +233,15 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
     const status = code === 0 ? 'complete' : 'failed';
     db.prepare(`UPDATE generations SET status=?, style_check=? WHERE id=?`).run(status, styleCheck, genId);
 
+    // Auto-promote to a Design Project when a sibling generation shares the
+    // same brand + export_path (i.e. this is the 2nd page on one design system).
+    const newDesignId = promoteIfEligible(genId);
+    if (newDesignId) {
+      const msg = `\n--- DESIGN PROJECT ---\nPromoted to design project #${newDesignId}. See Designs tab.\n`;
+      appendLog.run(msg, genId);
+      sendSSE(genId, 'design_promoted', { designId: newDesignId });
+    }
+
     // Detect HTML preview file
     const allFiles = fs.readdirSync(outputPath);
     const hasPreview = allFiles.some(f => f.endsWith('.html'));
@@ -300,10 +318,15 @@ app.post('/settings', (req, res) => {
 });
 
 // ─── POST /chat — stream a Claude response ───────────────────────────────────
+// Body: { message, history:[{role,content}], ctx:{ brandId, designId, generationId } }
+// Streams SSE. Scans stdout for a GEN_INTENT marker and emits a `gen_intent`
+// event (the frontend renders a confirm card); the marker is stripped from the
+// visible text stream. Prepends an ACTIVE BRAND/DESIGN/PAGE preamble from ctx.
 app.post('/chat', (req, res) => {
-  const { message, history = [] } = req.body;
+  const { message, history = [], ctx = {} } = req.body;
   const context = history.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-  const prompt  = context ? `${context}\nUser: ${message}` : message;
+  const preamble = buildChatPreamble(ctx);
+  const prompt  = [preamble, context && `${context}`, `User: ${message}`].filter(Boolean).join('\n');
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -320,10 +343,58 @@ app.post('/chat', (req, res) => {
     cwd: PLUGIN_DIR, stdio: ['pipe', 'pipe', 'pipe'],
   });
   proc.stdin.end();
-  proc.stdout.on('data', chunk => res.write(`data: ${JSON.stringify({ chunk: chunk.toString() })}\n\n`));
+
+  // Buffer stdout so we can detect a complete GEN_INTENT marker (it may arrive
+  // split across chunks) and emit a gen_intent event, then stream the stripped
+  // text. We flush the buffer up to the last newline each chunk so prose still
+  // streams live; the tail (partial marker) is held back until more arrives.
+  let buf = '';
+  proc.stdout.on('data', chunk => {
+    buf += chunk.toString();
+    const intent = extractIntent(buf);
+    if (intent) {
+      res.write(`event: gen_intent\ndata: ${JSON.stringify(intent)}\n\n`);
+      buf = stripIntent(buf);
+    }
+    const nl = buf.lastIndexOf('\n');
+    if (nl >= 0) {
+      const emit = buf.slice(0, nl + 1);
+      buf = buf.slice(nl + 1);
+      res.write(`data: ${JSON.stringify({ chunk: emit })}\n\n`);
+    }
+  });
   proc.stderr.on('data', chunk => res.write(`data: ${JSON.stringify({ chunk: chunk.toString() })}\n\n`));
-  proc.on('close', () => { res.write(`data: ${JSON.stringify({ done: true })}\n\n`); res.end(); });
+  proc.on('close', () => {
+    // Flush any remaining buffered text (minus a trailing marker).
+    const tail = stripIntent(buf);
+    if (tail) res.write(`data: ${JSON.stringify({ chunk: tail })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+  });
 });
+
+// Build the ACTIVE BRAND/DESIGN/PAGE preamble from chat context. Cheap DB reads;
+// missing ids just omit the relevant line.
+function buildChatPreamble(ctx) {
+  if (!ctx || (!ctx.brandId && !ctx.designId && !ctx.generationId)) return '';
+  const lines = ['[CHAT CONTEXT]'];
+  if (ctx.brandId) {
+    const b = getBrandProfile(ctx.brandId);
+    if (b) {
+      const palette = (b.data && b.data.colors || []).slice(0, 4).map(c => c.hex).join(', ');
+      lines.push(`ACTIVE BRAND: ${b.name}${palette ? ' — palette: ' + palette : ''}`);
+    }
+  }
+  if (ctx.designId) {
+    const d = getDesignProject(ctx.designId);
+    if (d) lines.push(`ACTIVE DESIGN: ${d.name} (id ${d.id}) — reuse its tokens/colours verbatim`);
+  }
+  if (ctx.generationId) {
+    lines.push(`ACTIVE PAGE: generation id ${ctx.generationId}`);
+  }
+  lines.push('[/CHAT CONTEXT]');
+  return lines.join('\n');
+}
 
 // ─── GET /prereqs — check claude is installed ────────────────────────────────
 app.get('/prereqs', (req, res) => {
@@ -337,6 +408,7 @@ app.get('/prereqs', (req, res) => {
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 function findClaude() {
+  if (process.env.CLAUDE_BIN) return process.env.CLAUDE_BIN; // ponytail: test/override hook
   const candidates = [
     'claude',
     '/usr/local/bin/claude',
@@ -489,6 +561,218 @@ app.delete('/briefs/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── /brand — Brand Profile CRUD ─────────────────────────────────────────────
+app.get('/brand', (_req, res) => {
+  res.json(listBrandProfiles());
+});
+
+// ─── GET /brand/extract-url — fetch + parse a public page ────────────────────
+// Registered BEFORE /brand/:id so the literal path wins over the :id param.
+// Returns a "page bundle": title, meta, og image, favicon, candidate colours,
+// font families, and stylesheet hrefs. The bundle prefills the Brand editor;
+// richer AI analysis arrives in Phase 3.6/7.
+app.get('/brand/extract-url', async (req, res) => {
+  const raw = req.query.url;
+  if (!raw) return res.status(400).json({ error: 'url query param required' });
+  let url;
+  try { url = new URL(raw); }
+  catch { return res.status(400).json({ error: 'invalid url' }); }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return res.status(400).json({ error: 'only http/https allowed' });
+  }
+  if (!(await isSafeHost(url.hostname))) {
+    return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  let upstream;
+  try {
+    upstream = await fetch(raw, {
+      redirect: 'follow',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Divi5Generator/1.0 (brand-extractor)' },
+    });
+  } catch (e) {
+    return res.status(502).json({ error: `fetch failed: ${e.message}` });
+  } finally { clearTimeout(timeout); }
+
+  // Cap the response at 1 MiB to bound memory; flag truncation.
+  const MAX = 1024 * 1024;
+  const reader = upstream.body.getReader();
+  let buf = Buffer.alloc(0);
+  let truncated = false;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf = Buffer.concat([buf, value]);
+    if (buf.length > MAX) { truncated = true; buf = buf.slice(0, MAX); break; }
+  }
+  const html = buf.toString('utf8');
+
+  const bundle = extractPageBundle(html, url);
+  res.json({ ...bundle, truncated, sourceUrl: raw });
+});
+
+// ─── GET /brand/extract-divi — pull brand from a live Divi 5 site ────────────
+// Calls the plugin's export endpoints, saves the result as a brand_profile.
+// Query params: site (WP home URL), key (DTI API key), name (optional profile name)
+app.get('/brand/extract-divi', async (req, res) => {
+  const { site, key, name } = req.query;
+  if (!site || !key) return res.status(400).json({ error: 'site and key query params required' });
+
+  let siteUrl;
+  try { siteUrl = new URL(site); }
+  catch { return res.status(400).json({ error: 'invalid site url' }); }
+  if (!(await isSafeHost(siteUrl.hostname))) {
+    return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
+  }
+
+  const base = siteUrl.origin + '/wp-json/divi-tools/v1';
+  const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
+
+  let variables, presets;
+  try {
+    const [vRes, pRes] = await Promise.all([
+      fetch(`${base}/global-variables/export`, { headers }),
+      fetch(`${base}/presets/export`, { headers }),
+    ]);
+    if (!vRes.ok) return res.status(502).json({ error: `variables export failed: ${vRes.status}` });
+    if (!pRes.ok) return res.status(502).json({ error: `presets export failed: ${pRes.status}` });
+    variables = await vRes.json();
+    presets   = await pRes.json();
+  } catch (e) {
+    return res.status(502).json({ error: `fetch failed: ${e.message}` });
+  }
+
+  const profileName = name || siteUrl.hostname;
+  const data = { variables, presets };
+  const id = createBrandProfile({ name: profileName, data, source_type: 'divi-export', source_ref: siteUrl.origin });
+
+  res.json({ id, name: profileName, colors: variables.global_colors?.length ?? 0, variables: variables.global_variables?.length ?? 0 });
+});
+
+// ─── POST /brand/:id/deploy — push brand profile to a target Divi 5 site ─────
+// Body: { site: "https://...", key: "..." }
+app.post('/brand/:id/deploy', async (req, res) => {
+  const profile = getBrandProfile(parseInt(req.params.id));
+  if (!profile) return res.status(404).json({ error: 'brand profile not found' });
+
+  const { site, key } = req.body;
+  if (!site || !key) return res.status(400).json({ error: 'site and key required' });
+
+  let siteUrl;
+  try { siteUrl = new URL(site); }
+  catch { return res.status(400).json({ error: 'invalid site url' }); }
+  if (!(await isSafeHost(siteUrl.hostname))) {
+    return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
+  }
+
+  const base = siteUrl.origin + '/wp-json/divi-tools/v1';
+  const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
+  const { variables, presets } = profile.data ? JSON.parse(profile.data) : {};
+
+  if (!variables && !presets) {
+    return res.status(422).json({ error: 'brand profile has no variables or presets data' });
+  }
+
+  const results = {};
+  try {
+    if (variables) {
+      const r = await fetch(`${base}/global-variables`, { method: 'POST', headers, body: JSON.stringify(variables) });
+      results.variables = await r.json();
+    }
+    if (presets?.presets) {
+      const r = await fetch(`${base}/presets/import`, { method: 'POST', headers, body: JSON.stringify({ presets: presets.presets }) });
+      results.presets = await r.json();
+    }
+  } catch (e) {
+    return res.status(502).json({ error: `deploy failed: ${e.message}` });
+  }
+
+  res.json({ ok: true, site: siteUrl.origin, ...results });
+});
+
+app.get('/brand/:id', (req, res) => {
+  const row = getBrandProfile(parseInt(req.params.id));
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json(row);
+});
+
+app.post('/brand', (req, res) => {
+  const { name, data, source_type, source_ref } = req.body;
+  if (!name || !data) return res.status(400).json({ error: 'name and data required' });
+  const id = createBrandProfile({ name, data, source_type: source_type || 'manual', source_ref });
+  res.json({ id });
+});
+
+app.put('/brand/:id', (req, res) => {
+  const { name, data, source_type, source_ref } = req.body;
+  try {
+    updateBrandProfile(parseInt(req.params.id), { name, data, source_type, source_ref });
+    res.json({ ok: true });
+  } catch (e) { res.status(404).json({ error: e.message }); }
+});
+
+app.delete('/brand/:id', (req, res) => {
+  deleteBrandProfile(parseInt(req.params.id));
+  res.json({ ok: true });
+});
+
+// ─── /designs — Design Projects ──────────────────────────────────────────────
+app.get('/designs', (_req, res) => {
+  res.json(listDesignProjects());
+});
+
+app.post('/designs', (req, res) => {
+  const { name, brand_id, export_id, tokens_path, variables_path, notes } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const id = createDesignProject({ name, brand_id, export_id, tokens_path, variables_path, notes });
+  res.json({ id });
+});
+
+app.get('/designs/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const proj = getDesignProject(id);
+  if (!proj) return res.status(404).json({ error: 'Not found' });
+  const pages = db.prepare(`
+    SELECT dp.page_type, dp.sort_order, g.id AS generation_id, g.brand, g.keyword, g.status
+    FROM design_pages dp
+    JOIN generations g ON g.id = dp.generation_id
+    WHERE dp.design_id=? ORDER BY dp.sort_order, g.id
+  `).all(id);
+  res.json({ ...proj, pages });
+});
+
+app.delete('/designs/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const keepPages = req.query.keepPages !== 'false'; // default: keep generations
+  deleteDesignProject(id, keepPages);
+  res.json({ ok: true });
+});
+
+// ─── bundle parser (pure, exported for unit testing) ─────────────────────────
+function extractPageBundle(html, url) {
+  const pickAttr = (re) => (html.match(re) || [])[1] || '';
+  const title    = pickAttr(/<title[^>]*>([^<]*)<\/title>/i).trim();
+  const metaDesc = pickAttr(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
+  const ogImage  = pickAttr(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']*)["']/i);
+  const favicon  = pickAttr(/<link[^>]+rel=["'](?:shortcut )?icon["'][^>]+href=["']([^"']*)["']/i);
+
+  const colors = [...new Set((html.match(/#[0-9a-fA-F]{6}\b/g) || []).map(s => s.toLowerCase()))].slice(0, 20);
+  const fonts = [...new Set(
+    [...html.matchAll(/font-family\s*:\s*([^;"']+)/gi)]
+      .map(m => m[1].split(',')[0].trim().replace(/["']/g, ''))
+      .filter(Boolean)
+  )].slice(0, 10);
+
+  const stylesheets = [...html.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']*)["']/gi)]
+    .map(m => m[1]).slice(0, 5)
+    .map(href => { try { return new URL(href, url).href; } catch { return href; } });
+
+  return { title, metaDesc, ogImage, favicon, colors, fonts, stylesheets };
+}
+
 // ─── GET /pick-folder — Native macOS folder picker ────────────────────────────
 app.get('/pick-folder', (req, res) => {
   try {
@@ -529,6 +813,12 @@ app.post('/rerun/:id', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Divi 5 Generator running at http://localhost:${PORT}`);
-});
+// Only bind the port when run as the main module, so test code can require()
+// this file (to grab extractPageBundle) without starting a second server.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Divi 5 Generator running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { extractPageBundle };

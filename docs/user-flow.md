@@ -1,5 +1,41 @@
 # Divi 5 Tools — User Flow
 
+## Chat-primary app flow (local app, default)
+
+The local app is chat-first: you describe the page, Claude proposes a build, you
+hit **Start**, and the result streams back with preview + import cards. Brand
+Profiles and Design Projects give the chat persistent context.
+
+```mermaid
+flowchart TD
+    A([Open app → Chat]) --> BRAND{Have a brand?}
+    BRAND -->|Seed one| EXTRACT["Brand tab\nextract from URL · logo image · Divi export\n→ Brand Profile (palette, fonts, voice)"]
+    BRAND -->|Skip| ASK
+    EXTRACT --> ASK["Ask Claude for a page\n(active brand/design sent as context)"]
+    ASK --> INTENT["Claude emits GEN_INTENT marker\n→ proposal card + Start button"]
+    INTENT --> GENERATE["Start → /generate streams log\n→ page.json + seo + schema"]
+    GENERATE --> PROMOTE{"2nd page on same\nbrand + export?"}
+    PROMOTE -->|Yes| PROJECT["Auto-promote into a Design Project\n(Designs tab)"]
+    PROMOTE -->|No| PREVIEWCARD
+    PROJECT --> PREVIEWCARD["Inline preview card"]
+    PREVIEWCARD --> OK{Looks right?}
+    OK -->|Refine| ASK
+    OK -->|Import| IMPORTCARD["Import card → WordPress draft\n(GET /pages lists it, DELETE /pages/:slug removes it)"]
+    IMPORTCARD --> DONE([✓ Draft live in WordPress])
+
+    style EXTRACT fill:#f0f4ff,stroke:#4a6cf7,color:#000
+    style PROJECT fill:#f0f4ff,stroke:#4a6cf7,color:#000
+    style DONE fill:#f0fff4,stroke:#22c55e,color:#000
+    style A fill:#1e293b,stroke:#1e293b,color:#fff
+```
+
+---
+
+## Skill / CLI flow with QA gates
+
+The underlying skills can also be driven directly from a Claude Code session.
+The full gated workflow:
+
 ```mermaid
 flowchart TD
     START([Start]) --> Q1{Do you have an\nexisting Divi site\nor export?}

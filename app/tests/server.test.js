@@ -12,9 +12,13 @@ const test   = require('node:test');
 const assert = require('node:assert/strict');
 const http   = require('node:http');
 const path   = require('node:path');
+const os     = require('node:os');
+const fs     = require('node:fs');
 const { spawn } = require('node:child_process');
 
 const SERVER_PATH = path.join(__dirname, '..', 'server.js');
+// Isolated DB so these tests never write brand/design rows into the real history.
+const DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'd5g-server-'));
 const PORT = 37470; // different from production to avoid conflicts
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -74,7 +78,7 @@ let serverProc;
 
 test.before(async () => {
   serverProc = spawn(process.execPath, [SERVER_PATH], {
-    env: { ...process.env, PORT: String(PORT) },
+    env: { ...process.env, PORT: String(PORT), DIVI5_DATA_DIR: DATA_DIR },
     stdio: 'pipe',
   });
   serverProc.stderr.on('data', () => {}); // suppress
@@ -84,6 +88,7 @@ test.before(async () => {
 
 test.after(() => {
   if (serverProc) serverProc.kill('SIGTERM');
+  fs.rmSync(DATA_DIR, { recursive: true, force: true });
 });
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -156,4 +161,113 @@ test('POST /generate with missing required fields returns a response (any HTTP s
   const { status } = await request('POST', '/generate', {});
   assert.ok(typeof status === 'number' && status >= 100 && status < 600,
     `Expected a valid HTTP status, got ${status}`);
+});
+
+// ─── /brand — Brand Profile CRUD ─────────────────────────────────────────────
+// Use a unique name per test so order-independent assertions hold even though
+// all tests share the server's single DB.
+
+test('POST /brand creates a profile, GET /brand lists it', async () => {
+  const tag = `Floria-${Date.now()}`;
+  const post = await request('POST', '/brand', { name: tag, data: { colors: [] }, source_type: 'manual' });
+  assert.equal(post.status, 200);
+  assert.ok(post.body.id, 'expected an id back');
+
+  const list = await request('GET', '/brand');
+  assert.equal(list.status, 200);
+  assert.ok(Array.isArray(list.body), 'GET /brand should return an array');
+  assert.ok(list.body.some(r => r.id === post.body.id && r.name === tag),
+    'created profile should appear in the list');
+});
+
+test('PUT /brand/:id updates data', async () => {
+  const tag = `X-${Date.now()}`;
+  const post = await request('POST', '/brand', { name: tag, data: { colors: [] } });
+  assert.equal(post.status, 200);
+  const id = post.body.id;
+
+  const put = await request('PUT', `/brand/${id}`, { data: { colors: [{ role: 'primary', hex: '#1A2744' }] } });
+  assert.equal(put.status, 200);
+
+  const get = await request('GET', `/brand/${id}`);
+  assert.equal(get.status, 200);
+  assert.equal(get.body.data.colors[0].hex, '#1A2744');
+});
+
+test('DELETE /brand/:id removes the profile', async () => {
+  const tag = `Y-${Date.now()}`;
+  const post = await request('POST', '/brand', { name: tag, data: {} });
+  const id = post.body.id;
+
+  const del = await request('DELETE', `/brand/${id}`);
+  assert.equal(del.status, 200);
+
+  const get = await request('GET', `/brand/${id}`);
+  assert.equal(get.status, 404);
+});
+
+// ─── /brand/extract-url — fetch + parse a public page ────────────────────────
+test('GET /brand/extract-url rejects missing url param', async () => {
+  const r = await request('GET', '/brand/extract-url');
+  assert.equal(r.status, 400);
+});
+
+test('GET /brand/extract-url rejects private IPs', async () => {
+  const r = await request('GET', '/brand/extract-url?url=http://127.0.0.1/');
+  assert.equal(r.status, 400);
+  assert.ok(/blocked|private|loopback/i.test(JSON.stringify(r.body)),
+    `expected a block message, got ${JSON.stringify(r.body)}`);
+});
+
+test('GET /brand/extract-url rejects non-http schemes', async () => {
+  const r = await request('GET', '/brand/extract-url?url=ftp://example.com/');
+  assert.equal(r.status, 400);
+});
+
+test('GET /brand/extract-url returns a bundle for a public URL', async () => {
+  // example.com is a stable IANA-reserved public page. Assert shape, not content.
+  const r = await request('GET', '/brand/extract-url?url=https://example.com');
+  assert.equal(r.status, 200);
+  const body = r.body;
+  assert.ok(body.title !== undefined, 'bundle should have a title key');
+  assert.ok(Array.isArray(body.colors) || Array.isArray(body.fonts),
+    'bundle should have a colors or fonts array');
+  assert.equal(body.sourceUrl, 'https://example.com');
+});
+
+// ─── /designs — Design Projects ──────────────────────────────────────────────
+// Helper: create a design project directly via the API.
+async function makeDesign(name = `D-${Date.now()}`) {
+  const r = await request('POST', '/designs', { name });
+  assert.equal(r.status, 200);
+  return r.body.id;
+}
+
+test('POST /designs creates a project; GET /designs lists it', async () => {
+  const id = await makeDesign(`Listed-${Date.now()}`);
+  const list = await request('GET', '/designs');
+  assert.equal(list.status, 200);
+  assert.ok(Array.isArray(list.body));
+  assert.ok(list.body.some(d => d.id === id), 'created design should appear in list');
+});
+
+test('GET /designs/:id returns the project with a pages array', async () => {
+  const id = await makeDesign();
+  const r = await request('GET', `/designs/${id}`);
+  assert.equal(r.status, 200);
+  assert.equal(r.body.id, id);
+  assert.ok(Array.isArray(r.body.pages), 'should include a pages array');
+});
+
+test('GET /designs/:id 404s for unknown id', async () => {
+  const r = await request('GET', '/designs/9999999');
+  assert.equal(r.status, 404);
+});
+
+test('DELETE /designs/:id removes the project (keepPages default)', async () => {
+  const id = await makeDesign();
+  const del = await request('DELETE', `/designs/${id}`);
+  assert.equal(del.status, 200);
+  const get = await request('GET', `/designs/${id}`);
+  assert.equal(get.status, 404);
 });

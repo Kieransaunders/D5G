@@ -10,8 +10,8 @@ set -euo pipefail
 # with the plugin files inside — the format WordPress expects.
 
 REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
-PLUGIN_DIR="${REPO_ROOT}/plugins/divi5-tools/plugin/divi-tools-importer"
-OUTPUT_ZIP="${REPO_ROOT}/divi-tools-importer.zip"
+PLUGIN_DIR="${REPO_ROOT}/plugin/divi-tools-importer"
+OUTPUT_ZIP="${1:-${REPO_ROOT}}/divi-tools-importer.zip"
 
 if [[ ! -d "$PLUGIN_DIR" ]]; then
   echo "Plugin source not found: $PLUGIN_DIR" >&2

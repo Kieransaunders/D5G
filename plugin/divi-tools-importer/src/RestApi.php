@@ -59,10 +59,43 @@ class DTI_RestApi {
 			),
 		) );
 
+		register_rest_route( self::NAMESPACE, '/presets/export', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_presets_export' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/global-variables', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'handle_global_variables_import' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/global-variables/export', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_global_variables_export' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
 		register_rest_route( self::NAMESPACE, '/ping', array(
 			'methods'             => 'GET',
 			'callback'            => array( __CLASS__, 'handle_ping' ),
 			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/pages', array(
+			'methods'             => 'GET',
+			'callback'            => array( __CLASS__, 'handle_pages_list' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/pages/(?P<slug>[a-z0-9-]+)', array(
+			'methods'             => 'DELETE',
+			'callback'            => array( __CLASS__, 'handle_pages_delete' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+			'args'                => array(
+				'slug' => array( 'required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_title' ),
+			),
 		) );
 	}
 
@@ -146,6 +179,45 @@ class DTI_RestApi {
 		return new WP_REST_Response( $result, 200 );
 	}
 
+	public static function handle_presets_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		try {
+			$result = DTI_PresetManager::export_presets();
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'export_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_global_variables_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		try {
+			$result = DTI_GlobalVariablesImporter::export();
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'export_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_global_variables_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		// Accept the full Global Variables JSON as the POST body.
+		$payload = $request->get_json_params();
+
+		if ( ! is_array( $payload ) || empty( $payload ) ) {
+			return new WP_Error( 'invalid_payload', 'POST body must be a valid Global Variables JSON object.', array( 'status' => 400 ) );
+		}
+
+		try {
+			$result = DTI_GlobalVariablesImporter::import( $payload );
+		} catch ( \InvalidArgumentException $e ) {
+			return new WP_Error( 'invalid_payload', $e->getMessage(), array( 'status' => 400 ) );
+		} catch ( \RuntimeException $e ) {
+			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
 	public static function handle_ping( WP_REST_Request $request ): WP_REST_Response {
 		return new WP_REST_Response( array(
 			'status'      => 'ok',
@@ -156,6 +228,36 @@ class DTI_RestApi {
 			'rankmath'    => class_exists( 'RankMath' ),
 			'dti_version' => DTI_VERSION,
 		), 200 );
+	}
+
+	public static function handle_pages_list( WP_REST_Request $request ): WP_REST_Response {
+		return new WP_REST_Response( DTI_PagesLister::list(), 200 );
+	}
+
+	public static function handle_pages_delete( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$slug = sanitize_title( (string) $request->get_param( 'slug' ) );
+
+		$query = new WP_Query( array(
+			'name'           => $slug,
+			'post_type'      => 'page',
+			'post_status'    => array( 'draft', 'publish', 'pending', 'private', 'trash' ),
+			'posts_per_page' => 1,
+			'no_found_rows'  => true,
+			'meta_key'       => '_dti_imported',
+		) );
+
+		if ( empty( $query->posts ) ) {
+			return new WP_Error( 'not_found', "No DTI-imported page found with slug: {$slug}", array( 'status' => 404 ) );
+		}
+
+		$post_id = $query->posts[0]->ID;
+		$deleted = wp_delete_post( $post_id, true );
+
+		if ( ! $deleted ) {
+			return new WP_Error( 'delete_failed', 'WordPress refused to delete the page.', array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( array( 'deleted' => $slug, 'id' => $post_id ), 200 );
 	}
 
 	public static function handle_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {

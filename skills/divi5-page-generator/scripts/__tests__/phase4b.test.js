@@ -17,10 +17,8 @@
  *   B5  Raw hex matching ET token — TOKEN rule
  *   B6  Missing h1 — SEO rule
  *   B7  Two h1s — SEO rule (also a common AI mistake)
- *
- * Gaps (not yet caught by validator — documented here as known blind spots):
- *   GAP-A  Button without decoration.button: { enable:'on' } — renders default blue
- *   GAP-B  codeBlock([]) passed array instead of null — emits open+close not self-close
+ *   B8  Button preset without enable:'on' — validator FAIL
+ *   B9  codeBlock([]) throws at builder time (array guard)
  */
 
 'use strict';
@@ -251,9 +249,21 @@ function baseline() {
   ok('B8: BUTTON error in output', /BUTTON/i.test(out), out.slice(-200));
 })();
 
-// ─── Gap still open ──────────────────────────────────────────────────────────
-console.log('\n  NOTE  GAP-B: codeBlock([]) array arg is NOT caught by the validator');
-console.log('        Emits open+close tags instead of self-closing. Fix: builder should throw on [] arg.');
+// ─── B9: codeBlock([]) throws synchronously ──────────────────────────────────
+
+(function b9() {
+  let threw = false;
+  let msg = '';
+  try { D.codeBlock([]); }
+  catch (e) { threw = true; msg = e.message; }
+  ok('B9: codeBlock([]) throws', threw, 'did not throw');
+  ok('B9: error mentions array', /array/i.test(msg), msg);
+
+  // null and string must still work
+  let ok2 = false;
+  try { D.codeBlock(null); D.codeBlock({ content: '<script>alert(1)</script>' }); ok2 = true; } catch (e) { ok2 = false; }
+  ok('B9: codeBlock(null) and string content still work', ok2, '');
+})();
 
 // ─── Cleanup + report ────────────────────────────────────────────────────────
 

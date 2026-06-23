@@ -285,6 +285,62 @@ If the live screenshot matches the mockup within acceptable tolerance — correc
 - Column widths: `flexType` fractions of 24 (`12_24` = 50%, `8_24` = 33%). The builder auto-adds phone stacking.
 - Global colours: `builder.globalColor()` returns the `$variable(...)$` reference; escaping is handled by serialisation.
 - Responsive: only include breakpoints that differ from desktop.
+- Cascade order: `global_variables` → `presets` → inline block `decoration` attrs. Inline attrs always win — use them for per-block overrides, presets for sitewide patterns.
+
+### Rendered CSS class reference (for `customCss` targeting)
+
+Divi 5 renders static classes — variables resolve to values, no `var()` in browser output.
+
+**Selectors to use in `customCss` blocks:**
+
+| Target | Selector |
+|---|---|
+| Section by position | `.et_pb_section_0`, `.et_pb_section_1` … |
+| Full-width section | `.et_pb_fullwidth_section` |
+| Section with background | `.et_pb_with_background` |
+| Row | `.et_pb_row`, `.et_pb_row_0` … |
+| Column widths | `.et_pb_column_4_4` (100%), `.et_pb_column_1_2` (50%), `.et_pb_column_1_3` (33%), `.et_pb_column_2_3` (66%), `.et_pb_column_1_4` (25%), `.et_pb_column_3_4` (75%) |
+| Text module | `.et_pb_text`, `.et_pb_text_0` … |
+| Button | `.et_pb_button` |
+| Image | `.et_pb_image` |
+| CTA | `.et_pb_cta` |
+| Dark bg utility | `.et_pb_bg_layout_dark` |
+| Light bg utility | `.et_pb_bg_layout_light` |
+| Text alignment | `.et_pb_text_align_left/center/right/justified` |
+| Border applied | `.et_pb_with_border` |
+| Box shadow applied | `.et_pb_with_box_shadow` |
+
+**Animation/state classes (add via `customCss` or module attrs):**
+
+| Effect | Class |
+|---|---|
+| Fade in | `.et_pb_animation_fade_in` |
+| Slide from top/bottom/left/right | `.et_pb_animation_top/bottom/left/right` |
+| Animation complete | `.et_had_animation` |
+| Sticky active | `.et_pb_sticky` |
+| Sticky module (enabled) | `.et_pb_sticky_module` |
+| Scroll to top | `.et_pb_scroll_top` |
+
+**Note:** These are render-output classes, not JSON attributes. Use them in `customCss` fields or when writing custom CSS overrides — not as block props.
+
+### Fluid CSS functions in spacing/sizing attrs
+
+Any numeric field in Divi 5 accepts `calc()`, `clamp()`, `min()`, `max()` as raw strings. When set, Divi disables the unit picker's increment buttons — that's expected.
+
+**Prefer these over hardcoded px values:**
+
+| Use case | Value |
+|---|---|
+| Fluid hero padding | `clamp(60px, 10vw, 140px)` |
+| Fluid section padding | `clamp(30px, 6vw, 80px)` |
+| Fluid heading size | `clamp(32px, 5vw, 72px)` |
+| Fluid body text | `clamp(16px, 2vw + 10px, 24px)` |
+| Max content width | `min(90vw, 1200px)` |
+| Viewport minus header | `calc(100vh - 80px)` |
+| Padding minus gutter | `calc(50% - 24px)` |
+| Padding floor | `max(20px, 3vw)` |
+
+These go directly into `padding`, `fontSize`, `width` etc. in the block JSON — no wrapping needed.
 
 ### CSS generation rules — critical (see `docs/divi5-css-generation-rules.md` for full detail)
 
@@ -343,8 +399,18 @@ These bugs are silent — Divi drops the module or ignores the style with no err
 | Preset backgrounds | `b.colorVar('coral')` in preset `decoration.background` | Raw hex `T.coral` — `$variable(...)$` refs produce no CSS in Divi's preset CSS generator; only font/text colour fields resolve them |
 | Button unlock | preset or inline button without `button: D.dv({ enable: 'on' })` | Every `b.preset('divi/button', ...)` and every `D.button()` call needs `button: D.dv({ enable: 'on' })` — without it Divi ignores all custom button styles and falls back to global default (blue) |
 | Inline HTML styles | `D.text({ html: '<div style="font-size:48px">6</div>' })` | Use `D.numberCounter()` — WordPress's `wp_kses_post()` strips all `style=""` attributes from text module HTML on save |
+| Placeholder missing | `const content = [hero, marquee].join('\n')` | `const content = D.placeholder([hero, marquee])` — the validator FAILs with `content must start with wp:divi/placeholder` if you join sections as a raw string |
+| Multiple h1 headings | Three `D.heading({ level: 'h1' })` calls for a styled title | One `D.heading({ level: 'h1', text: '...' })` — Divi treats each `heading()` call as a separate block; splitting a title across calls creates multiple h1s |
+| Keyword phrase broken by preposition | keyword `coffee shop frome` while copy reads `coffee shop in Frome` | Make the keyword itself natural (`coffee shop in Frome`) so it appears verbatim in h1/h2 — the validator substring-matches the keyword case-insensitively, so a mismatching preposition fails it |
+| `textTransform` does not render | preset font `D.dv({ textTransform: 'uppercase' })` and lowercase text | Pass the literal text already UPPERCASE — `heading()`/`text()` font decoration drops `textTransform` (only `letterSpacing`, `size`, `weight`, `color` etc. render). Uppercase the source string instead |
+| Two-tone / accent-word heading | a second `heading()` for the coloured word (→ multiple h1s) | Inline span in the title: `text: \`PROPER <span style='color:#DBB4EE'>BELTER</span> COFFEE\`` — `htmlContent()` single-quotes attrs so the inline colour survives `wp_kses_post` on headings (it does NOT survive on `text()` modules — headings only) |
+| Keyword phrase split by `<br>`/tag | `\`COFFEE SHOP<br>${lav('IN FROME')}\`` | Keep the keyword phrase contiguous with no tag inside it — the validator reads raw h1/h2 text *including* tags, so `<br>`/`<span>` between words breaks the substring match. Wrap the whole phrase in one span instead: `\`${lav('Coffee Shop in Frome')}\`` |
+| Buttons stack vertically | two `D.button()` directly in a `column()` | Wrap them in a `divi/group` flex-row: `D.block('group', { module:{ decoration:{ layout:{ desktop:{ value:{ display:'flex', flexDirection:'row', columnGap:'16px', flexWrap:'wrap' } } } } } }, [btnA, btnB])` — columns lay modules out vertically; `group` is the flex container |
+| Flex layout / bg-image / asymmetric padding | `column({ padding })` (uniform only) or expecting `flexType` to centre content | Hand-build with `D.block('column', { module:{ decoration }})`: `layout.desktop.value` = `{ display, flexDirection, justifyContent, alignItems, rowGap }`; bg image = `background.desktop.value.image = { url, size:'cover', position:'center center' }`; per-side padding via `spacing.desktop.value.padding` with `syncVertical/Horizontal:'off'`. The `column()`/`row()` helpers don't expose these |
+| Placeholder images off-brand | `picsum.photos` (returns random unrelated photos) | Use a keyword source — `https://loremflickr.com/{w}/{h}/{keyword}?lock={n}` (single keyword like `barista`/`cafe`/`coffee`; multi-keyword combos and rare terms 500). Flag stock placeholders for real-photo swap before launch |
+| Stale per-page CSS after re-import | re-import over an existing page id, screenshot shows old styling | `rm -f wp-content/et-cache/{post_id}/et-core-unified-*.min.css` then `curl <page-url>` to regenerate — preset CSS lives in `et-core-unified-*.min.css`, NOT `et-divi-dynamic-*.css` |
 
-The validator now catches the doubled-prefix bug and warns on non-self-closing code blocks.
+The validator catches the placeholder, multiple-h1, and keyword-in-h1/h2 bugs — zero FAILs before import.
 
 ## Token-first workflow (multi-skill)
 
@@ -385,3 +451,37 @@ All paths relative to this skill's directory (`${CLAUDE_SKILL_DIR}` when invokin
 - `divi5-json-key-learnings.md` — format deep-dive
 - `Meaningful Wellbeing.json` — real-world export fixture
 - `Divi-5-Design-System/` — official preset/design-variable examples
+
+## Design-project mode (chat-driven, brand-anchored)
+
+When the prompt preamble includes a `[CHAT CONTEXT]` block with `ACTIVE BRAND:` and/or `ACTIVE DESIGN:`, you are in **design-project mode**. This means the page must belong to an existing brand + design system — do **not** invent new hex colours or typefaces outside what the context supplies.
+
+Rules:
+- **Reuse the supplied palette verbatim.** If `ACTIVE BRAND: Acme — palette: #1a2744, #f97316, #f5f5f5` appears, every colour you emit must come from that set (plus neutral black/white). Never introduce a new hex.
+- **Reuse the supplied fonts.** Heading/body families come from the Brand Profile; use them in every text module.
+- If a `tokens.js` path is referenced by the Design Project, `require()` it and drop `T.colorRef[...]` / `preset: T.preset[...]` so the page binds to the live global colours/presets on the install (see `divi5-extract-style`).
+- Treat `ACTIVE PAGE: generation id N` as the page you may be revising — load and iterate, don't start fresh.
+
+## Generation intent marker (chat mode)
+
+When invoked from the Divi5Generator's **chat** (the prompt arrives via the `/chat` endpoint with a `[CHAT CONTEXT]` preamble), and the user asks you to *build/generate/make a page*, emit a single-line marker describing the parsed brief so the app can render a confirm card. The marker is parsed by `app/lib/intent-marker.js` — keep this shape in sync.
+
+Emit **exactly one** marker, on its own line, then continue with normal prose:
+
+```
+<!-- GEN_INTENT: {"brand":"Acme","designId":null,"pageType":"landing","keyword":"invoice software","sections":["hero","features","pricing","cta"],"ctaLabel":"Start free trial","aesthetic":"confident"} -->
+```
+
+Field contract (all optional except where noted):
+
+| Field | Type | Notes |
+|---|---|---|
+| `brand` | string | Brand name from the active brand or the user's request. |
+| `designId` | number\|null | The active Design Project id, if any. |
+| `pageType` | string | `home` / `landing` / `about` / `contact` / `page` etc. Default `page`. |
+| `keyword` | string | Primary SEO keyword if stated. |
+| `sections` | string[] | Section labels if the user specified them. |
+| `ctaLabel` | string | CTA button text if stated. |
+| `aesthetic` | string | One of the aesthetics from `references/aesthetics.md` if implied. |
+
+The app extracts the JSON, shows a "Generate: … " card with a **Start** button (no auto-fire — the user must confirm), and strips the marker from the visible reply. So the marker is invisible to the user; write your normal helpful response around it. Do not emit a marker unless the user is clearly asking for a generation.

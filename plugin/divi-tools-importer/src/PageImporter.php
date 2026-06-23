@@ -154,6 +154,11 @@ class DTI_PageImporter {
 		update_post_meta( $page_id, '_et_pb_page_layout', 'et_full_width_page' );
 		update_post_meta( $page_id, '_et_pb_built_for_post_type', array( 'page' ) );
 
+		// Stamp this page as imported by Divi Tools Importer (with timestamp), so
+		// GET /pages can list only our imports without relying on _et_pb_* keys
+		// that Divi itself also writes.
+		update_post_meta( $page_id, '_dti_imported', time() );
+
 		// -----------------------------------------------------------------------
 		// 7. SEO meta.
 		// -----------------------------------------------------------------------

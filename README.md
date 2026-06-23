@@ -77,18 +77,30 @@ flowchart TD
 
 ## Local App
 
-The plugin ships a browser-based generator app with a Claude chat interface.
+The plugin ships a browser-based app that is **chat-primary** — you drive the
+whole flow from a Claude conversation, with the structured form demoted to a
+"Brief" drawer for when you want it.
 
 ```bash
 /divi5generate:launch
 ```
 
 Opens at **http://localhost:3747** with:
-- **Generate tab** — fill in a brief, aesthetic, CTA, and optional designer export → streams a live generation log
-- **Chat tab** — ask Claude anything about your Divi pages, get section ideas, refine output
-- **Settings tab** — configure your WordPress site URL and API key for one-click import
-- Import to WordPress directly from the app
-- Generation history with re-run and revision notes
+- **Chat tab** (default) — ask for a page in plain language. When Claude proposes a build it emits a proposal card with a **Start** button; generations stream inline, then surface a preview card and an import card.
+- **Brand tab** — create/edit **Brand Profiles** (palette, fonts, voice). Seed one from a URL, a logo image (canvas colour extraction), or a Divi export.
+- **Designs tab** — **Design Projects** group the pages built on one brand + export. The 2nd page on the same brand+export auto-promotes into a project.
+- **Settings tab** — WordPress site URL + API key for one-click import.
+
+```mermaid
+flowchart LR
+    BRAND[Brand tab\nextract palette/fonts\nfrom URL · image · export] --> DESIGN[Design project\ngroups pages on\none brand + export]
+    DESIGN --> CHAT[Chat\nask for a page →\nproposal card → Start]
+    CHAT --> PREVIEW[Inline preview card\naccept or refine]
+    PREVIEW -- refine --> CHAT
+    PREVIEW --> IMPORT[Import card →\nWordPress draft]
+    style BRAND fill:#6366f1,color:#fff
+    style IMPORT fill:#10b981,color:#fff
+```
 
 ---
 

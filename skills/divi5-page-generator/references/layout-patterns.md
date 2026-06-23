@@ -97,6 +97,15 @@ D.row({
 
 At least 2–3 cells use photography; don't ship all text-on-same-bg tiles.
 
+**Featured item spanning (bento hero cell):** Grid Offset Rules let the first child span multiple tracks without changing DOM order. Exact JSON attrs are unconfirmed — use `customCss` on the first column as a fallback until a real export reveals the attr names:
+
+```css
+/* customCss on the first column inside a grid row */
+grid-column: span 2;
+```
+
+For a 3-col grid with item 1 spanning 2 cols: set `gridColumnCount: '3'` on the row, then apply `grid-column: span 2` via the column's `customCss.main` field.
+
 ### Testimonials stagger (Floria "Clarity.")
 
 Prefer 2–3 columns with **varied** card styling (different bg shades, not identical white cards). Quote

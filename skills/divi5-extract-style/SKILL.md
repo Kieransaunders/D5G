@@ -89,3 +89,55 @@ It parses `global_colors` (resolving derived `$variable(...)$` shades), `global_
 2. **Fresh site** — import `<name>.variables.json` first (and the original export with **Import Presets** checked to land the presets), then generate as above.
 
 Verified end-to-end against a real export: the generated page references the existing `gcid-…` colour ids and binds `modulePreset` to the existing `h1` / `body text` / row preset ids.
+
+## Brand Profile JSON (canonical shape)
+
+All extraction modes below return a **Brand Profile JSON** object — the shared format the Divi5Generator app stores in its `brand_profiles` table and the `divi5-brand-profile` skill documents. Use this exact shape:
+
+```json
+{
+  "name": "Acme",
+  "colors": [
+    { "role": "primary", "hex": "#1a2744", "source": "url|export|image|chat|manual", "locked": false, "id": "gcid-… (export only)" }
+  ],
+  "fonts": {
+    "heading": { "family": "Playfair Display", "source": "url|export|image|chat|manual" },
+    "body":    { "family": "Inter",          "source": "…" }
+  },
+  "logo": null,
+  "voice": "Confident, plain-spoken…",
+  "tagline": "We make invoicing effortless",
+  "sourceType": "url|export|image|chat|manual",
+  "sourceRef": "https://acme.com or /path/to/export.json",
+  "extractedAt": "ISO timestamp"
+}
+```
+
+- `colors[].role`: assign `primary`, `accent`, then `color-3`, `color-4`… by order of prominence. `locked: true` means a user pinned it — never overwrite on re-extraction.
+- Only include fields you actually found. Empty `fonts`/`voice`/`tagline` are fine (omit the key or set empty).
+
+## Extraction modes
+
+### Divi export mode (default — see above)
+`extractBrandProfileFromExport(doc)` in `scripts/extract-from-export.js` returns Brand Profile JSON from a parsed Divi 5 export. Colours carry their `gcid-` `id` so a generated page can reuse the existing global colour; fonts are pulled from preset typography attrs (best-effort; absent in many exports).
+
+### URL mode
+The app's `GET /brand/extract-url?url=…` fetches a public page and returns a **page bundle** (`{title, metaDesc, ogImage, favicon, colors[], fonts[], stylesheets[]}`). To turn that bundle into a Brand Profile JSON:
+
+1. Take the bundle's `colors[]` (already deduped hexes, ≤20) — assign roles by frequency/prominence, `source: "url"`.
+2. `fonts[0]` → `heading.family`, `fonts[1]` (or `fonts[0]`) → `body.family`, `source: "url"`.
+3. `title` → `name` if the brand has no name yet.
+4. Only include colours/fonts that genuinely appear in the page's CSS/inline styles — never synthesise. Discard pure-white/black unless clearly the brand.
+
+### Image mode (logo / screenshot)
+Analyse the image (vision) and return Brand Profile JSON. Prefer the canvas-derived palette the app already supplies (`source: "image-canvas"`) as a starting set, then enrich with vision: identify logo colours, dominant brand colour, and any visible typeface. `sourceType: "image"`. If you can read a font name from the image, set `fonts`; otherwise leave `fonts` empty rather than guess.
+
+### Chat mode
+Extract a Brand Profile JSON from a conversation (`POST /brand/extract-chat` passes `{history}`). **Only include colours/fonts/voice that are explicitly mentioned** by the user in the chat — never infer. Leave every other field empty. `sourceType: "chat"`.
+
+## Re-extraction rules (sticky fields)
+
+When re-extracting into an existing Brand Profile, the app preserves fields the user set manually:
+- Any colour/field with `locked: true` or `source: "manual"` is **kept verbatim** — do not overwrite it.
+- New candidates are appended (not replace), capped at a reasonable history (the app keeps the latest 5 per role).
+- `name`, `voice`, `tagline` set by the user are sticky.
