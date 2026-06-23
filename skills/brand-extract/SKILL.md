@@ -47,13 +47,13 @@ Report the profile ID, name, color count, and variable count to the user.
 | `blocked: private/loopback` | App can't reach that host | Use the public URL or ensure the site is accessible |
 | `fetch failed` | Site down or wrong URL | Verify the site URL |
 
-### 4. Open the app
+### 4. Open the app at the new profile
 
 ```bash
-open "http://localhost:3747"
+open "http://localhost:3747/#brand/<id>"
 ```
 
-If `open` isn't available (non-Mac), use `xdg-open` or tell the user to navigate to that URL.
+This deep-links directly to the Brand tab and opens the profile editor. If `open` isn't available (non-Mac), use `xdg-open`.
 
 ### 5. Report back
 
@@ -63,7 +63,7 @@ Tell the user:
 > - `<colors>` global colours captured
 > - `<variables>` design variables captured
 >
-> The app is open — click the **Brand** tab to review and edit the profile.
+> The app is open directly on the new brand profile — review and edit it there.
 >
 > Next:
 > - Generate pages that use this brand: `/divi5generate:divi5-page-generator`

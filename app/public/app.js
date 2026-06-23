@@ -318,25 +318,44 @@ async function loadGeneration(id) {
 }
 
 // ─── Tab switching ────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    const target = btn.dataset.tab;
-    // Generic: hide every tab-<name> panel, show the chosen one.
-    document.querySelectorAll('[id^="tab-"]').forEach(panel => {
-      panel.hidden = panel.id !== `tab-${target}`;
-    });
-    if (target === 'brand') loadBrandGrid();
-    if (target === 'designs') loadDesignsList();
+function switchTab(name, { updateHash = true } = {}) {
+  const btn = document.querySelector(`.tab[data-tab="${name}"]`);
+  if (!btn) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[id^="tab-"]').forEach(panel => {
+    panel.hidden = panel.id !== `tab-${name}`;
   });
+  if (name === 'brand') loadBrandGrid();
+  if (name === 'designs') loadDesignsList();
+  if (updateHash) history.replaceState(null, '', `#${name}`);
+}
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-// Sync visible panel to whichever tab is marked active in the HTML on load
-// (Chat is the default). Triggers the active tab's load hook too.
+// Hash routing — #brand, #brand/42, #designs, #chat, #generate
+function applyHash(hash) {
+  const [tab, id] = (hash.replace('#', '') || 'chat').split('/');
+  const validTabs = ['chat', 'generate', 'brief', 'brand', 'designs'];
+  switchTab(validTabs.includes(tab) ? tab : 'chat', { updateHash: false });
+  if (tab === 'brand' && id) {
+    // wait for grid to render, then open the editor
+    loadBrandGrid().then(() => openBrandEditor(parseInt(id)));
+  }
+}
+
+window.addEventListener('hashchange', () => applyHash(location.hash));
+
+// Sync on load — hash wins over the HTML active class
 (function syncActiveTabOnLoad() {
-  const active = document.querySelector('.tab.active');
-  if (active) active.click();
+  if (location.hash) {
+    applyHash(location.hash);
+  } else {
+    const active = document.querySelector('.tab.active');
+    if (active) switchTab(active.dataset.tab, { updateHash: false });
+  }
 })();
 
 // One-time toast: tell existing users the form moved to the "Brief" tab.
