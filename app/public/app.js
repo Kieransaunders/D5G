@@ -435,10 +435,9 @@ window.addEventListener('hashchange', () => applyHash(location.hash));
 // ── Migrate tab — DB pull / push ──────────────────────────────────────────
 function migrateVal(id) { return document.getElementById(id).value.trim(); }
 
-// Persist migrate fields so you don't re-type 4 URLs + keys every run.
+// Persist migrate fields so you don't re-type URLs + keys every run.
 // Local-only dev tool; same trust level as the stored settings API key.
-const MIGRATE_FIELDS = ['pullRemote','pullRemoteKey','pullLocal','pullLocalKey',
-                        'pushLocal','pushLocalKey','pushRemote','pushRemoteKey'];
+const MIGRATE_FIELDS = ['mgRemote','mgRemoteKey','mgLocal','mgLocalKey'];
 function saveMigrateFields() {
   const store = {};
   for (const id of MIGRATE_FIELDS) store[id] = document.getElementById(id)?.value || '';
@@ -484,32 +483,38 @@ async function runMigrate(url, body, btn, resultEl) {
 document.getElementById('runPull').addEventListener('click', () => {
   saveMigrateFields();
   runMigrate('/migrate/pull', {
-    remote:    migrateVal('pullRemote'),
-    remoteKey: migrateVal('pullRemoteKey'),
-    local:     migrateVal('pullLocal'),
-    localKey:  migrateVal('pullLocalKey'),
-  }, document.getElementById('runPull'), document.getElementById('pullResult'));
+    remote:    migrateVal('mgRemote'),
+    remoteKey: migrateVal('mgRemoteKey'),
+    local:     migrateVal('mgLocal'),
+    localKey:  migrateVal('mgLocalKey'),
+  }, document.getElementById('runPull'), document.getElementById('migrateResult'));
 });
 
 document.getElementById('runPush').addEventListener('click', () => {
-  const remote = migrateVal('pushRemote');
+  const remote = migrateVal('mgRemote');
   let host = '';
   try { host = new URL(remote).hostname; } catch {}
-  if (!host || migrateVal('pushConfirm') !== host) {
-    const el = document.getElementById('pushResult');
+  if (!host) {
+    const el = document.getElementById('migrateResult');
     el.style.color = '#c0392b';
-    el.textContent = `✗ Type "${host || 'the remote hostname'}" in the confirm box to push.`;
+    el.textContent = '✗ Enter a valid remote site URL first.';
     return;
   }
-  if (!confirm(`Overwrite the database at ${host}? The remote is backed up first, but all its content will be replaced.`)) return;
+  const typed = prompt(`PUSH overwrites the live database at ${host}.\nThe remote is backed up first, but all its content will be replaced.\n\nType the hostname to confirm:`);
+  if (typed !== host) {
+    const el = document.getElementById('migrateResult');
+    el.style.color = '#c0392b';
+    el.textContent = typed == null ? '✗ Push cancelled.' : `✗ "${typed}" doesn't match "${host}" — push cancelled.`;
+    return;
+  }
   saveMigrateFields();
   runMigrate('/migrate/push', {
-    local:      migrateVal('pushLocal'),
-    localKey:   migrateVal('pushLocalKey'),
+    local:      migrateVal('mgLocal'),
+    localKey:   migrateVal('mgLocalKey'),
     remote,
-    remoteKey:  migrateVal('pushRemoteKey'),
+    remoteKey:  migrateVal('mgRemoteKey'),
     confirmHost: host,
-  }, document.getElementById('runPush'), document.getElementById('pushResult'));
+  }, document.getElementById('runPush'), document.getElementById('migrateResult'));
 });
 
 // Sync on load — hash wins over the HTML active class
@@ -1413,7 +1418,7 @@ function renderBrandColorRows() {
     </div>`).join('');
 }
 
-function addBrandColorRow(role = '', hex = '#6366f1', source = 'manual') {
+function addBrandColorRow(role = '', hex = '#f75d00', source = 'manual') {
   if (!brandEditing) return;
   brandEditing.data.colors.push({ role, hex, source, locked: false });
   renderBrandColorRows();

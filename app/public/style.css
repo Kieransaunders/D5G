@@ -6,8 +6,8 @@
   --border:    #334155;
   --text:      #e2e8f0;
   --muted:     #94a3b8;
-  --accent:    #6366f1;
-  --accent-h:  #818cf8;
+  --accent:    #f75d00;  /* iConnectIT brand orange */
+  --accent-h:  #ff7a2b;  /* lighter orange for hover */
   --success:   #22c55e;
   --warn:      #f59e0b;
   --danger:    #ef4444;
@@ -69,7 +69,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   border-radius: 8px; padding: 10px 12px; font-size: 0.8125rem; line-height: 1.4;
   transition: border-color 0.15s, background 0.15s;
 }
-.chat-example:hover { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+.chat-example:hover { border-color: var(--accent); background: rgba(247,93,0,0.08); }
 .chat-empty-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.5; margin-top: 4px; }
 .chat-empty-hint code {
   font-family: var(--mono); background: var(--surface);
@@ -183,7 +183,7 @@ select option { background: var(--surface); }
   transition: border-color 0.15s, background 0.15s;
   position: relative;
 }
-.drop-zone:hover, .drop-zone.over { border-color: var(--accent); background: #6366f108; }
+.drop-zone:hover, .drop-zone.over { border-color: var(--accent); background: #f75d0008; }
 .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .drop-zone .file-name { color: var(--text); font-weight: 500; margin-top: 4px; }
 
@@ -233,7 +233,7 @@ select option { background: var(--surface); }
   border: 1px solid transparent;
   transition: all 0.2s;
 }
-.step.active { color: var(--text); border-color: var(--accent); background: #6366f110; }
+.step.active { color: var(--text); border-color: var(--accent); background: #f75d0010; }
 .step.done   { color: var(--success); border-color: #22c55e33; background: #22c55e08; }
 .step.fail   { color: var(--danger);  border-color: #ef444433; background: #ef444408; }
 .step .dot {
