@@ -246,6 +246,11 @@ For brand-specific presets not in the ET library (custom colors, pill buttons et
    Compare either output against the Stage 2 HTML preview. Fix any content, copy, or structural divergence before delivering. This is the JSON fidelity gate.
 5. Confirm the taste gate (`taste-check.js`) still passes on the final JSON — the copy and structure must match the approved, taste-checked HTML.
 6. Remind the user: import via Divi Library with **"Import Presets" checked**.
+7. **Final on-disk gate (MANDATORY — do not skip, do not declare done before this passes).** The deliverable is frequently corrupted by accidentally writing the HTML preview into the `.json`. Before ending the turn, verify the actual bytes on disk:
+   ```bash
+   node -e 'const t=require("fs").readFileSync("[brand]-landing-page.json","utf8").trimStart(); if(t[0]!=="{"){console.error("FAIL: not JSON, starts with "+JSON.stringify(t.slice(0,15)));process.exit(1)} const j=JSON.parse(t); if(j.context!=="et_builder"){console.error("FAIL: context is "+j.context);process.exit(1)} console.log("OK: valid et_builder JSON")'
+   ```
+   If this prints anything other than `OK`, you wrote HTML or the wrong content into the page file. The page JSON must come from the builder's `assemble()` + `fs.writeFileSync`, **never** hand-authored and never the preview HTML. Regenerate it properly via the builder script and re-run this gate until it prints `OK`. A run that ends without this gate passing has produced no importable page and has failed.
 
 ### Stage 4 — Live screenshot comparison (Playwright gate)
 
