@@ -901,11 +901,68 @@ function closeBrandEditor() {
   document.getElementById('brandEditor').hidden = true;
 }
 
+// Fetch a public page, parse a bundle, and prefill the editor with candidate
+// colours + fonts. Richer Claude analysis is wired in Phase 3.6/7; for now the
+// bundle alone is genuinely useful (plan Task 3.3 simplification).
+async function extractFromUrl() {
+  const url = prompt('Paste a public URL to extract brand cues from:');
+  if (!url) return;
+  openBrandEditor(null);                 // open a blank editor to receive the bundle
+  const editor = document.getElementById('brandEditor');
+  let banner = document.getElementById('brandExtractStatus');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'brandExtractStatus';
+    banner.style.cssText = 'font-size:0.75rem;color:var(--muted);padding:6px 8px;border-radius:6px;background:var(--bg)';
+    editor.insertBefore(banner, editor.firstChild);
+  }
+  banner.textContent = `Fetching ${url}…`;
+  banner.style.color = 'var(--muted)';
+
+  let bundle;
+  try {
+    const res = await fetch(`/brand/extract-url?url=${encodeURIComponent(url)}`);
+    bundle = await res.json();
+    if (!res.ok) throw new Error(bundle.error || `HTTP ${res.status}`);
+  } catch (e) {
+    banner.textContent = `Could not extract: ${e.message}`;
+    banner.style.color = 'var(--danger)';
+    return;
+  }
+
+  // Prefill candidate colours (role auto-assigned by order) + fonts.
+  const colors = (bundle.colors || []).slice(0, 6).map((hex, i) => ({
+    role: ['', 'primary', 'accent', ''][i] || `color-${i}`,
+    hex,
+    source: 'url',
+    locked: false,
+  }));
+  if (brandEditing) {
+    brandEditing.data.colors = colors;
+    const f = bundle.fonts || [];
+    if (f[0]) brandEditing.data.fonts = { heading: { family: f[0], source: 'url' } };
+    if (f[1]) brandEditing.data.fonts.body = { family: f[1], source: 'url' };
+    else if (f[0]) brandEditing.data.fonts.body = { family: f[0], source: 'url' };
+    if (!brandEditing.name && bundle.title) brandEditing.name = bundle.title;
+    paintBrandEditor();
+  }
+
+  const parts = [
+    bundle.title ? `“${bundle.title}”` : null,
+    `${colors.length} colours`,
+    (bundle.fonts || []).length ? `${bundle.fonts.length} fonts` : null,
+    bundle.truncated ? 'page truncated' : null,
+  ].filter(Boolean);
+  banner.textContent = `Extracted from URL — ${parts.join(' · ')}. Review before saving.`;
+  banner.style.color = 'var(--muted)';
+}
+
 // ── Brand tab wiring ──
 document.querySelectorAll('[data-brand-new]').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
-    // Only "blank" is enabled in Phase 2; extraction paths arrive in Phase 3.
+    const mode = btn.dataset.brandNew;
+    if (mode === 'url') { extractFromUrl(); return; }
     openBrandEditor(null);
   });
 });
