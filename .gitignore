@@ -16,3 +16,17 @@ skills/**/golden/*-diff.png
 skills/divi5-page-generator/references/Divi-5-Design-System/
 
 .DS_Store
+
+# Local scratch at repo root — generated pages, previews, tokens, and one-off
+# generation scripts. Useful while iterating, not part of the shipped plugin.
+/westway-*
+/coffee-roastery-*
+/iconnectit-theatre.json
+/generate-*.js
+/add-theatre-*.js
+/live-hero.jpeg
+/preview-*.html
+/preview-payload.json
+/ds-bundle/
+/.design-sync/
+/.playwright-mcp/

@@ -126,6 +126,8 @@ for (const { key, content } of contents) {
   tokensByKey[key] = tokens; // (T1) retain parsed tokens for downstream re-walks
   if (!tokens.length) { err(`data["${key}"]: no Divi blocks found`); continue; }
   if (tokens[0].name !== 'placeholder') err(`data["${key}"]: content must start with wp:divi/placeholder`);
+  if (/<!--\s*<!--/.test(content)) err(`data["${key}"]: double-comment pattern <!--<!-- detected — malformed block comment`);
+  if (/\/wp:post-content\s*-->/.test(content)) err(`data["${key}"]: content contains /wp:post-content boundary — blocks must not appear after this tag`);
 
   // nesting + balance
   const stack = [];

@@ -652,6 +652,16 @@ function numberCounter(opts) {
   return block('number-counter', attrs, null);
 }
 
+/** code({ content: '<script>...' | null, preset }) — raw HTML/JS block. */
+function codeBlock(opts) {
+  const o = opts || {};
+  const content = o.content !== undefined ? o.content : o;
+  if (Array.isArray(content)) throw new Error('codeBlock: content must be a string or null, not an array');
+  let attrs = content != null ? { code: { innerContent: dv(String(content)) } } : {};
+  attrs = applyPreset(prune(attrs), o.preset);
+  return block('code', attrs, null);
+}
+
 /** divider/spacer ({ show:false, height }) */
 function divider(opts) {
   const o = opts || {};
@@ -998,7 +1008,7 @@ module.exports = {
   dv, block, placeholder, merge, prune, htmlContent,
   applyGroupPreset,
   section, overlaySection, row, column,
-  heading, text, eyebrow, button, blurb, image, icon, accordion, numberCounter, divider,
+  heading, text, eyebrow, button, blurb, image, icon, accordion, numberCounter, divider, codeBlock,
   theatreAttrs, theatrePartAttrs, withTheatre, normaliseCustomAttrs,
   isPinPreset, assertKnownPreset,
   createBuilder, randomId,
