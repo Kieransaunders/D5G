@@ -614,6 +614,85 @@ app.get('/brand/extract-url', async (req, res) => {
   res.json({ ...bundle, truncated, sourceUrl: raw });
 });
 
+// ─── GET /brand/extract-divi — pull brand from a live Divi 5 site ────────────
+// Calls the plugin's export endpoints, saves the result as a brand_profile.
+// Query params: site (WP home URL), key (DTI API key), name (optional profile name)
+app.get('/brand/extract-divi', async (req, res) => {
+  const { site, key, name } = req.query;
+  if (!site || !key) return res.status(400).json({ error: 'site and key query params required' });
+
+  let siteUrl;
+  try { siteUrl = new URL(site); }
+  catch { return res.status(400).json({ error: 'invalid site url' }); }
+  if (!(await isSafeHost(siteUrl.hostname))) {
+    return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
+  }
+
+  const base = siteUrl.origin + '/wp-json/divi-tools/v1';
+  const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
+
+  let variables, presets;
+  try {
+    const [vRes, pRes] = await Promise.all([
+      fetch(`${base}/global-variables/export`, { headers }),
+      fetch(`${base}/presets/export`, { headers }),
+    ]);
+    if (!vRes.ok) return res.status(502).json({ error: `variables export failed: ${vRes.status}` });
+    if (!pRes.ok) return res.status(502).json({ error: `presets export failed: ${pRes.status}` });
+    variables = await vRes.json();
+    presets   = await pRes.json();
+  } catch (e) {
+    return res.status(502).json({ error: `fetch failed: ${e.message}` });
+  }
+
+  const profileName = name || siteUrl.hostname;
+  const data = { variables, presets };
+  const id = createBrandProfile({ name: profileName, data, source_type: 'divi-export', source_ref: siteUrl.origin });
+
+  res.json({ id, name: profileName, colors: variables.global_colors?.length ?? 0, variables: variables.global_variables?.length ?? 0 });
+});
+
+// ─── POST /brand/:id/deploy — push brand profile to a target Divi 5 site ─────
+// Body: { site: "https://...", key: "..." }
+app.post('/brand/:id/deploy', async (req, res) => {
+  const profile = getBrandProfile(parseInt(req.params.id));
+  if (!profile) return res.status(404).json({ error: 'brand profile not found' });
+
+  const { site, key } = req.body;
+  if (!site || !key) return res.status(400).json({ error: 'site and key required' });
+
+  let siteUrl;
+  try { siteUrl = new URL(site); }
+  catch { return res.status(400).json({ error: 'invalid site url' }); }
+  if (!(await isSafeHost(siteUrl.hostname))) {
+    return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
+  }
+
+  const base = siteUrl.origin + '/wp-json/divi-tools/v1';
+  const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
+  const { variables, presets } = profile.data ? JSON.parse(profile.data) : {};
+
+  if (!variables && !presets) {
+    return res.status(422).json({ error: 'brand profile has no variables or presets data' });
+  }
+
+  const results = {};
+  try {
+    if (variables) {
+      const r = await fetch(`${base}/global-variables`, { method: 'POST', headers, body: JSON.stringify(variables) });
+      results.variables = await r.json();
+    }
+    if (presets?.presets) {
+      const r = await fetch(`${base}/presets/import`, { method: 'POST', headers, body: JSON.stringify({ presets: presets.presets }) });
+      results.presets = await r.json();
+    }
+  } catch (e) {
+    return res.status(502).json({ error: `deploy failed: ${e.message}` });
+  }
+
+  res.json({ ok: true, site: siteUrl.origin, ...results });
+});
+
 app.get('/brand/:id', (req, res) => {
   const row = getBrandProfile(parseInt(req.params.id));
   if (!row) return res.status(404).json({ error: 'Not found' });
