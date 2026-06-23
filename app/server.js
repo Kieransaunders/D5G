@@ -16,6 +16,7 @@ const {
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
 const { extractIntent, stripIntent } = require('./lib/intent-marker');
+const { buildImportPayload } = require('./lib/import-payload');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -508,6 +509,9 @@ app.post('/import/:id', async (req, res) => {
     const seo    = seoFile   && fs.existsSync(seoFile.filepath)   ? JSON.parse(fs.readFileSync(seoFile.filepath,   'utf8')) : null;
     const schema = schemaFile&& fs.existsSync(schemaFile.filepath) ? JSON.parse(fs.readFileSync(schemaFile.filepath,'utf8')) : null;
 
+    // The plugin defaults to draft; pass publish:true to go live immediately.
+    const publish = req.body?.publish === true;
+
     db.prepare(`UPDATE generations SET import_status='importing' WHERE id=?`).run(id);
 
     const controller = new AbortController();
@@ -520,7 +524,7 @@ app.post('/import/:id', async (req, res) => {
           'Content-Type': 'application/json',
           'X-Divi-Tools-Key': apiKey,
         },
-        body: JSON.stringify({ layout, seo, schema, draft: true }),
+        body: JSON.stringify(buildImportPayload({ layout, seo, schema, publish })),
         signal: controller.signal,
       });
     } finally {
