@@ -318,6 +318,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       panel.hidden = panel.id !== `tab-${target}`;
     });
     if (target === 'brand') loadBrandGrid();
+    if (target === 'designs') loadDesignsList();
   });
 });
 
@@ -1044,4 +1045,93 @@ document.getElementById('brandColors').addEventListener('click', e => {
     brandEditing.data.colors.splice(i, 1);
     renderBrandColorRows();
   }
+});
+
+// ─── Design Projects ──────────────────────────────────────────────────────────
+async function loadDesignsList() {
+  const wrap = document.getElementById('designsList');
+  let designs;
+  try {
+    designs = await fetch('/designs').then(r => r.json());
+  } catch {
+    wrap.innerHTML = '<div class="empty">Could not load design projects.</div>';
+    return;
+  }
+  if (!Array.isArray(designs) || designs.length === 0) {
+    wrap.innerHTML = '<div class="empty">No design projects yet. They auto-form after your 2nd page sharing a brand + export.</div>';
+    return;
+  }
+  wrap.innerHTML = designs.map(d => `
+    <div class="design-card" data-design="${d.id}">
+      <div class="design-card-head">
+        <strong>${escapeHtml(d.name)}</strong>
+        <span class="brand-card-src">${d.page_count || 0} page(s)</span>
+      </div>
+      <div class="brand-card-meta">${d.brand_name ? 'brand: ' + escapeHtml(d.brand_name) : 'no brand linked'} · created ${escapeHtml((d.created_at || '').split(' ')[0])}</div>
+      <button type="button" class="btn-link design-expand" data-design-expand="${d.id}" style="font-size:0.75rem;color:var(--accent)">Show pages</button>
+      <button type="button" class="btn-link design-delete" data-design-delete="${d.id}" style="font-size:0.75rem;color:var(--danger)">Delete</button>
+      <div class="design-pages" data-design-pages="${d.id}" hidden style="margin-top:6px;display:flex;flex-direction:column;gap:4px"></div>
+    </div>`).join('');
+
+  wrap.querySelectorAll('[data-design-expand]').forEach(btn => {
+    btn.addEventListener('click', () => toggleDesignPages(parseInt(btn.dataset.designExpand)));
+  });
+  wrap.querySelectorAll('[data-design-delete]').forEach(btn => {
+    btn.addEventListener('click', () => deleteDesign(parseInt(btn.dataset.designDelete)));
+  });
+}
+
+async function toggleDesignPages(id) {
+  const pages = document.querySelector(`[data-design-pages="${id}"]`);
+  const btn = document.querySelector(`[data-design-expand="${id}"]`);
+  if (!pages.hidden) { pages.hidden = true; btn.textContent = 'Show pages'; return; }
+  const proj = await fetch(`/designs/${id}`).then(r => r.json());
+  if (proj.error || !Array.isArray(proj.pages) || proj.pages.length === 0) {
+    pages.innerHTML = '<span class="field-hint">No linked pages.</span>';
+  } else {
+    pages.innerHTML = proj.pages.map(p => `
+      <div class="design-page-row">
+        <span class="brand-card-src">${escapeHtml(p.page_type || 'page')}</span>
+        <span>${escapeHtml(p.brand || '?')} · ${escapeHtml(p.keyword || '')}</span>
+        <span class="field-hint">#${p.generation_id} ${escapeHtml(p.status || '')}</span>
+      </div>`).join('');
+  }
+  pages.hidden = false;
+  btn.textContent = 'Hide pages';
+}
+
+async function deleteDesign(id) {
+  if (!confirm('Delete this design project? Linked generations are kept (unlinked).')) return;
+  await fetch(`/designs/${id}?keepPages=true`, { method: 'DELETE' });
+  await loadDesignsList();
+}
+
+function openDesignModal() {
+  // Prefill brand dropdown from current brand profiles.
+  fetch('/brand').then(r => r.json()).then(profiles => {
+    const sel = document.getElementById('designBrand');
+    sel.innerHTML = '<option value="">— none —</option>' +
+      (profiles || []).map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+    document.getElementById('designModal').hidden = false;
+  });
+}
+
+document.getElementById('designNewBtn').addEventListener('click', openDesignModal);
+document.getElementById('designModalClose').addEventListener('click', () => {
+  document.getElementById('designModal').hidden = true;
+});
+document.getElementById('designCreate').addEventListener('click', async () => {
+  const name = document.getElementById('designName').value.trim();
+  if (!name) { alert('Name is required.'); return; }
+  const brand_id = document.getElementById('designBrand').value || null;
+  const notes = document.getElementById('designNotes').value.trim() || null;
+  const res = await fetch('/designs', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, brand_id: brand_id ? parseInt(brand_id) : null, notes }),
+  }).then(r => r.json());
+  if (res.error) { alert(res.error); return; }
+  document.getElementById('designName').value = '';
+  document.getElementById('designNotes').value = '';
+  document.getElementById('designModal').hidden = true;
+  await loadDesignsList();
 });

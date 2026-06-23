@@ -20,6 +20,7 @@
       <button type="button" class="tab active" data-tab="generate">Generate</button>
       <button type="button" class="tab" data-tab="chat">Chat</button>
       <button type="button" class="tab" data-tab="brand">Brand</button>
+      <button type="button" class="tab" data-tab="designs">Designs</button>
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
@@ -298,6 +299,39 @@
           <button type="button" class="btn-generate" id="brandSave">Save</button>
           <button type="button" class="btn-secondary" id="brandDelete" hidden>Delete</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ── Designs tab ── -->
+    <div id="tab-designs" hidden style="display:flex;flex-direction:column;flex:1;gap:10px;min-height:0">
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Design Projects</span>
+        <button type="button" class="btn-secondary" id="designNewBtn">＋ New project</button>
+      </div>
+
+      <div id="designsList" style="overflow-y:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px">
+        <div class="empty">No design projects yet. They auto-form after your 2nd page sharing a brand + export.</div>
+      </div>
+
+      <!-- New project modal -->
+      <div id="designModal" hidden class="brand-editor">
+        <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>New design project</span>
+          <button type="button" class="btn-link" id="designModalClose" style="color:var(--muted)">Close</button>
+        </div>
+        <div class="field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="designName" placeholder="Floria design">
+        </div>
+        <div class="field">
+          <label>Brand profile</label>
+          <select id="designBrand"><option value="">— none —</option></select>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="designNotes" style="resize:none;height:50px" placeholder="Optional notes…"></textarea>
+        </div>
+        <button type="button" class="btn-generate" id="designCreate">Create</button>
       </div>
     </div>
 
