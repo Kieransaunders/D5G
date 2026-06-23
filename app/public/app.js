@@ -227,6 +227,15 @@ document.getElementById('genForm').addEventListener('submit', async (e) => {
 
       if (hasPreview) showHtmlPreview(id);
 
+      // If this generation was kicked off from a chat intent card, surface
+      // inline preview/file/import cards in the chat stream.
+      if (pendingChatGeneration && pendingChatGeneration.card) {
+        appendGenerationCards(id, files, hasPreview);
+        const startBtn = pendingChatGeneration.card.querySelector('[data-intent-start]');
+        if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Start →'; }
+        pendingChatGeneration = null;
+      }
+
       loadHistory();
     });
 
@@ -446,9 +455,74 @@ async function startGenerationFromIntent(intent, card) {
   const startBtn = card.querySelector('[data-intent-start]');
   startBtn.disabled = true;
   startBtn.textContent = 'Starting…';
+  // The /generate handler assigns an id; the SSE 'done' event carries it. We
+  // can't know the id here, so mark that the *next* completed generation should
+  // surface inline in chat. Cleared once consumed in the done handler.
+  pendingChatGeneration = { intent, card };
   const form = document.forms.genForm;
   if (form && form.requestSubmit) form.requestSubmit();
   else if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
+}
+
+let pendingChatGeneration = null;
+
+// Append inline preview + file + import cards into the chat stream for a gen.
+function appendGenerationCards(genId, files, hasPreview) {
+  const el = document.getElementById('chatMessages');
+  const wrap = document.createElement('div');
+  wrap.className = 'gen-cards';
+  wrap.style.alignSelf = 'stretch';
+
+  if (hasPreview) {
+    const preview = document.createElement('div');
+    preview.className = 'gen-card gen-card-preview';
+    preview.innerHTML = `
+      <div class="gen-card-title">Preview · generation #${genId}</div>
+      <iframe src="/preview-html/${genId}?t=${Date.now()}" sandbox="allow-same-origin allow-scripts" loading="lazy"></iframe>
+      <div class="gen-card-actions">
+        <button type="button" class="btn-link" data-drawer-open="${genId}">Open full</button>
+      </div>`;
+    wrap.appendChild(preview);
+    preview.querySelector('[data-drawer-open]').addEventListener('click', () => openPreviewDrawer(genId));
+  }
+
+  if (files && files.length) {
+    const fileCard = document.createElement('div');
+    fileCard.className = 'gen-card gen-card-files';
+    fileCard.innerHTML = `
+      <div class="gen-card-title">Files · ${files.length}</div>
+      <div class="gen-card-filelist">${files.map(f =>
+        `<a class="gen-card-file" href="/download/${genId}/${encodeURIComponent(f.filename)}" target="_blank">${escapeHtml(f.filename)}</a>`
+      ).join('')}</div>`;
+    wrap.appendChild(fileCard);
+
+    const importCard = document.createElement('div');
+    importCard.className = 'gen-card gen-card-import';
+    importCard.innerHTML = `
+      <div class="gen-card-title">Import</div>
+      <button type="button" class="btn-import" data-chat-import="${genId}">Import to WordPress</button>
+      <span class="gen-card-status" data-chat-import-status="${genId}"></span>`;
+    wrap.appendChild(importCard);
+    importCard.querySelector('[data-chat-import]').addEventListener('click', (e) => chatImport(genId, e.target));
+  }
+
+  el.appendChild(wrap);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function chatImport(genId, btn) {
+  const status = document.querySelector(`[data-chat-import-status="${genId}"]`);
+  btn.disabled = true;
+  if (status) status.textContent = 'Importing…';
+  try {
+    const r = await fetch(`/import/${genId}`, { method: 'POST' }).then(r => r.json());
+    if (status) status.innerHTML = r.ok && r.permalink
+      ? `✅ Imported — <a href="${r.permalink}" target="_blank">view</a>`
+      : `⚠️ ${escapeHtml(r.error || 'import failed')}`;
+  } catch (e) {
+    if (status) status.textContent = `⚠️ ${e.message}`;
+  }
+  btn.disabled = false;
 }
 
 document.getElementById('chatSend').addEventListener('click', sendChat);
@@ -776,6 +850,26 @@ function showHtmlPreview(genId) {
   panel.style.display = '';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// Preview side drawer — pop a generation preview out to ~50% width on the right.
+function openPreviewDrawer(genId) {
+  const drawer = document.getElementById('previewDrawer');
+  const frame = document.getElementById('previewDrawerFrame');
+  const title = document.getElementById('previewDrawerTitle');
+  const newTab = document.getElementById('previewDrawerNewTab');
+  if (!drawer || !frame) return;
+  const url = `/preview-html/${genId}?t=${Date.now()}`;
+  frame.src = url;
+  newTab.href = url;
+  title.textContent = `Preview · generation #${genId}`;
+  drawer.hidden = false;
+}
+document.getElementById('previewDrawerClose').addEventListener('click', () => {
+  const drawer = document.getElementById('previewDrawer');
+  const frame = document.getElementById('previewDrawerFrame');
+  drawer.hidden = true;
+  frame.src = '';
+});
 
 // ─── Revision notes field ─────────────────────────────────────────────────────
 document.getElementById('clearRevision').addEventListener('click', () => {
