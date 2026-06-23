@@ -389,8 +389,15 @@ function buildChatPreamble(ctx) {
   if (ctx.brandId) {
     const b = getBrandProfile(ctx.brandId);
     if (b) {
-      const palette = (b.data && b.data.colors || []).slice(0, 4).map(c => c.hex).join(', ');
-      lines.push(`ACTIVE BRAND: ${b.name}${palette ? ' — palette: ' + palette : ''}`);
+      lines.push(`ACTIVE BRAND: ${b.name}`);
+      const colors = (b.data && b.data.colors) || [];
+      if (colors.length) {
+        const swatches = colors.map(c => c.role ? `${c.hex} (${c.role})` : c.hex).join(', ');
+        lines.push(`Brand palette — use ONLY these colours, do not invent new ones: ${swatches}`);
+      }
+      const fonts = (b.data && b.data.fonts) || {};
+      const fontLine = [fonts.heading && `headings ${fonts.heading.family}`, fonts.body && `body ${fonts.body.family}`].filter(Boolean).join(', ');
+      if (fontLine) lines.push(`Brand fonts: ${fontLine}.`);
     }
   }
   if (ctx.designId) {

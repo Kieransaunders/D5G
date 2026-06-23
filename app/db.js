@@ -125,15 +125,45 @@ function createBrandProfile({ name, data, source_type = null, source_ref = null 
   ).run(name, JSON.stringify(data), source_type, source_ref).lastInsertRowid;
 }
 
+// A divi-export profile stores colours/fonts under data.variables.
+// Derive the flat data.colors / data.fonts the rest of the app reads, while
+// keeping the raw variables/presets intact for brand-deploy. Mirrors the
+// client-side normalizeBrandData so generation sees the same tokens the UI shows.
+function normalizeBrandData(data) {
+  if (!data || typeof data !== 'object') return data;
+  if (!Array.isArray(data.colors) || data.colors.length === 0) {
+    const gc = data.variables && data.variables.global_colors;
+    if (Array.isArray(gc) && gc.length) {
+      data.colors = gc
+        .filter(t => Array.isArray(t) && t[1] && t[1].color)
+        .map(([gcid, m]) => ({ role: m.label || gcid, hex: m.color, source: 'divi', gcid }));
+    }
+  }
+  if (!data.fonts || (!data.fonts.heading && !data.fonts.body)) {
+    const gv = data.variables && data.variables.global_variables;
+    if (Array.isArray(gv)) {
+      const fonts = gv.filter(v => v && v.type === 'fonts');
+      const find = re => (fonts.find(f => re.test(f.id || '')) || {}).value;
+      const heading = find(/heading/i), body = find(/body/i);
+      if (heading || body) {
+        data.fonts = data.fonts || {};
+        if (heading) data.fonts.heading = { family: heading };
+        if (body) data.fonts.body = { family: body };
+      }
+    }
+  }
+  return data;
+}
+
 function getBrandProfile(id) {
   const row = db.prepare('SELECT * FROM brand_profiles WHERE id=?').get(id);
   if (!row) return undefined;
-  return { ...row, data: JSON.parse(row.data) };
+  return { ...row, data: normalizeBrandData(JSON.parse(row.data)) };
 }
 
 function listBrandProfiles() {
   return db.prepare('SELECT * FROM brand_profiles ORDER BY id DESC').all()
-    .map(r => ({ ...r, data: JSON.parse(r.data) }));
+    .map(r => ({ ...r, data: normalizeBrandData(JSON.parse(r.data)) }));
 }
 
 function updateBrandProfile(id, { name, data, source_type, source_ref }) {

@@ -1288,6 +1288,13 @@ async function loadBrandGrid() {
   grid.querySelectorAll('[data-brand-edit]').forEach(btn => {
     btn.addEventListener('click', () => openBrandEditor(parseInt(btn.dataset.brandEdit)));
   });
+  grid.querySelectorAll('[data-brand-use]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await setChatContext('brandId', parseInt(btn.dataset.brandUse));
+      switchTab('chat');
+      document.getElementById('chatInput')?.focus();
+    });
+  });
 }
 
 function renderBrandCard(p) {
@@ -1306,7 +1313,10 @@ function renderBrandCard(p) {
       </div>
       <div class="brand-card-swatches">${swatches || '<span class="brand-card-no-swatches">no colours</span>'}</div>
       ${meta ? `<div class="brand-card-meta">${escapeHtml(meta)}</div>` : ''}
-      <button type="button" class="btn-link brand-card-edit" data-brand-edit="${p.id}">Edit</button>
+      <div style="display:flex;gap:14px;align-items:center">
+        <button type="button" class="btn-link brand-card-edit" data-brand-edit="${p.id}">Edit</button>
+        <button type="button" class="btn-link brand-card-use" data-brand-use="${p.id}" style="color:var(--accent)">Use in chat →</button>
+      </div>
     </div>`;
 }
 
