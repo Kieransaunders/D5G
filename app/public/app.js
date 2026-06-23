@@ -1,5 +1,10 @@
 'use strict';
 
+// Currently-open brand profile. Declared up top: load-time tab routing
+// (renderBrandCanvas) can run before the editor section, which would otherwise
+// hit the temporal dead zone.
+let brandEditing = null;
+
 // ─── Prerequisites check ─────────────────────────────────────────────────────
 async function checkPrereqs() {
   const el = document.getElementById('prereqs');
@@ -326,9 +331,88 @@ function switchTab(name, { updateHash = true } = {}) {
   document.querySelectorAll('[id^="tab-"]').forEach(panel => {
     panel.hidden = panel.id !== `tab-${name}`;
   });
+  updateMainForTab(name);
   if (name === 'brand') loadBrandGrid();
   if (name === 'designs') loadDesignsList();
   if (updateHash) history.replaceState(null, '', `#${name}`);
+}
+
+// The right pane is contextual: design canvas for page tabs, a live brand
+// preview for the Brand tab, and a neutral idle panel for Migrate/Settings —
+// so you never see an unrelated page while editing a brand or settings.
+function updateMainForTab(tab) {
+  const isPageTab = tab === 'chat' || tab === 'generate' || tab === 'designs';
+  const isBrand   = tab === 'brand';
+  document.getElementById('canvasPanel').hidden  = !isPageTab;
+  document.getElementById('historyPanel').hidden = !isPageTab;
+  document.getElementById('brandCanvas').hidden  = !isBrand;
+  const idle = document.getElementById('idleCanvas');
+  idle.hidden = isPageTab || isBrand;
+  if (!idle.hidden) {
+    const copy = {
+      migrate:  ['Database migration', 'Pull a live site into local, or push local up — the controls are on the left.'],
+      settings: ['Settings', 'Configure your WordPress site URL and API key on the left.'],
+    }[tab] || ['Nothing to preview here', "This tab's controls are in the panel on the left."];
+    document.getElementById('idleCanvasTitle').textContent = copy[0];
+    document.getElementById('idleCanvasSub').textContent = copy[1];
+  }
+  if (isBrand) renderBrandCanvas();
+}
+
+// Inject a Google-Fonts stylesheet so the preview renders in the real family.
+// Non-Google families just 404 silently and fall back to the default stack.
+function loadPreviewFont(family) {
+  if (!family) return;
+  const id = 'previewfont-' + family.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+  if (document.getElementById(id)) return;
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@400;700&display=swap`;
+  document.head.appendChild(link);
+}
+
+// Render the open brand profile's palette + fonts into the right pane.
+function renderBrandCanvas() {
+  const stage = document.getElementById('brandCanvasStage');
+  const title = document.getElementById('brandCanvasTitle');
+  if (!stage) return;
+  const d = brandEditing?.data;
+  const colors  = d?.colors || [];
+  const heading = d?.fonts?.heading?.family;
+  const body    = d?.fonts?.body?.family;
+  title.textContent = brandEditing?.name ? `Brand preview · ${brandEditing.name}` : 'Brand preview';
+
+  if (!brandEditing || (colors.length === 0 && !heading && !body)) {
+    stage.innerHTML = `<div class="canvas-empty">
+      <div class="canvas-empty-title">No brand open</div>
+      <div class="canvas-empty-sub">Click a profile's <strong>Edit</strong>, or extract one with <strong>From Divi export</strong>. Its palette and fonts preview here.</div>
+    </div>`;
+    return;
+  }
+
+  loadPreviewFont(heading);
+  loadPreviewFont(body);
+
+  const swatches = colors.map(c => `
+    <div style="display:flex;flex-direction:column;gap:6px;width:120px">
+      <div style="height:72px;border-radius:8px;border:1px solid var(--border);background:${escapeHtml(c.hex)}"></div>
+      <div style="font-size:0.78rem;font-weight:600">${escapeHtml(c.role || '')}</div>
+      <div style="font-size:0.72rem;color:var(--muted);font-family:monospace">${escapeHtml(c.hex)}</div>
+    </div>`).join('');
+
+  const fontSample = (label, family) => family ? `
+    <div style="margin-bottom:18px">
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${label} · ${escapeHtml(family)}</div>
+      <div style="font-family:'${escapeHtml(family)}',sans-serif;font-size:1.6rem;font-weight:700">The quick brown fox</div>
+      <div style="font-family:'${escapeHtml(family)}',sans-serif;font-size:0.95rem">Jumps over the lazy dog — 0123456789</div>
+    </div>` : '';
+
+  stage.innerHTML = `
+    ${colors.length ? `<div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Palette · ${colors.length} colour${colors.length === 1 ? '' : 's'}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:28px">${swatches}</div>` : ''}
+    ${(heading || body) ? `<div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Typography</div>
+    ${fontSample('Heading', heading)}${fontSample('Body', body)}` : ''}`;
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
@@ -1154,9 +1238,6 @@ const BRAND_FONT_OPTIONS = [
   'Work Sans', 'Raleway', 'DM Sans', 'Archivo', 'Oswald', 'IBM Plex Sans',
 ];
 
-// Mutable working copy of the profile currently open in the editor (null = closed).
-let brandEditing = null;
-
 function emptyBrandData() {
   return { colors: [], fonts: {}, logo: null, voice: '', tagline: '' };
 }
@@ -1181,7 +1262,7 @@ async function loadBrandGrid() {
 }
 
 function renderBrandCard(p) {
-  const data = p.data || {};
+  const data = normalizeBrandData(p.data || {});
   const swatches = (data.colors || []).slice(0, 6).map(c =>
     `<span class="brand-card-swatch" style="background:${c.hex}" title="${escapeHtml(c.role || c.hex)}:${c.hex}"></span>`
   ).join('');
@@ -1203,6 +1284,45 @@ function renderBrandCard(p) {
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// A divi-export profile stores { variables: { global_colors, global_variables }, presets }.
+// The editor/cards read data.colors + data.fonts. Derive those onto the same object so
+// the raw divi data (gcid tuples needed for brand-deploy) is preserved on save.
+function normalizeBrandData(data) {
+  if (!data || typeof data !== 'object') return data;
+  if (!Array.isArray(data.colors) || data.colors.length === 0) {
+    const gc = data.variables?.global_colors;
+    if (Array.isArray(gc) && gc.length) {
+      data.colors = gc
+        .filter(t => Array.isArray(t) && t[1])
+        .map(([gcid, meta]) => ({ role: meta.label || gcid, hex: meta.color || '', source: 'divi', gcid }))
+        .filter(c => c.hex);
+    }
+  }
+  if (!data.fonts?.heading && !data.fonts?.body) {
+    const gv = data.variables?.global_variables;
+    if (Array.isArray(gv)) {
+      const fonts = gv.filter(v => v?.type === 'fonts');
+      const find = re => fonts.find(f => re.test(f.id || ''))?.value;
+      const heading = find(/heading/i), body = find(/body/i);
+      if (heading || body) {
+        data.fonts = data.fonts || {};
+        if (heading) data.fonts.heading = { family: heading };
+        if (body) data.fonts.body = { family: body };
+      }
+    }
+  }
+  return data;
+}
+
+// Font selects only list preset families — inject the profile's own family if missing.
+function ensureFontOption(selectId, family) {
+  if (!family) return;
+  const sel = document.getElementById(selectId);
+  if (![...sel.options].some(o => o.value === family)) {
+    sel.add(new Option(family, family));
+  }
 }
 
 function fillFontSelects() {
@@ -1232,7 +1352,7 @@ function openBrandEditor(id) {
     delBtn.hidden = false;
     fetch(`/brand/${id}`).then(r => r.json()).then(p => {
       if (!p || p.error) return;
-      brandEditing = { id: p.id, name: p.name, source_type: p.source_type || 'manual', data: p.data || emptyBrandData() };
+      brandEditing = { id: p.id, name: p.name, source_type: p.source_type || 'manual', data: normalizeBrandData(p.data || emptyBrandData()) };
       paintBrandEditor();
     });
   }
@@ -1245,9 +1365,12 @@ function paintBrandEditor() {
   document.getElementById('brandName').value = brandEditing.name || '';
   document.getElementById('brandTagline').value = d.tagline || '';
   document.getElementById('brandVoice').value = d.voice || '';
+  ensureFontOption('brandHeadingFont', d.fonts?.heading?.family);
+  ensureFontOption('brandBodyFont', d.fonts?.body?.family);
   document.getElementById('brandHeadingFont').value = d.fonts?.heading?.family || '';
   document.getElementById('brandBodyFont').value = d.fonts?.body?.family || '';
   renderBrandColorRows();
+  renderBrandCanvas();
 }
 
 function renderBrandColorRows() {

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Divi 5 Generator</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🎨</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -415,6 +416,24 @@
 
   <!-- ── Main panel ─────────────────────────────────────────────────── -->
   <main class="main">
+
+    <!-- Brand preview — shown on the Brand tab (palette + fonts of the open profile) -->
+    <div class="canvas-panel" id="brandCanvas" hidden>
+      <div class="canvas-head">
+        <div class="canvas-title" id="brandCanvasTitle">Brand preview</div>
+      </div>
+      <div class="canvas-stage" id="brandCanvasStage" style="overflow:auto;padding:24px"></div>
+    </div>
+
+    <!-- Neutral idle panel — shown on tabs with no right-pane content (Migrate / Settings) -->
+    <div class="canvas-panel" id="idleCanvas" hidden>
+      <div class="canvas-stage">
+        <div class="canvas-empty">
+          <div class="canvas-empty-title" id="idleCanvasTitle">Nothing to preview here</div>
+          <div class="canvas-empty-sub" id="idleCanvasSub">This tab's controls are in the panel on the left.</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Design canvas — persistent live preview of the latest generation -->
     <div class="canvas-panel" id="canvasPanel">
