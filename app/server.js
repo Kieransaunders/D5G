@@ -15,6 +15,7 @@ const {
   promoteIfEligible,
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
+const { extractIntent, stripIntent } = require('./lib/intent-marker');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -317,10 +318,15 @@ app.post('/settings', (req, res) => {
 });
 
 // ─── POST /chat — stream a Claude response ───────────────────────────────────
+// Body: { message, history:[{role,content}], ctx:{ brandId, designId, generationId } }
+// Streams SSE. Scans stdout for a GEN_INTENT marker and emits a `gen_intent`
+// event (the frontend renders a confirm card); the marker is stripped from the
+// visible text stream. Prepends an ACTIVE BRAND/DESIGN/PAGE preamble from ctx.
 app.post('/chat', (req, res) => {
-  const { message, history = [] } = req.body;
+  const { message, history = [], ctx = {} } = req.body;
   const context = history.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-  const prompt  = context ? `${context}\nUser: ${message}` : message;
+  const preamble = buildChatPreamble(ctx);
+  const prompt  = [preamble, context && `${context}`, `User: ${message}`].filter(Boolean).join('\n');
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -337,10 +343,58 @@ app.post('/chat', (req, res) => {
     cwd: PLUGIN_DIR, stdio: ['pipe', 'pipe', 'pipe'],
   });
   proc.stdin.end();
-  proc.stdout.on('data', chunk => res.write(`data: ${JSON.stringify({ chunk: chunk.toString() })}\n\n`));
+
+  // Buffer stdout so we can detect a complete GEN_INTENT marker (it may arrive
+  // split across chunks) and emit a gen_intent event, then stream the stripped
+  // text. We flush the buffer up to the last newline each chunk so prose still
+  // streams live; the tail (partial marker) is held back until more arrives.
+  let buf = '';
+  proc.stdout.on('data', chunk => {
+    buf += chunk.toString();
+    const intent = extractIntent(buf);
+    if (intent) {
+      res.write(`event: gen_intent\ndata: ${JSON.stringify(intent)}\n\n`);
+      buf = stripIntent(buf);
+    }
+    const nl = buf.lastIndexOf('\n');
+    if (nl >= 0) {
+      const emit = buf.slice(0, nl + 1);
+      buf = buf.slice(nl + 1);
+      res.write(`data: ${JSON.stringify({ chunk: emit })}\n\n`);
+    }
+  });
   proc.stderr.on('data', chunk => res.write(`data: ${JSON.stringify({ chunk: chunk.toString() })}\n\n`));
-  proc.on('close', () => { res.write(`data: ${JSON.stringify({ done: true })}\n\n`); res.end(); });
+  proc.on('close', () => {
+    // Flush any remaining buffered text (minus a trailing marker).
+    const tail = stripIntent(buf);
+    if (tail) res.write(`data: ${JSON.stringify({ chunk: tail })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+  });
 });
+
+// Build the ACTIVE BRAND/DESIGN/PAGE preamble from chat context. Cheap DB reads;
+// missing ids just omit the relevant line.
+function buildChatPreamble(ctx) {
+  if (!ctx || (!ctx.brandId && !ctx.designId && !ctx.generationId)) return '';
+  const lines = ['[CHAT CONTEXT]'];
+  if (ctx.brandId) {
+    const b = getBrandProfile(ctx.brandId);
+    if (b) {
+      const palette = (b.data && b.data.colors || []).slice(0, 4).map(c => c.hex).join(', ');
+      lines.push(`ACTIVE BRAND: ${b.name}${palette ? ' — palette: ' + palette : ''}`);
+    }
+  }
+  if (ctx.designId) {
+    const d = getDesignProject(ctx.designId);
+    if (d) lines.push(`ACTIVE DESIGN: ${d.name} (id ${d.id}) — reuse its tokens/colours verbatim`);
+  }
+  if (ctx.generationId) {
+    lines.push(`ACTIVE PAGE: generation id ${ctx.generationId}`);
+  }
+  lines.push('[/CHAT CONTEXT]');
+  return lines.join('\n');
+}
 
 // ─── GET /prereqs — check claude is installed ────────────────────────────────
 app.get('/prereqs', (req, res) => {

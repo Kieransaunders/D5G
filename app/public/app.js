@@ -340,6 +340,9 @@ if (briefLink) {
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 const chatHistory = [];
+// Active chat context — sent with each /chat POST so the server can prepend
+// an ACTIVE BRAND/DESIGN/PAGE preamble. Chips to display/clear it land in 5.7.
+const chatCtx = { brandId: null, designId: null, generationId: null };
 
 function appendChatMsg(role, text) {
   const el = document.getElementById('chatMessages');
@@ -367,11 +370,12 @@ async function sendChat() {
     const res = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, history: chatHistory }),
+      body: JSON.stringify({ message, history: chatHistory, ctx: chatCtx }),
     });
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     let buf = '';
+    let eventName = null;
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -379,9 +383,18 @@ async function sendChat() {
       const lines = buf.split('\n');
       buf = lines.pop();
       for (const line of lines) {
+        if (line === '') { eventName = null; continue; }
+        if (line.startsWith('event: ')) { eventName = line.slice(7).trim(); continue; }
         if (!line.startsWith('data: ')) continue;
         const d = JSON.parse(line.slice(6));
-        if (d.chunk) { reply += d.chunk; replyEl.textContent = reply; document.getElementById('chatMessages').scrollTop = 99999; }
+        if (eventName === 'gen_intent' && d) {
+          appendIntentCard(d);
+          eventName = null;
+        } else if (d.chunk) {
+          reply += d.chunk;
+          replyEl.textContent = reply;
+          document.getElementById('chatMessages').scrollTop = 999999;
+        }
       }
     }
   } catch (e) {
@@ -392,6 +405,50 @@ async function sendChat() {
   chatHistory.push({ role: 'user', content: message });
   chatHistory.push({ role: 'assistant', content: reply });
   document.getElementById('chatSend').disabled = false;
+}
+
+// Render a generation proposal card from a GEN_INTENT payload. "Start" fills the
+// Brief form from the intent and submits it (no auto-fire — explicit click).
+function appendIntentCard(intent) {
+  const el = document.getElementById('chatMessages');
+  const card = document.createElement('div');
+  card.className = 'intent-card';
+  const rows = Object.entries(intent)
+    .filter(([k]) => !['designId'].includes(k))
+    .map(([k, v]) => `<div><span class="brand-card-src">${escapeHtml(k)}</span> ${escapeHtml(String(v))}</div>`)
+    .join('');
+  card.innerHTML = `
+    <div class="intent-card-title">Generate: ${escapeHtml(intent.pageType || 'page')}${intent.brand ? ' for ' + escapeHtml(intent.brand) : ''}</div>
+    <div class="intent-card-rows">${rows}</div>
+    <div class="intent-card-actions">
+      <button type="button" class="btn-link" data-intent-edit>Edit brief</button>
+      <button type="button" class="btn-generate" data-intent-start style="min-width:auto;height:auto;padding:6px 14px">Start →</button>
+    </div>`;
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+  card.querySelector('[data-intent-edit]').addEventListener('click', () => fillFormFromIntent(intent));
+  card.querySelector('[data-intent-start]').addEventListener('click', () => startGenerationFromIntent(intent, card));
+}
+
+function fillFormFromIntent(intent) {
+  const f = document.forms.genForm;
+  if (!f) return;
+  if (intent.brand)    f.elements.brand.value = intent.brand;
+  if (intent.keyword)  f.elements.keyword.value = intent.keyword;
+  if (intent.sections) f.elements.sections.value = Array.isArray(intent.sections) ? intent.sections.join(', ') : intent.sections;
+  if (intent.ctaLabel && f.elements.cta_label) f.elements.cta_label.value = intent.ctaLabel;
+  if (intent.aesthetic) f.elements.aesthetic.value = intent.aesthetic;
+  document.querySelector('.tab[data-tab=generate]').click();
+}
+
+async function startGenerationFromIntent(intent, card) {
+  fillFormFromIntent(intent);
+  const startBtn = card.querySelector('[data-intent-start]');
+  startBtn.disabled = true;
+  startBtn.textContent = 'Starting…';
+  const form = document.forms.genForm;
+  if (form && form.requestSubmit) form.requestSubmit();
+  else if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
 }
 
 document.getElementById('chatSend').addEventListener('click', sendChat);
