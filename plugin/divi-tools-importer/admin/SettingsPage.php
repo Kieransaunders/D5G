@@ -91,8 +91,57 @@ class DTI_SettingsPage {
 				<tr>
 					<th>Quick test</th>
 					<td>
-						<a href="<?php echo esc_url( $ping_url ); ?>" target="_blank" class="button">Ping endpoint ↗</a>
-						<p class="description">Opens the ping endpoint — requires your key as <code>?dti_key=YOUR_KEY</code></p>
+						<input type="text" id="dti-test-key" class="regular-text" autocomplete="off" spellcheck="false"
+							placeholder="Paste your API key" style="font-family:monospace"<?php echo $plain_key ? ' value="' . esc_attr( $plain_key ) . '"' : ''; ?>>
+						<button type="button" id="dti-test-btn" class="button" data-ping="<?php echo esc_url( $ping_url ); ?>">Test connection</button>
+						<span id="dti-test-result" style="margin-left:10px;font-weight:600"></span>
+						<p class="description">Sends your key in the <code>X-Divi-Tools-Key</code> header (the same path the importer uses) and shows the live response. Your key stays out of the URL and server logs.</p>
+						<pre id="dti-test-output" style="display:none;background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;overflow-x:auto;font-size:12px;max-width:900px;margin-top:8px"></pre>
+				<script>
+				(function () {
+					var btn = document.getElementById('dti-test-btn');
+					if (!btn) return;
+					btn.addEventListener('click', function () {
+						var key    = document.getElementById('dti-test-key').value.trim();
+						var result = document.getElementById('dti-test-result');
+						var output = document.getElementById('dti-test-output');
+						if (!key) {
+							result.textContent = '✗ Enter your API key first';
+							result.style.color = '#b32d2e';
+							output.style.display = 'none';
+							return;
+						}
+						result.textContent = 'Testing…';
+						result.style.color = '#666';
+						output.style.display = 'none';
+						fetch(btn.dataset.ping, { headers: { 'X-Divi-Tools-Key': key } })
+							.then(function (r) { return r.json().then(function (b) { return { status: r.status, body: b }; }); })
+							.then(function (res) {
+								output.style.display = 'block';
+								output.textContent = JSON.stringify(res.body, null, 2);
+								if (res.status === 200 && res.body && res.body.status === 'ok') {
+									result.textContent = '✓ Connected — key valid';
+									result.style.color = 'green';
+								} else if (res.status === 401) {
+									result.textContent = '✗ 401 — invalid or missing key';
+									result.style.color = '#b32d2e';
+								} else if (res.status === 429) {
+									result.textContent = '✗ 429 — rate limited, wait 60s';
+									result.style.color = '#b32d2e';
+								} else {
+									result.textContent = '✗ HTTP ' + res.status;
+									result.style.color = '#b32d2e';
+								}
+							})
+							.catch(function (e) {
+								result.textContent = '✗ Request failed (' + e.message + ')';
+								result.style.color = '#b32d2e';
+								output.style.display = 'block';
+								output.textContent = String(e);
+							});
+					});
+				})();
+				</script>
 					</td>
 				</tr>
 				<tr>
