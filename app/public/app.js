@@ -294,6 +294,7 @@ async function loadHistory() {
 
 async function loadGeneration(id) {
   const gen = await fetch(`/generations/${id}`).then(r => r.json());
+  if (gen.has_preview) showInCanvas(id, { title: `${gen.brand} · ${gen.keyword}` });
   logBox.innerHTML = '';
   appendLog(gen.log || '(no log)');
   document.getElementById('logPanel').style.display = '';
@@ -519,16 +520,16 @@ function appendGenerationCards(genId, files, hasPreview) {
   wrap.style.alignSelf = 'stretch';
 
   if (hasPreview) {
+    // The big preview lives in the canvas on the right — show a compact pointer
+    // here, plus a button to focus it.
     const preview = document.createElement('div');
-    preview.className = 'gen-card gen-card-preview';
+    preview.className = 'gen-card gen-card-preview-note';
     preview.innerHTML = `
-      <div class="gen-card-title">Preview · generation #${genId}</div>
-      <iframe src="/preview-html/${genId}?t=${Date.now()}" sandbox="allow-same-origin allow-scripts" loading="lazy"></iframe>
-      <div class="gen-card-actions">
-        <button type="button" class="btn-link" data-drawer-open="${genId}">Open full</button>
-      </div>`;
+      <div class="gen-card-title">✓ Preview ready — showing on the right →</div>
+      <button type="button" class="btn-link" data-canvas-focus="${genId}">View in canvas</button>`;
     wrap.appendChild(preview);
-    preview.querySelector('[data-drawer-open]').addEventListener('click', () => openPreviewDrawer(genId));
+    preview.querySelector('[data-canvas-focus]').addEventListener('click',
+      () => showInCanvas(genId));
   }
 
   if (files && files.length) {
@@ -572,7 +573,8 @@ async function chatImport(genId, btn) {
 
 document.getElementById('chatSend').addEventListener('click', sendChat);
 document.getElementById('chatInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  // Enter inserts a newline (default). Cmd/Ctrl+Enter sends.
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendChat(); }
 });
 document.getElementById('chatClear').addEventListener('click', () => {
   chatHistory.length = 0;
@@ -975,14 +977,59 @@ document.getElementById('saveBriefBtn').addEventListener('click', async () => {
   await loadBriefs();
 });
 
-// ─── HTML Preview panel ───────────────────────────────────────────────────────
+// ─── Design canvas (persistent live preview on the right) ─────────────────────
+let canvasGenId = null;
+function showInCanvas(genId, meta = {}) {
+  const frame = document.getElementById('canvasFrame');
+  if (!frame) return;
+  canvasGenId = genId;
+  const url = `/preview-html/${genId}?t=${Date.now()}`;
+  frame.src = url;
+  frame.hidden = false;
+  document.getElementById('canvasEmpty').hidden = true;
+  document.getElementById('canvasTitle').textContent = meta.title || `Preview · generation #${genId}`;
+  const newTab = document.getElementById('canvasNewTab');
+  newTab.href = url; newTab.hidden = false;
+  document.getElementById('canvasImport').hidden = false;
+  document.getElementById('canvasStatus').textContent = '';
+  document.getElementById('canvasPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Load the most recent completed generation that has a preview into the canvas.
+async function loadLatestIntoCanvas() {
+  try {
+    const rows = await fetch('/generations').then(r => r.json());
+    const hit = rows.find(r => r.status === 'complete' && r.has_preview);
+    if (hit) showInCanvas(hit.id, { title: `${hit.brand} · ${hit.keyword}` });
+  } catch {}
+}
+
+// Viewport toggle (Desktop / Mobile frame width).
+document.getElementById('viewportToggle')?.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-vw]');
+  if (!btn) return;
+  document.querySelectorAll('#viewportToggle button').forEach(b => b.classList.toggle('active', b === btn));
+  document.getElementById('canvasFrame').classList.toggle('mobile', btn.dataset.vw === 'mobile');
+});
+
+// Canvas Import button → reuse the import endpoint, report into canvas-status.
+document.getElementById('canvasImport')?.addEventListener('click', async (e) => {
+  if (!canvasGenId) return;
+  const btn = e.currentTarget;
+  const status = document.getElementById('canvasStatus');
+  btn.disabled = true; status.textContent = 'Importing…';
+  try {
+    const r = await fetch(`/import/${canvasGenId}`, { method: 'POST' }).then(r => r.json());
+    status.innerHTML = r.ok && r.permalink
+      ? `✅ Imported as a draft — <a href="${r.permalink}" target="_blank" style="color:var(--accent)">view in WordPress ↗</a>`
+      : `⚠️ ${escapeHtml(r.error || 'import failed')}`;
+  } catch (err) { status.textContent = `⚠️ ${err.message}`; }
+  btn.disabled = false;
+});
+
+// ─── HTML Preview panel (now routes to the canvas) ────────────────────────────
 function showHtmlPreview(genId) {
-  const panel = document.getElementById('previewPanel');
-  const frame = document.getElementById('previewFrame');
-  if (!panel || !frame) return;
-  frame.src = `/preview-html/${genId}?t=${Date.now()}`;
-  panel.style.display = '';
-  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showInCanvas(genId);
 }
 
 // Preview side drawer — pop a generation preview out to ~50% width on the right.
@@ -1013,6 +1060,7 @@ document.getElementById('clearRevision').addEventListener('click', () => {
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 renderChatEmptyState();
+loadLatestIntoCanvas();
 checkPrereqs();
 loadHistory();
 loadSettings();

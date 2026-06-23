@@ -344,8 +344,8 @@
       <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0;padding-right:4px"></div>
       <div id="chatContextChips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       <div style="display:flex;gap:8px;align-items:flex-end;position:relative">
-        <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot… (type / for shortcuts)" style="flex:1;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
-        <button type="button" class="btn-generate" id="chatSend" style="height:72px;min-width:64px">Send</button>
+        <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot… (type / for shortcuts)" style="flex:1;min-width:0;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
+        <button type="button" class="btn-generate" id="chatSend" style="height:72px;width:auto;flex:none;min-width:64px;padding-left:16px;padding-right:16px">Send</button>
         <div id="slashMenu" class="slash-menu" hidden></div>
       </div>
       <button type="button" class="btn-link" id="chatClear" style="font-size:0.75rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;text-align:left">Clear conversation</button>
@@ -355,6 +355,29 @@
 
   <!-- ── Main panel ─────────────────────────────────────────────────── -->
   <main class="main">
+
+    <!-- Design canvas — persistent live preview of the latest generation -->
+    <div class="canvas-panel" id="canvasPanel">
+      <div class="canvas-head">
+        <div class="canvas-title" id="canvasTitle">Design preview</div>
+        <div class="canvas-actions">
+          <div class="viewport-toggle" id="viewportToggle">
+            <button type="button" data-vw="desktop" class="active">Desktop</button>
+            <button type="button" data-vw="mobile">Mobile</button>
+          </div>
+          <a id="canvasNewTab" class="btn-link" target="_blank" hidden style="font-size:0.78rem;color:var(--accent)">Open ↗</a>
+          <button type="button" class="btn-import" id="canvasImport" hidden>Import to WordPress</button>
+        </div>
+      </div>
+      <div class="canvas-stage" id="canvasStage">
+        <div class="canvas-empty" id="canvasEmpty">
+          <div class="canvas-empty-title">Your design preview will appear here</div>
+          <div class="canvas-empty-sub">Describe a page in the chat and hit <strong>Start</strong> — the generated layout renders here, then you can import it to WordPress.</div>
+        </div>
+        <iframe id="canvasFrame" hidden sandbox="allow-same-origin allow-scripts"></iframe>
+      </div>
+      <div class="canvas-status" id="canvasStatus"></div>
+    </div>
 
     <!-- Progress + log (hidden until generation starts) -->
     <div class="panel" id="progressPanel" style="display:none">
