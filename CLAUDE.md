@@ -40,7 +40,7 @@ Then open Claude Code Desktop — it picks up the install automatically from `~/
 
 ## Skills
 
-All 7 skills live in `skills/`. Each `SKILL.md` requires:
+All skills live in `skills/`. Each `SKILL.md` requires:
 
 ```yaml
 ---
@@ -76,10 +76,16 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 
 | Skill | Purpose |
 |---|---|
-| `divi5-page-generator` | Generate SEO-optimised Divi 5 page JSON |
+| `divi5-page-generator` | Generate SEO-optimised Divi 5 page JSON (pages + sections) |
 | `import-to-local` | Import JSON into WordPress via REST API, open preview |
+| `launch-app` | Launch the Divi 5 Generator app |
 | `design-review` | Audit Divi 5 JSON for structure, SEO, spec compliance |
-| `divi5-extract-style` | Extract brand tokens from a Divi 5 export |
-| `divi5-style-check` | Validate CSS/style consistency |
+| `divi5-extract-style` | Extract brand tokens from a Divi 5 export / brand guide |
+| `divi5-style-check` | Validate CSS/style consistency against an original export |
+| `divi5-brand-profile` | Canonical brand profile schema (colours, fonts, voice) |
+| `brand-extract` | Extract a brand profile from a live Divi 5 WordPress site |
+| `brand-deploy` | Deploy a saved brand profile to a Divi 5 site |
+| `design-sync` | Bridge a brand profile ↔ Claude Design design system |
+| `claude-design-to-divi` | Turn a Claude Design hand-off bundle into an importable Divi 5 page |
 | `divi5-plugin-dev` | Custom Divi 5 module/plugin development |
 | `divitheatre-engine` | Theatre.js motion engine reference |

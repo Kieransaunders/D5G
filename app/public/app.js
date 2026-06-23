@@ -1120,6 +1120,50 @@ async function deleteWpPage(slug, title, btn) {
 
 document.getElementById('refreshPages').addEventListener('click', loadWpPages);
 
+// ─── Import a Claude Design hand-off bundle ───────────────────────────────────
+document.getElementById('dhImportBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('dhBundle');
+  const status = document.getElementById('dhStatus');
+  const btn = document.getElementById('dhImportBtn');
+  const file = fileInput.files[0];
+  if (!file) { status.innerHTML = '<span class="style-fail">Choose a bundle file first.</span>'; return; }
+
+  const data = new FormData();
+  data.append('bundle', file);
+  data.append('brand', document.getElementById('dhBrand').value.trim());
+  if (document.getElementById('dhPublish').checked) data.append('publish', 'true');
+
+  btn.disabled = true;
+  btn.textContent = 'Building…';
+  status.textContent = 'Uploading bundle…\n';
+
+  try {
+    const res = await fetch('/design-handoff', { method: 'POST', body: data });
+    const out = await res.json();
+    if (!res.ok || !out.id) {
+      status.innerHTML = `<span class="style-fail">${out.error || 'Upload failed'}</span>`;
+      btn.disabled = false; btn.textContent = 'Build from bundle';
+      return;
+    }
+
+    const es = new EventSource(`/stream/${out.id}`);
+    es.addEventListener('log', ev => { status.textContent += JSON.parse(ev.data).chunk; });
+    es.addEventListener('done', ev => {
+      es.close();
+      const { status: s } = JSON.parse(ev.data);
+      const ok = s === 'complete';
+      status.innerHTML += `\n<span class="${ok ? 'style-pass' : 'style-fail'}">Finished: ${s}</span>`;
+      btn.disabled = false; btn.textContent = 'Build from bundle';
+      loadWpPages();
+      if (typeof loadHistory === 'function') loadHistory();
+    });
+    es.onerror = () => { es.close(); btn.disabled = false; btn.textContent = 'Build from bundle'; };
+  } catch (err) {
+    status.innerHTML = `<span class="style-fail">Error: ${err.message}</span>`;
+    btn.disabled = false; btn.textContent = 'Build from bundle';
+  }
+});
+
 // ─── Re-run a past generation ─────────────────────────────────────────────────
 function viewMockup(id, event) {
   event.stopPropagation();

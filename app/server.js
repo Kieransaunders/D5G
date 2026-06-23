@@ -186,6 +186,13 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
 
   const fullPrompt = paletteHint ? `${prompt} ${paletteHint}` : prompt;
 
+  runClaudeGeneration(genId, outputPath, fullPrompt, exportPath);
+});
+
+// ── Run the divi5 generator via the claude CLI, streaming logs over SSE ──────
+// Shared by /generate and /design-handoff. exportPath is optional and only
+// drives the post-run style check (skipped when null).
+function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
   // ── Spawn claude ────────────────────────────────────────────────────────
   const claudeBin = findClaude();
   if (!claudeBin) {
@@ -299,6 +306,49 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
     (sseClients.get(genId) || []).forEach(r => r.end());
     sseClients.delete(genId);
   });
+}
+
+// ─── POST /design-handoff — ingest a Claude Design hand-off bundle ───────────
+// Accepts a Claude Design hand-off bundle (.zip or .json) and runs the
+// claude-design-to-divi skill, which converts it into an importable Divi 5 page
+// via the page generator. Streams progress over the same SSE channel as
+// /generate, so the UI can reuse the existing generation view.
+app.post('/design-handoff', upload.single('bundle'), (req, res) => {
+  const { brand, brandId, outputDir, publish } = req.body;
+  if (!req.file) return res.status(400).json({ error: 'No hand-off bundle uploaded' });
+
+  const outputPath = outputDir || path.join(os.homedir(), 'Desktop', 'divi-output');
+  try {
+    fs.mkdirSync(outputPath, { recursive: true });
+  } catch (e) {
+    return res.status(400).json({ error: `Cannot write to output folder "${outputPath}": ${e.message}` });
+  }
+
+  // Store the uploaded bundle (zip or json) alongside other exports.
+  const safeName   = (req.file.originalname || 'bundle').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const bundlePath = path.join(EXPORTS_DIR, `${Date.now()}-${safeName}`);
+  fs.renameSync(req.file.path, bundlePath);
+
+  const genId = db.prepare(`
+    INSERT INTO generations (brand, keyword, sections, aesthetic, cta_label, cta_url, output_dir, export_path, what_it_does)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(brand || 'claude-design', '', '[]', '', '', '', outputPath, bundlePath,
+         'Imported from a Claude Design hand-off bundle').lastInsertRowid;
+
+  res.json({ id: genId });
+
+  // Build the skill prompt. brand/brandId become the --brand flag; quotes are
+  // stripped so the value can't break the surrounding prompt token.
+  const brandArg   = (brand || brandId || '').toString().replace(/["\\]/g, '');
+  const brandFlag  = brandArg ? ` --brand "${brandArg}"` : '';
+  const publishFlag = (publish === 'true' || publish === true) ? ' --publish' : '';
+  const prompt = [
+    `/divi5generate:claude-design-to-divi`,
+    `${bundlePath}${brandFlag}${publishFlag}`,
+    `Convert this Claude Design hand-off bundle into an importable Divi 5 page, then preview it.`,
+  ].join(' ');
+
+  runClaudeGeneration(genId, outputPath, prompt, null);
 });
 
 // ─── GET /generations — history list ────────────────────────────────────────
