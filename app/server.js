@@ -6,7 +6,7 @@ const path    = require('path');
 const fs      = require('fs');
 const os      = require('os');
 const { spawn, execSync } = require('child_process');
-const { db, EXPORTS_DIR } = require('./db');
+const { db, EXPORTS_DIR, DATA_DIR } = require('./db');
 const {
   createBrandProfile, getBrandProfile, listBrandProfiles,
   updateBrandProfile, deleteBrandProfile,
@@ -20,6 +20,22 @@ const { buildImportPayload } = require('./lib/import-payload');
 const { normalizePagesList, isValidSlug } = require('./lib/wp-pages');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
+
+// Generation outputs must live on persistent storage. A caller-supplied dir in
+// /tmp (or the OS temp dir) gets purged by macOS — periodic clean removes files
+// after a few days and reboots wipe it — which later breaks /preview-html and
+// /download with no obvious cause. Redirect volatile paths to the app data dir.
+const GEN_OUTPUTS = path.join(DATA_DIR, 'outputs');
+function resolveOutputDir(outputDir) {
+  const isVolatile = p =>
+    /^(\/private)?\/tmp(\/|$)/.test(p) ||
+    p === os.tmpdir() || p.startsWith(os.tmpdir() + path.sep);
+  if (!outputDir || isVolatile(outputDir)) {
+    return path.join(GEN_OUTPUTS, String(Date.now()));
+  }
+  return outputDir;
+}
+
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
 const ET_PAGES    = require(path.join(PLUGIN_DIR, 'skills', 'divi5-page-generator', 'scripts', 'et-pages.js'));
 const PORT        = parseInt(process.env.PORT) || 3747;
@@ -89,7 +105,7 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
   } = req.body;
 
   const sectionsArr = Array.isArray(sections) ? sections : (sections ? [sections] : []);
-  const outputPath  = outputDir || path.join(os.homedir(), 'Desktop', 'divi-output');
+  const outputPath  = resolveOutputDir(outputDir);
   try {
     fs.mkdirSync(outputPath, { recursive: true });
   } catch (e) {
@@ -293,10 +309,20 @@ function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
       sendSSE(genId, 'design_promoted', { designId: newDesignId });
     }
 
-    // Detect HTML preview file
+    // Detect HTML preview file and persist its contents to the DB. Storing the
+    // HTML (not just a has_preview flag) means /preview-html keeps working even
+    // after the output dir is cleaned — see resolveOutputDir / the /tmp purge.
     const allFiles = fs.readdirSync(outputPath);
-    const hasPreview = allFiles.some(f => f.endsWith('.html'));
-    db.prepare(`UPDATE generations SET has_preview=? WHERE id=?`).run(hasPreview ? 1 : 0, genId);
+    const htmlFiles = allFiles.filter(f => f.endsWith('.html'));
+    const previewFile = htmlFiles.find(f => f.includes('preview')) || htmlFiles[0];
+    let previewHtml = null;
+    if (previewFile) {
+      try { previewHtml = fs.readFileSync(path.join(outputPath, previewFile), 'utf8'); }
+      catch (_) {}
+    }
+    db.prepare(`UPDATE generations SET has_preview=?, preview_html=? WHERE id=?`)
+      .run(previewFile ? 1 : 0, previewHtml, genId);
+    const hasPreview = !!previewFile;
 
     // Send final file list to UI
     const outputFiles = db.prepare('SELECT * FROM output_files WHERE generation_id=?').all(genId);
@@ -317,7 +343,7 @@ app.post('/design-handoff', upload.single('bundle'), (req, res) => {
   const { brand, brandId, outputDir, publish } = req.body;
   if (!req.file) return res.status(400).json({ error: 'No hand-off bundle uploaded' });
 
-  const outputPath = outputDir || path.join(os.homedir(), 'Desktop', 'divi-output');
+  const outputPath = resolveOutputDir(outputDir);
   try {
     fs.mkdirSync(outputPath, { recursive: true });
   } catch (e) {
@@ -686,18 +712,37 @@ app.delete('/wp-pages/:slug', async (req, res) => {
 
 // ─── GET /preview-html/:id — serve Stage 2 HTML preview file ────────────────
 app.get('/preview-html/:id', (req, res) => {
-  const gen = db.prepare('SELECT output_dir FROM generations WHERE id=?').get(req.params.id);
+  const gen = db.prepare('SELECT output_dir, preview_html FROM generations WHERE id=?')
+    .get(req.params.id);
   if (!gen) return res.status(404).send('Not found');
-  try {
-    const files = fs.readdirSync(gen.output_dir).filter(f => f.endsWith('.html'));
-    if (!files.length) return res.status(404).send('No preview HTML yet');
-    // Prefer file with 'preview' in name
-    const html = files.find(f => f.includes('preview')) || files[0];
-    res.setHeader('Content-Type', 'text/html');
-    res.send(fs.readFileSync(path.join(gen.output_dir, html), 'utf8'));
-  } catch (_) {
-    res.status(404).send('Preview not available');
+
+  // 1. Prefer the live file on disk (always current if the dir still exists).
+  const dirExists = gen.output_dir && fs.existsSync(gen.output_dir);
+  if (dirExists) {
+    try {
+      const files = fs.readdirSync(gen.output_dir).filter(f => f.endsWith('.html'));
+      if (files.length) {
+        const html = files.find(f => f.includes('preview')) || files[0];
+        res.setHeader('Content-Type', 'text/html');
+        return res.send(fs.readFileSync(path.join(gen.output_dir, html), 'utf8'));
+      }
+    } catch (e) {
+      return res.status(500).send(`Could not read preview from ${gen.output_dir}: ${e.message}`);
+    }
   }
+
+  // 2. Fall back to the copy stored in the DB — survives a cleaned output dir.
+  if (gen.preview_html) {
+    res.setHeader('Content-Type', 'text/html');
+    return res.send(gen.preview_html);
+  }
+
+  // 3. Nothing to serve — say why, rather than a blank "not available".
+  res.status(404).send(
+    `No preview for generation ${req.params.id}. Output dir ${gen.output_dir} ` +
+    `${dirExists ? 'exists but contains no .html file' : 'is missing (likely purged from /tmp)'}, ` +
+    `and no preview was stored in the database. Re-run the generation to a persistent folder.`
+  );
 });
 
 // ─── GET /briefs — list saved briefs ─────────────────────────────────────────

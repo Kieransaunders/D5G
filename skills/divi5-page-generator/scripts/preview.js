@@ -495,6 +495,16 @@ const html = `<!DOCTYPE html>
 // ─── Write output ─────────────────────────────────────────────────────────────
 
 const outFile = outArg || jsonFile.replace(/\.json$/, '-preview.html');
+// Guard: this script emits HTML. Writing it to a .json path corrupts the page
+// file the importer reads (the "HTML written into the .json" failure). Refuse it.
+if (/\.json$/i.test(outFile)) {
+  console.error(
+    `Refusing to write the HTML preview to a .json path: ${outFile}\n` +
+    `The preview is HTML. Use a .html --out (or omit --out for the default ` +
+    `"-preview.html"). Writing HTML into a .json breaks page import.`
+  );
+  process.exit(1);
+}
 fs.writeFileSync(outFile, html);
 console.log(`Preview written: ${outFile}`);
 

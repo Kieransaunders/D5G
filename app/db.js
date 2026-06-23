@@ -113,6 +113,9 @@ const migrations = [
   `ALTER TABLE generations ADD COLUMN et_template TEXT`,
   `ALTER TABLE generations ADD COLUMN design_id INTEGER`,
   `ALTER TABLE generations ADD COLUMN page_type TEXT`,
+  // Persist the Stage 2 HTML preview in the DB so /preview-html survives the
+  // output dir being cleaned (e.g. a /tmp purge) — the file on disk is fragile.
+  `ALTER TABLE generations ADD COLUMN preview_html TEXT`,
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (_) {}
