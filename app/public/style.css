@@ -621,6 +621,71 @@ select option { background: var(--surface); }
 .color-remove:hover { background: rgba(239,68,68,0.14); color: var(--danger) !important; }
 .color-row input:focus { outline: none; border-color: var(--accent); }
 
+/* ── Brand Kit preview (Canva-style) ───────────────────────────────────────── */
+.bk { max-width: 760px; margin: 0 auto; }
+.bk-hero {
+  border-radius: 16px;
+  padding: 32px 28px;
+  margin-bottom: 26px;
+}
+.bk-hero-kicker { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; }
+.bk-hero-name { font-size: 1.9rem; font-weight: 800; line-height: 1.1; margin-top: 6px; }
+.bk-hero-tag { font-size: 0.95rem; margin-top: 8px; }
+.bk-hero-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.bk-chip {
+  font-size: 0.72rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.bk-section { margin-bottom: 28px; }
+.bk-section-title {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+}
+.bk-swatches {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;
+}
+.bk-swatch {
+  position: relative;
+  height: 130px;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.bk-swatch:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.35); }
+.bk-swatch-copy {
+  position: absolute; top: 10px; right: 12px;
+  font-size: 0.68rem; font-weight: 600; opacity: 0;
+  transition: opacity 0.15s;
+}
+.bk-swatch:hover .bk-swatch-copy { opacity: 0.85; }
+.bk-swatch-meta { display: flex; flex-direction: column; gap: 2px; }
+.bk-swatch-role { font-size: 0.82rem; font-weight: 700; }
+.bk-swatch-hex { font-size: 0.72rem; font-family: var(--mono); opacity: 0.85; text-transform: uppercase; }
+.bk-fonts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.bk-font-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.bk-font-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.bk-font-label {
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent);
+}
+.bk-font-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.bk-font-aa { font-size: 3.4rem; font-weight: 700; line-height: 1; color: var(--text); margin-bottom: 10px; }
+.bk-font-pangram { color: var(--text); display: flex; flex-direction: column; gap: 4px; }
+
 /* ── Designs tab ────────────────────────────────────────────────────────────── */
 .design-card {
   background: var(--surface);

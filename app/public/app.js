@@ -395,25 +395,75 @@ function renderBrandCanvas() {
   loadPreviewFont(heading);
   loadPreviewFont(body);
 
-  const swatches = colors.map(c => `
-    <div style="display:flex;flex-direction:column;gap:6px;width:120px">
-      <div style="height:72px;border-radius:8px;border:1px solid var(--border);background:${escapeHtml(c.hex)}"></div>
-      <div style="font-size:0.78rem;font-weight:600">${escapeHtml(c.role || '')}</div>
-      <div style="font-size:0.72rem;color:var(--muted);font-family:monospace">${escapeHtml(c.hex)}</div>
-    </div>`).join('');
+  // Pick the most saturated, mid-dark colour as the kit's hero accent.
+  const lum = hex => { const m = pickerHex(hex).match(/\w\w/g).map(h => parseInt(h, 16)); return 0.299*m[0] + 0.587*m[1] + 0.114*m[2]; };
+  const sat = hex => { const m = pickerHex(hex).match(/\w\w/g).map(h => parseInt(h, 16)); return Math.max(...m) - Math.min(...m); };
+  const accent = [...colors].sort((a, b) => sat(b.hex) - sat(a.hex))[0]?.hex || 'var(--accent)';
+  const onAccent = lum(accent) > 150 ? '#1a1a1a' : '#ffffff';
+  const tagline = d?.tagline || '';
 
-  const fontSample = (label, family) => family ? `
-    <div style="margin-bottom:18px">
-      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${label} · ${escapeHtml(family)}</div>
-      <div style="font-family:'${escapeHtml(family)}',sans-serif;font-size:1.6rem;font-weight:700">The quick brown fox</div>
-      <div style="font-family:'${escapeHtml(family)}',sans-serif;font-size:0.95rem">Jumps over the lazy dog — 0123456789</div>
+  const swatches = colors.map((c, i) => {
+    const textOn = lum(c.hex) > 150 ? '#1a1a1a' : '#ffffff';
+    return `
+    <button type="button" class="bk-swatch" data-copy="${escapeHtml(c.hex)}" title="Click to copy ${escapeHtml(c.hex)}"
+            style="background:${escapeHtml(pickerHex(c.hex))};color:${textOn}">
+      <span class="bk-swatch-copy">⧉ copy</span>
+      <span class="bk-swatch-meta">
+        <span class="bk-swatch-role">${escapeHtml(c.role || 'Colour ' + (i+1))}</span>
+        <span class="bk-swatch-hex">${escapeHtml(c.hex)}</span>
+      </span>
+    </button>`;
+  }).join('');
+
+  const fontCard = (label, family) => family ? `
+    <div class="bk-font-card">
+      <div class="bk-font-head">
+        <span class="bk-font-label">${label}</span>
+        <span class="bk-font-name">${escapeHtml(family)}</span>
+      </div>
+      <div class="bk-font-aa" style="font-family:'${escapeHtml(family)}',sans-serif">Aa</div>
+      <div class="bk-font-pangram" style="font-family:'${escapeHtml(family)}',sans-serif">
+        <div style="font-weight:700;font-size:1.15rem">The quick brown fox jumps</div>
+        <div style="font-size:0.9rem;opacity:.85">over the lazy dog · 0123456789</div>
+      </div>
     </div>` : '';
 
   stage.innerHTML = `
-    ${colors.length ? `<div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Palette · ${colors.length} colour${colors.length === 1 ? '' : 's'}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:28px">${swatches}</div>` : ''}
-    ${(heading || body) ? `<div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Typography</div>
-    ${fontSample('Heading', heading)}${fontSample('Body', body)}` : ''}`;
+    <div class="bk">
+      <div class="bk-hero" style="background:${escapeHtml(pickerHex(accent))};color:${onAccent}">
+        <div class="bk-hero-kicker" style="color:${onAccent};opacity:.7">BRAND KIT</div>
+        <div class="bk-hero-name">${escapeHtml(brandEditing.name || 'Untitled brand')}</div>
+        ${tagline ? `<div class="bk-hero-tag" style="opacity:.85">${escapeHtml(tagline)}</div>` : ''}
+        <div class="bk-hero-chips">
+          ${colors.length ? `<span class="bk-chip" style="border-color:${onAccent}44;color:${onAccent}">${colors.length} colour${colors.length===1?'':'s'}</span>` : ''}
+          ${(heading||body) ? `<span class="bk-chip" style="border-color:${onAccent}44;color:${onAccent}">${[heading,body].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')}</span>` : ''}
+        </div>
+      </div>
+
+      ${colors.length ? `
+      <div class="bk-section">
+        <div class="bk-section-title">Colour palette</div>
+        <div class="bk-swatches">${swatches}</div>
+      </div>` : ''}
+
+      ${(heading || body) ? `
+      <div class="bk-section">
+        <div class="bk-section-title">Typography</div>
+        <div class="bk-fonts">${fontCard('Heading', heading)}${fontCard('Body', body)}</div>
+      </div>` : ''}
+    </div>`;
+
+  // Click a swatch to copy its hex, with brief inline feedback.
+  stage.querySelectorAll('.bk-swatch').forEach(el => {
+    el.addEventListener('click', () => {
+      const hex = el.dataset.copy;
+      navigator.clipboard?.writeText(hex);
+      const tag = el.querySelector('.bk-swatch-copy');
+      const prev = tag.textContent;
+      tag.textContent = '✓ copied';
+      setTimeout(() => { tag.textContent = prev; }, 1100);
+    });
+  });
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
