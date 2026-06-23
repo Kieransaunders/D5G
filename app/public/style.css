@@ -621,3 +621,41 @@ select option { background: var(--surface); }
 @media (max-width: 720px) {
   .preview-drawer { width: 100%; }
 }
+
+/* ── Chat context chips + slash menu (5.7) ──────────────────────────────────── */
+.ctx-chip {
+  font-size: 0.7rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.ctx-chip:hover { border-color: var(--danger); }
+.slash-menu {
+  position: absolute;
+  bottom: 78px;
+  left: 0;
+  right: 64px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  padding: 4px;
+  z-index: 20;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.slash-menu[hidden] { display: none; }
+.slash-item {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.slash-item:hover { background: var(--bg); }
+.slash-item span { color: var(--muted); font-size: 0.7rem; }

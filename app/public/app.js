@@ -534,6 +534,94 @@ document.getElementById('chatClear').addEventListener('click', () => {
   document.getElementById('chatMessages').innerHTML = '';
 });
 
+// ─── Chat context chips + slash hints (5.7) ──────────────────────────────────
+// Chips show the active brand/design/page sent in the chat preamble. Click a
+// chip to clear that piece of context.
+async function setChatContext(field, id) {
+  chatCtx[field] = id || null;
+  await renderChatChips();
+}
+window.setChatContext = setChatContext; // exposed for Brand/Designs tabs to call
+
+async function renderChatChips() {
+  const wrap = document.getElementById('chatContextChips');
+  if (!wrap) return;
+  const chips = [];
+  if (chatCtx.brandId) {
+    try {
+      const b = await fetch(`/brand/${chatCtx.brandId}`).then(r => r.json());
+      if (!b.error) chips.push(['brand', `Brand: ${b.name}`]);
+    } catch {}
+  }
+  if (chatCtx.designId) {
+    try {
+      const d = await fetch(`/designs/${chatCtx.designId}`).then(r => r.json());
+      if (!d.error) chips.push(['design', `Design: ${d.name}`]);
+    } catch {}
+  }
+  if (chatCtx.generationId) chips.push(['page', `Page: gen #${chatCtx.generationId}`]);
+  wrap.innerHTML = chips.map(([field, label]) =>
+    `<button type="button" class="ctx-chip" data-clear-ctx="${field}">${escapeHtml(label)} ✕</button>`).join('');
+  wrap.querySelectorAll('[data-clear-ctx]').forEach(btn => {
+    btn.addEventListener('click', () => { chatCtx[btn.dataset.clearCtx] = null; renderChatChips(); });
+  });
+}
+
+// Slash autocomplete: typing '/' at the start of the input shows a shortcut menu.
+const SLASH_COMMANDS = [
+  ['/generate', 'Propose a page generation (chat mode)'],
+  ['/brand',    'Attach a brand profile to the chat'],
+  ['/design',   'Attach a design project to the chat'],
+  ['/import',   'Import the active page to WordPress'],
+  ['/pages',    'List imported pages on the site'],
+];
+const slashMenu = document.getElementById('slashMenu');
+const chatInputEl = document.getElementById('chatInput');
+chatInputEl.addEventListener('input', () => {
+  const v = chatInputEl.value;
+  if (v.startsWith('/') && !v.includes('\n')) {
+    const q = v.slice(1).toLowerCase();
+    const hits = SLASH_COMMANDS.filter(([cmd]) => cmd.slice(1).startsWith(q));
+    slashMenu.innerHTML = hits.map(([cmd, desc]) =>
+      `<div class="slash-item" data-slash="${cmd}"><strong>${cmd}</strong> <span>${escapeHtml(desc)}</span></div>`).join('');
+    slashMenu.hidden = hits.length === 0;
+    slashMenu.querySelectorAll('[data-slash]').forEach(item => {
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        applySlashCommand(item.dataset.slash);
+      });
+    });
+  } else {
+    slashMenu.hidden = true;
+  }
+});
+chatInputEl.addEventListener('blur', () => setTimeout(() => slashMenu.hidden = true, 150));
+
+function applySlashCommand(cmd) {
+  chatInputEl.value = '';
+  slashMenu.hidden = true;
+  switch (cmd) {
+    case '/generate':
+      chatInputEl.value = 'Build a ';
+      chatInputEl.focus();
+      break;
+    case '/brand':
+      document.querySelector('.tab[data-tab=brand]').click();
+      break;
+    case '/design':
+      document.querySelector('.tab[data-tab=designs]').click();
+      break;
+    case '/import':
+      chatInputEl.value = 'Import the current page to WordPress.';
+      chatInputEl.focus();
+      break;
+    case '/pages':
+      chatInputEl.value = 'List the pages already imported to the site.';
+      chatInputEl.focus();
+      break;
+  }
+}
+
 // ─── Settings load / save ─────────────────────────────────────────────────────
 async function loadSettings() {
   try {
@@ -1236,6 +1324,7 @@ async function loadDesignsList() {
       </div>
       <div class="brand-card-meta">${d.brand_name ? 'brand: ' + escapeHtml(d.brand_name) : 'no brand linked'} · created ${escapeHtml((d.created_at || '').split(' ')[0])}</div>
       <button type="button" class="btn-link design-expand" data-design-expand="${d.id}" style="font-size:0.75rem;color:var(--accent)">Show pages</button>
+      <button type="button" class="btn-link design-use" data-design-use="${d.id}" style="font-size:0.75rem;color:var(--accent)">Use in chat</button>
       <button type="button" class="btn-link design-delete" data-design-delete="${d.id}" style="font-size:0.75rem;color:var(--danger)">Delete</button>
       <div class="design-pages" data-design-pages="${d.id}" hidden style="margin-top:6px;display:flex;flex-direction:column;gap:4px"></div>
     </div>`).join('');
@@ -1245,6 +1334,12 @@ async function loadDesignsList() {
   });
   wrap.querySelectorAll('[data-design-delete]').forEach(btn => {
     btn.addEventListener('click', () => deleteDesign(parseInt(btn.dataset.designDelete)));
+  });
+  wrap.querySelectorAll('[data-design-use]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await setChatContext('designId', parseInt(btn.dataset.designUse));
+      document.querySelector('.tab[data-tab=chat]').click();
+    });
   });
 }
 
