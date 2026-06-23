@@ -7,6 +7,10 @@ const fs      = require('fs');
 const os      = require('os');
 const { spawn, execSync } = require('child_process');
 const { db, EXPORTS_DIR } = require('./db');
+const {
+  createBrandProfile, getBrandProfile, listBrandProfiles,
+  updateBrandProfile, deleteBrandProfile,
+} = require('./db');
 
 const PLUGIN_DIR  = path.resolve(__dirname, '..');
 const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
@@ -486,6 +490,37 @@ app.post('/briefs', (req, res) => {
 // ─── DELETE /briefs/:id ───────────────────────────────────────────────────────
 app.delete('/briefs/:id', (req, res) => {
   db.prepare('DELETE FROM saved_briefs WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+// ─── /brand — Brand Profile CRUD ─────────────────────────────────────────────
+app.get('/brand', (_req, res) => {
+  res.json(listBrandProfiles());
+});
+
+app.get('/brand/:id', (req, res) => {
+  const row = getBrandProfile(parseInt(req.params.id));
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json(row);
+});
+
+app.post('/brand', (req, res) => {
+  const { name, data, source_type, source_ref } = req.body;
+  if (!name || !data) return res.status(400).json({ error: 'name and data required' });
+  const id = createBrandProfile({ name, data, source_type: source_type || 'manual', source_ref });
+  res.json({ id });
+});
+
+app.put('/brand/:id', (req, res) => {
+  const { name, data, source_type, source_ref } = req.body;
+  try {
+    updateBrandProfile(parseInt(req.params.id), { name, data, source_type, source_ref });
+    res.json({ ok: true });
+  } catch (e) { res.status(404).json({ error: e.message }); }
+});
+
+app.delete('/brand/:id', (req, res) => {
+  deleteBrandProfile(parseInt(req.params.id));
   res.json({ ok: true });
 });
 

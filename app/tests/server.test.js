@@ -157,3 +157,46 @@ test('POST /generate with missing required fields returns a response (any HTTP s
   assert.ok(typeof status === 'number' && status >= 100 && status < 600,
     `Expected a valid HTTP status, got ${status}`);
 });
+
+// ─── /brand — Brand Profile CRUD ─────────────────────────────────────────────
+// Use a unique name per test so order-independent assertions hold even though
+// all tests share the server's single DB.
+
+test('POST /brand creates a profile, GET /brand lists it', async () => {
+  const tag = `Floria-${Date.now()}`;
+  const post = await request('POST', '/brand', { name: tag, data: { colors: [] }, source_type: 'manual' });
+  assert.equal(post.status, 200);
+  assert.ok(post.body.id, 'expected an id back');
+
+  const list = await request('GET', '/brand');
+  assert.equal(list.status, 200);
+  assert.ok(Array.isArray(list.body), 'GET /brand should return an array');
+  assert.ok(list.body.some(r => r.id === post.body.id && r.name === tag),
+    'created profile should appear in the list');
+});
+
+test('PUT /brand/:id updates data', async () => {
+  const tag = `X-${Date.now()}`;
+  const post = await request('POST', '/brand', { name: tag, data: { colors: [] } });
+  assert.equal(post.status, 200);
+  const id = post.body.id;
+
+  const put = await request('PUT', `/brand/${id}`, { data: { colors: [{ role: 'primary', hex: '#1A2744' }] } });
+  assert.equal(put.status, 200);
+
+  const get = await request('GET', `/brand/${id}`);
+  assert.equal(get.status, 200);
+  assert.equal(get.body.data.colors[0].hex, '#1A2744');
+});
+
+test('DELETE /brand/:id removes the profile', async () => {
+  const tag = `Y-${Date.now()}`;
+  const post = await request('POST', '/brand', { name: tag, data: {} });
+  const id = post.body.id;
+
+  const del = await request('DELETE', `/brand/${id}`);
+  assert.equal(del.status, 200);
+
+  const get = await request('GET', `/brand/${id}`);
+  assert.equal(get.status, 404);
+});
