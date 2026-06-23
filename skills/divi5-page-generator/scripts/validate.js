@@ -113,6 +113,7 @@ const allPresetRefs = [];
 const allGcidRefs = [];
 const headingOutline = []; // {level, text}
 const imagesMissingAlt = [];
+const placeholderImages = [];
 let textBlocks = [];
 let blockCount = 0;
 
@@ -186,6 +187,7 @@ for (const { key, content } of contents) {
     if (t.name === 'image' && t.attrs) {
       const v = t.attrs.image?.innerContent?.desktop?.value || {};
       if (!v.alt || !String(v.alt).trim()) imagesMissingAlt.push(v.src || '(no src)');
+      if (/loremflickr|picsum|placehold/i.test(String(v.src || ''))) placeholderImages.push(v.src);
     }
 
     // ─── DiviTheatre custom-attribute checks (pin category) ──────────────────
@@ -315,6 +317,16 @@ if (presetFirstMode && allGcidRefs.length) {
   if (!varFiles.length) {
     err(`GCID: ${allGcidRefs.length} gcid reference(s) in preset-first mode but no *.variables.json found alongside the page. ` +
         `Provide the matching variables file (from the style-variables skill or site export) or bundle global_colors in the JSON.`);
+  } else {
+    // Don't trust the filename — parse the file(s) and confirm every referenced gcid
+    // actually appears inside. Shape-agnostic: scan the raw text for the gcid slug.
+    const varsText = varFiles.map(f => {
+      try { return fs.readFileSync(path.join(dir2, f), 'utf8'); }
+      catch (e) { warn(`could not read ${f}: ${e.message}`); return ''; }
+    }).join('\n');
+    const missing = [...new Set(allGcidRefs)].filter(g => !varsText.includes(g) && !etSystemGcids.has(g));
+    if (missing.length) warn(`GCID: ${missing.length} referenced gcid(s) absent from ${varFiles.join(', ')}: ${missing.join(', ')}`);
+    else pass(`all gcid references present in ${varFiles.join(', ')}`);
   }
 }
 
@@ -335,24 +347,85 @@ if (definedColors.size) pass(`${definedColors.size} global colours defined, refe
   const hasEnable = (attrs) =>
     attrs?.button?.decoration?.button?.desktop?.value?.enable === 'on';
 
+  // ── colour resolution (the "invisible text on same-tone bg" footgun) ──
+  const colorHexMap = new Map((doc.global_colors || []).map(c => [c[0], String(c[1]?.color || '').toLowerCase()]));
+  // → hex string | 'transparent' | null (a ref we can't resolve to a hex)
+  const resolveColor = (val) => {
+    if (!val || typeof val !== 'string') return undefined; // not set at all
+    if (val === 'transparent') return 'transparent';
+    if (/^#[0-9a-f]{3,8}$/i.test(val)) return val.toLowerCase();
+    const m = val.match(/gcid-[a-z0-9-]+/i);
+    if (m) return colorHexMap.get(m[0]) || null; // null = ref to a colour defined elsewhere (on-site)
+    return null;
+  };
+  const firstBp = (obj, leaf) => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (const bp of ['desktop', 'tablet', 'phone']) {
+      const v = obj[bp]?.value?.[leaf];
+      if (v != null) return v;
+    }
+    return undefined;
+  };
+  const relLum = (hex) => {
+    const h = hex.replace('#', '');
+    const n = h.length === 3 ? h.split('').map(c => c + c).join('') : h.slice(0, 6);
+    const ch = [0, 2, 4].map(i => {
+      const c = parseInt(n.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  const contrast = (a, b) => {
+    const l1 = relLum(a), l2 = relLum(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  };
+
+  // dec = the button.decoration object
+  const checkButtonColour = (dec, label) => {
+    if (!dec) return;
+    const textVal = firstBp(dec.font?.font, 'color');   // correct path: font.font.*.color
+    const bgVal   = firstBp(dec.background, 'color');
+    const text = resolveColor(textVal);
+    const bg = resolveColor(bgVal);
+
+    // Mis-pathed text colour: set directly on font.*.color instead of font.font.*.color → silently dropped.
+    if (firstBp(dec.font, 'color') != null) {
+      err(`BUTTON: "${label}" sets a colour on button.decoration.font (wrong key) — must be font.font.*.color, so the text colour will not apply`);
+    }
+
+    const bgIsSolid = bg && bg !== 'transparent'; // a real background (hex or unresolved ref)
+    if (bgIsSolid && text === undefined) {
+      err(`BUTTON: "${label}" has a background but no text colour — text defaults onto the same tone and renders invisible`);
+    } else if (typeof text === 'string' && text.startsWith('#') && typeof bg === 'string' && bg.startsWith('#')) {
+      // Button labels are large/bold text → WCAG AA threshold is 3:1, not 4.5:1.
+      // ponytail: 3:1 gate, raise to 4.5 if small-text buttons ever ship.
+      const ratio = contrast(text, bg);
+      if (ratio < 3) warn(`BUTTON: "${label}" text/background contrast ${ratio.toFixed(2)}:1 < WCAG AA large-text 3:1 (${text} on ${bg})`);
+    }
+  };
+
   let buttonFails = 0;
 
   // Group presets (divi/button group — used by groupPreset.button on block)
   const groupItems = doc.presets?.group?.['divi/button']?.items || {};
   for (const [id, item] of Object.entries(groupItems)) {
+    const label = item.name || id;
     if (!hasEnable(item.attrs)) {
-      err(`BUTTON: group preset "${item.name || id}" missing button.decoration.button.enable:"on" — will render default blue`);
+      err(`BUTTON: group preset "${label}" missing button.decoration.button.enable:"on" — will render default blue`);
       buttonFails++;
     }
+    checkButtonColour(item.attrs?.button?.decoration, `group preset ${label}`);
   }
 
   // Module presets (divi/button module preset)
   const moduleItems = doc.presets?.module?.['divi/button']?.items || {};
   for (const [id, item] of Object.entries(moduleItems)) {
+    const label = item.name || id;
     if (!hasEnable(item.attrs)) {
-      err(`BUTTON: module preset "${item.name || id}" missing button.decoration.button.enable:"on" — will render default blue`);
+      err(`BUTTON: module preset "${label}" missing button.decoration.button.enable:"on" — will render default blue`);
       buttonFails++;
     }
+    checkButtonColour(item.attrs?.button?.decoration, `module preset ${label}`);
   }
 
   // Inline button blocks with no preset reference (enable must be on the block itself)
@@ -361,12 +434,13 @@ if (definedColors.size) pass(`${definedColors.size} global colours defined, refe
       if (t.name !== 'button' || !t.attrs) continue;
       const hasGroupPreset = t.attrs.groupPreset?.button?.presetId?.length > 0;
       const hasModulePreset = Array.isArray(t.attrs.modulePreset) && t.attrs.modulePreset.length > 0;
+      const label = t.attrs.button?.innerContent?.desktop?.value?.text || '(unlabelled)';
       if (hasGroupPreset || hasModulePreset) continue;
       if (!hasEnable(t.attrs)) {
-        const label = t.attrs.button?.innerContent?.desktop?.value?.text || '(unlabelled)';
         err(`BUTTON: inline button "${String(label).slice(0, 40)}" has no preset and missing enable:"on" — will render default blue`);
         buttonFails++;
       }
+      checkButtonColour(t.attrs.button?.decoration, `inline ${String(label).slice(0, 40)}`);
     }
   }
 
@@ -474,6 +548,8 @@ pass(`SEO: outline checked (${headingOutline.length} headings)`);
 
 if (imagesMissingAlt.length) err(`SEO: ${imagesMissingAlt.length} image(s) missing alt text: ${imagesMissingAlt.join(', ')}`);
 else pass('SEO: all images have alt text');
+
+if (placeholderImages.length) warn(`${placeholderImages.length} placeholder image(s) (loremflickr/picsum/placehold) — swap for real photography before launch; loremflickr is unreliable on live sites: ${placeholderImages.slice(0, 3).join(', ')}`);
 
 if (keyword) {
   const kw = keyword.toLowerCase();

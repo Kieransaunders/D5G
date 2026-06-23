@@ -809,6 +809,22 @@ function createBuilder(opts) {
     preset(moduleName, name, attrs) {
       const id = randomId();
       const prunedAttrs = prune(attrs);
+      // Guard the button footgun: text colour must live at button.decoration.font.font.*.color.
+      // A `color` set directly on font (or any other decoration key) is silently dropped on render.
+      if (moduleName === 'divi/button') {
+        const dec = prunedAttrs?.button?.decoration;
+        if (dec) {
+          const bpHasColor = (o) => o && typeof o === 'object' &&
+            ['desktop', 'tablet', 'phone'].some(bp => o[bp]?.value?.color != null);
+          if (bpHasColor(dec.font)) {
+            console.warn(`b.preset('divi/button', '${name}'): colour set on button.decoration.font — must be font.font.*.color (use b.buttonPreset() to avoid this). Text colour will not apply.`);
+          }
+          if (dec.font && !dec.font.font && bpHasColor(dec.font) === false) {
+            // font present but not shaped { font: dv(...) } and not carrying a colour — likely a wrong key
+            console.warn(`b.preset('divi/button', '${name}'): button.decoration.font is not shaped { font: dv(...) }; styles may not apply.`);
+          }
+        }
+      }
       if (!presets[moduleName]) presets[moduleName] = { default: id, items: {} };
       presets[moduleName].items[id] = {
         id,
@@ -949,6 +965,23 @@ function createBuilder(opts) {
 
       const gp = (name, bgGcid) => this.groupPreset('divi/button', 'button', 'divi/button', name, btnAttrs(bgGcid));
       return { primary: gp('Button Primary', primary), secondary: gp('Button Secondary', secondary) };
+    },
+
+    /**
+     * Register a single button MODULE preset with the correct nesting — the
+     * hand-built shape (font.font, enable:'on') that's easy to get wrong.
+     * opts: { bg, color, hover, radius, fontSize, fontFamily } — pass colours as
+     * refs (b.colorVar/b.color) or hex. Returns { id, attrs } like preset().
+     */
+    buttonPreset(name, opts) {
+      const o = opts || {};
+      const attrs = { button: { decoration: prune({
+        button:     dv(prune({ enable: 'on', icon: { enable: 'off' } })),
+        font:       { font: dv(prune({ color: o.color, size: o.fontSize, family: o.fontFamily })) },
+        background: o.bg ? Object.assign({}, dv({ color: o.bg }), o.hover ? { hover: { color: o.hover } } : {}) : undefined,
+        border:     o.radius ? dv({ radius: { topLeft: o.radius, topRight: o.radius, bottomLeft: o.radius, bottomRight: o.radius, sync: 'on' } }) : undefined,
+      }) } };
+      return this.preset('divi/button', name, attrs);
     },
 
     /**

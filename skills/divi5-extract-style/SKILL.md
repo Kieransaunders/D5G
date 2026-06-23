@@ -98,16 +98,16 @@ All extraction modes below return a **Brand Profile JSON** object — the shared
 {
   "name": "Acme",
   "colors": [
-    { "role": "primary", "hex": "#1a2744", "source": "url|export|image|chat|manual", "locked": false, "id": "gcid-… (export only)" }
+    { "role": "primary", "hex": "#1a2744", "source": "url|export|image|chat|manual|canva", "locked": false, "id": "gcid-… (export only)" }
   ],
   "fonts": {
-    "heading": { "family": "Playfair Display", "source": "url|export|image|chat|manual" },
+    "heading": { "family": "Playfair Display", "source": "url|export|image|chat|manual|canva" },
     "body":    { "family": "Inter",          "source": "…" }
   },
   "logo": null,
   "voice": "Confident, plain-spoken…",
   "tagline": "We make invoicing effortless",
-  "sourceType": "url|export|image|chat|manual",
+  "sourceType": "url|export|image|chat|manual|canva",
   "sourceRef": "https://acme.com or /path/to/export.json",
   "extractedAt": "ISO timestamp"
 }
@@ -131,6 +131,19 @@ The app's `GET /brand/extract-url?url=…` fetches a public page and returns a *
 
 ### Image mode (logo / screenshot)
 Analyse the image (vision) and return Brand Profile JSON. Prefer the canvas-derived palette the app already supplies (`source: "image-canvas"`) as a starting set, then enrich with vision: identify logo colours, dominant brand colour, and any visible typeface. `sourceType: "image"`. If you can read a font name from the image, set `fonts`; otherwise leave `fonts` empty rather than guess.
+
+### Canva mode (design / brand template via the Canva connector)
+Pull a brand from a Canva design when the user has the **Canva connector** connected in Claude. Canva's Connect API does **not** expose brand-kit colours or fonts as structured tokens, so this mode is image-derived for colours and content-derived for fonts — it is not a clean token import. Set `sourceType: "canva"` and `source: "canva"` on everything it produces.
+
+**Steps:**
+
+1. **Find the source design.** If the user pasted a Canva link, resolve it (`resolve-shortlink` → design id); otherwise `search-designs` by name, or `list-brand-templates` and take the one they mean. `list-brand-kits` only returns kit `id`/`name`/`thumbnail` — useful for picking, not for tokens.
+2. **Get a raster.** Prefer `export-design` to a PNG (higher resolution → better palette) over `get-design-thumbnail` (faster, lower res, fine for a quick read). Save the PNG to the working directory.
+3. **Colours →** run the **Image mode** palette+vision step above on that PNG. Tag results `source: "canva"`.
+4. **Fonts →** call `get-design-content` and read the font `family` off the design's text elements — this is *real* data from the design, not a vision guess, so prefer it. Map the largest/heading text → `fonts.heading`, body text → `fonts.body`, `source: "canva"`. Only fall back to a vision guess if content has no font info, and then leave it empty rather than invent.
+5. **Logo / voice / tagline** — leave empty unless the user states them in chat (then `source: "chat"` for those fields).
+
+`sourceRef`: the Canva design id or URL. Flag clearly in the report that colours came from a rendered image (so they're approximate) and which fonts came from design content vs. a guess.
 
 ### Chat mode
 Extract a Brand Profile JSON from a conversation (`POST /brand/extract-chat` passes `{history}`). **Only include colours/fonts/voice that are explicitly mentioned** by the user in the chat — never infer. Leave every other field empty. `sourceType: "chat"`.

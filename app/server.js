@@ -253,7 +253,26 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
       }
     }
 
-    const status = code === 0 ? 'complete' : 'failed';
+    // A run can exit 0 but produce a malformed deliverable (e.g. the model
+    // wrote HTML into the .json). The deliverable is the landing-page file, or
+    // the base-page clone in clone-delivery mode. Surface a broken/absent one
+    // loudly instead of a silent "complete".
+    const landingOnDisk = allJsonFiles.some(f => f.includes('landing-page'));
+    const landingValid  = files.some(f => f.includes('landing-page'));
+    const cloneValid    = files.some(f => f.includes('-base-page'));
+    // Broken if the intended landing page is on disk but malformed, or nothing
+    // importable (landing or clone) was produced at all.
+    const brokenLanding = landingOnDisk && !landingValid;
+    const pageProblem = code === 0 && (brokenLanding || (!landingValid && !cloneValid));
+    if (pageProblem) {
+      const warn = brokenLanding
+        ? `\n⚠ The page JSON came out malformed (not valid JSON — likely HTML written into the .json). Re-run the generation.\n`
+        : `\n⚠ Generation finished but produced no importable Divi page JSON. Re-run it.\n`;
+      appendLog.run(warn, genId);
+      sendSSE(genId, 'log', { chunk: warn });
+    }
+
+    const status = code !== 0 ? 'failed' : (pageProblem ? 'no_page' : 'complete');
     db.prepare(`UPDATE generations SET status=?, style_check=? WHERE id=?`).run(status, styleCheck, genId);
 
     // Auto-promote to a Design Project when a sibling generation shares the
