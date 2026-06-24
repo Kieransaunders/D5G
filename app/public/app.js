@@ -878,7 +878,31 @@ async function sendChatAgent() {
           eventName = null;
         } else if (eventName === 'gen_intent') {
           awaitingUser = false;
-          appendIntentCard(d);                    // Stage 2: one-click Generate card
+          appendIntentCard(d);                    // Stage 2: one-click Generate card (legacy fallback)
+          stopWorking();
+          eventName = null;
+        } else if (eventName === 'building') {
+          // Stage 2 (in-chat build) started: keep the approved mockup showing,
+          // flip the canvas status to a building indicator, keep the spinner alive.
+          awaitingUser = false;
+          working = 'Building the Divi 5 page';
+          const cs = document.getElementById('canvasStatus');
+          if (cs) cs.textContent = 'Building the real Divi 5 page\u2026';
+          if (!reply) showWorking(working);
+          eventName = null;
+        } else if (eventName === 'page_built') {
+          // Stage 2 finished in-chat: render the real preview in the canvas and
+          // drop the file/import cards into the chat (same result shape as /generate).
+          awaitingUser = false;
+          if (d.status === 'complete' && d.hasPreview) {
+            showInCanvas(d.genId, { title: `Preview \u00b7 generation #${d.genId}` });
+            appendGenerationCards(d.genId, d.files, d.hasPreview);
+            if (!reply) setReply('\u2713 Page built \u2014 showing on the right \u2192');
+          } else {
+            appendGenerationCards(d.genId, d.files, d.hasPreview);
+            setReply(`\u26a0 Build finished with status "${d.status}". You can retry or refine.`);
+          }
+          if (typeof loadHistory === 'function') { try { loadHistory(); } catch {} }
           stopWorking();
           eventName = null;
         } else if (eventName === 'brand_saved') {
@@ -889,6 +913,8 @@ async function sendChatAgent() {
           awaitingUser = false;
           working = d.name === 'show_mockup' ? 'Building the mockup'
                   : d.name === 'extract_brand' ? 'Reading the site'
+                  : d.name === 'start_build' ? 'Building the Divi 5 page'
+                  : d.name === 'deliver_page' ? 'Finishing your page'
                   : d.name === 'propose_page' ? 'Preparing the build' : `Running ${d.name}`;
           if (!reply) showWorking(working);
           eventName = null;
@@ -1835,6 +1861,7 @@ function showInCanvas(genId, meta = {}) {
   const newTab = document.getElementById('canvasNewTab');
   newTab.href = url; newTab.hidden = false;
   document.getElementById('canvasImport').hidden = false;
+  const cg = document.getElementById('canvasGenerate'); if (cg) cg.hidden = true;
   document.getElementById('canvasStatus').textContent = '';
   document.getElementById('canvasPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1864,7 +1891,8 @@ function showMockupInCanvas(html, title) {
   document.getElementById('canvasTitle').textContent = title || 'Mockup · draft';
   const newTab = document.getElementById('canvasNewTab'); if (newTab) newTab.hidden = true;
   const imp = document.getElementById('canvasImport'); if (imp) imp.hidden = true;
-  document.getElementById('canvasStatus').textContent = 'Draft mockup — ask for changes, or approve to build the real Divi 5 page';
+  const gen = document.getElementById('canvasGenerate'); if (gen) gen.hidden = false;
+  document.getElementById('canvasStatus').textContent = 'Draft mockup — ask for changes, or click Generate Divi Page when ready';
   document.getElementById('canvasPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1905,6 +1933,12 @@ document.getElementById('canvasImport')?.addEventListener('click', async (e) => 
     }
   } catch (err) { status.textContent = `⚠️ ${err.message}`; }
   btn.disabled = false;
+});
+
+// ─── Generate Divi Page button (canvas toolbar — shown during mockup phase) ───
+document.getElementById('canvasGenerate')?.addEventListener('click', () => {
+  chatInputEl.value = 'Build the Divi 5 page now.';
+  sendChatAgent();
 });
 
 // ─── HTML Preview panel (now routes to the canvas) ────────────────────────────

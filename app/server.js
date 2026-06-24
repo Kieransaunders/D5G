@@ -12,7 +12,6 @@ const {
   updateBrandProfile, deleteBrandProfile,
   createDesignProject, getDesignProject, listDesignProjects,
   linkGenerationToDesign, deleteDesignProject,
-  promoteIfEligible,
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
 const { extractIntent, stripIntent } = require('./lib/intent-marker');
@@ -51,7 +50,6 @@ function resolveOutputDir(outputDir) {
   return outputDir;
 }
 
-const STYLE_CHECK = path.join(PLUGIN_DIR, 'skills', 'divi5-style-check', 'scripts', 'style-check.js');
 const ET_PAGES    = require(path.join(PLUGIN_DIR, 'skills', 'divi5-page-generator', 'scripts', 'et-pages.js'));
 const PORT        = parseInt(process.env.PORT) || 3747;
 
@@ -261,9 +259,6 @@ function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
     }
   }, 30000);
   const resetGenHang = () => { lastGenOutputAt = Date.now(); };
-  // Listen on `res` (client disconnect), not `req` (fires on body read).
-  res.on('close', () => proc.kill('SIGKILL')); // no orphan on client disconnect
-
   const appendLog = db.prepare(`UPDATE generations SET log = log || ? WHERE id = ?`);
 
   proc.stdout.on('data', chunk => {
@@ -600,14 +595,15 @@ function buildChatPreamble(ctx) {
 // defaults + the divi5generate skills intact (we steer via the message, not by
 // replacing the system prompt).
 // Scratch working dir for agent chat sessions — keeps any stray writes out of
-// the repo root. Real page generation still goes through /generate's own dirs.
+// the repo root. In-chat Stage-2 builds now write under GEN_OUTPUTS (below) via
+// the start_build / deliver_page tools, NOT the legacy /generate path.
 const AGENT_CWD = path.join(GEN_OUTPUTS, '_chat');
 try { fs.mkdirSync(AGENT_CWD, { recursive: true }); } catch (_) {}
 
 const AGENT_GUIDE = [
   'You are helping build a Divi 5 web page inside an app, in TWO stages.',
   'STAGE 1 — MOCKUP (always first): have a short, focused conversation to gather the brief. Use the AskUserQuestion tool for choices and the pick_colour / pick_number / collect_fields tools for inputs. Then produce ONE self-contained HTML mockup of the page and show it by calling the show_mockup tool (use the brand colours/fonts if given). Iterate: each time the user asks for a change ("darker hero", "swap the sections"), call show_mockup again. Never ask "shall I generate?" in plain text — the user can only act through the tools and cards.',
-  'STAGE 2 — BUILD: only once the user approves the mockup, call the propose_page tool with the brief (brand, keyword, pageType, sections, ctaLabel, aesthetic). That renders a one-click Generate card which builds the real, importable Divi 5 JSON and previews it.',
+  'STAGE 2 — BUILD: only once the user approves the mockup, call the start_build tool with the brief (brand, keyword, pageType, sections, ctaLabel, aesthetic, motion). It returns an output directory and the exact prompt to run. THEN actually run the divi5-page-generator skill yourself (in headless/brief mode) to write the [brand]-landing-page.json into that directory, and finally call the deliver_page tool with that directory so the app registers the page and shows the preview in the canvas. You are doing the build end-to-end — never hand off to a form or ask the user to click Start.',
 ].join('\n');
 
 app.post('/agent/chat', async (req, res) => {
@@ -640,7 +636,7 @@ app.post('/agent/chat', async (req, res) => {
 
   let sid = sessionId;
   try {
-    const r = await startOrContinue({ sessionId, text: text2, cwd: AGENT_CWD, appBase: `http://127.0.0.1:${PORT}`, sink });
+    const r = await startOrContinue({ sessionId, text: text2, cwd: AGENT_CWD, appBase: `http://127.0.0.1:${PORT}`, genOutputs: GEN_OUTPUTS, sink });
     sid = r.sessionId;
     if (r.isNew) sink.event('session', { id: sid });
     res.on('close', () => { clearInterval(keepAlive); detachSink(sid, sink); }); // client left mid-turn; keep session
@@ -699,18 +695,6 @@ function findClaude() {
     try { execSync(`which "${c}" 2>/dev/null || test -f "${c}"`); return c; } catch (_) {}
   }
   try { return execSync('which claude').toString().trim(); } catch (_) { return null; }
-}
-
-function runStyleCheck(originalPath, generatedPath) {
-  try {
-    const out = execSync(`node "${STYLE_CHECK}" "${originalPath}" "${generatedPath}"`, { encoding: 'utf8' });
-    return { consistent: true, report: out };
-  } catch (e) {
-    const report = [e.stdout, e.stderr].filter(Boolean).join('\n') || e.message;
-    // Distinguish a style mismatch (script exited non-zero with output) from a crash (no stdout)
-    const crashed = !e.stdout && !e.stderr;
-    return { consistent: false, crashed, report };
-  }
 }
 
 // ─── POST /import/:id — Import generated page to WordPress ───────────────────
@@ -945,12 +929,11 @@ app.get('/preview-html/:id', (req, res) => {
     return res.send(gen.preview_html);
   }
 
-  // 3. Nothing to serve — say why, rather than a blank "not available".
-  res.status(404).send(
-    `No preview for generation ${req.params.id}. Output dir ${gen.output_dir} ` +
-    `${dirExists ? 'exists but contains no .html file' : 'is missing (likely purged from /tmp)'}, ` +
-    `and no preview was stored in the database. Re-run the generation to a persistent folder.`
-  );
+  // 3. No HTML preview — this generation only has JSON output (direct form path).
+  res.setHeader('Content-Type', 'text/html');
+  res.status(200).send(`<!doctype html><html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#888;background:#f9f9f9;text-align:center">
+    <div><div style="font-size:2rem;margin-bottom:8px">📄</div><p style="margin:0;font-size:0.9rem">No HTML mockup for this generation.<br>Import to WordPress to preview the live Divi page.</p></div>
+  </body></html>`);
 });
 
 // ─── GET /screenshot?url=… — full-page PNG of a live Divi page (QA loop) ──────

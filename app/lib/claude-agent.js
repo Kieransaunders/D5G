@@ -15,6 +15,8 @@
 const { randomUUID } = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const { db } = require('../db');
+const { registerGenerationFromDir } = require('./generation-registrar');
 
 // ── State ────────────────────────────────────────────────────────────────────
 const sessions = new Map(); // sessionId → Session
@@ -22,12 +24,14 @@ const pending  = new Map(); // reqId → { resolve, reject, sessionId }  (questi
 const IDLE_MS  = 15 * 60 * 1000; // close a session after 15 min of no activity
 
 // ── Session ──────────────────────────────────────────────────────────────────
-function newSession(cwd, appBase) {
+function newSession(cwd, appBase, genOutputs) {
   const s = {
     id: randomUUID(),
     cwd,
     appBase,           // e.g. http://127.0.0.1:3747 — so tools can call the app's own endpoints
+    genOutputs,        // persistent dir under which in-chat builds write their outputs
     lastMockupPath: null, // path of the most recent Stage-1 mockup HTML (fed to Stage 2)
+    lastBuild: null,   // { genId, dir } of the current/last Stage-2 in-chat build
     sink: null,        // current SSE writer { event, data } for the active turn
     queue: [],         // SDKUserMessages waiting to be pulled by the input generator
     waiters: [],       // resolvers parked when the generator is awaiting input
@@ -155,7 +159,7 @@ function buildInputTools(s, sdk) {
         // Persist the latest mockup so Stage 2 (/generate) can match it.
         try { s.lastMockupPath = path.join(s.cwd, `mockup-${s.id}.html`); fs.writeFileSync(s.lastMockupPath, a.html); } catch (_) {}
         s.sink?.event('mockup', { html: a.html, title: a.title || 'Mockup · draft' });
-        return { content: [{ type: 'text', text: 'Mockup is showing in the canvas. Ask if they want changes; when they approve, call propose_page to build the real Divi 5 page.' }] };
+        return { content: [{ type: 'text', text: 'Mockup is showing in the canvas. Ask if they want changes; when they approve, call start_build to build the real Divi 5 page in-chat, then run the page-generator skill and call deliver_page.' }] };
       },
     );
 
@@ -199,29 +203,124 @@ function buildInputTools(s, sdk) {
       },
     );
 
-    // STAGE 2 — once the mockup is approved, the agent calls this instead of
-    // asking "shall I generate?" in prose. It renders the app's existing
-    // one-click Generate card, which runs the real /generate pipeline and shows
-    // a preview in the canvas. Fire-and-return — the user drives generation.
-    const propose = tool(
-      'propose_page',
-      'Propose generating the Divi 5 page once you have gathered enough of the brief. Renders a one-click Generate card in the app that runs the real page generator and shows a live preview. ALWAYS use this when ready to build — never ask "shall I generate?" in plain text, the user cannot act on prose.',
+    // STAGE 2 (BUILD) — two tools that keep the build entirely in-chat.
+    //
+    // start_build: called the moment the user approves the mockup. Allocates a
+    // persistent output dir + a generation row, tells the UI to show the
+    // spinner, and hands the agent the exact headless-build instructions (invoke
+    // the divi5-page-generator skill, write [brand]-landing-page.json into the
+    // dir). Fire-and-return — the agent then does the build, then calls
+    // deliver_page. This REPLACES the old propose_page → tab-switch → /generate
+    // handoff that ran the one-shot `claude -p` (the thing that hung).
+    const startBuild = tool(
+      'start_build',
+      'Begin building the real Divi 5 page once the user approves the mockup. Call this INSTEAD of asking "shall I generate?" — the user cannot act on prose. Returns the output directory path and the exact build instructions; follow them, then call deliver_page with the same dirPath once the page JSON exists.',
       {
-        brand: z.string().optional(),
-        keyword: z.string().optional(),
-        pageType: z.string().optional(),
-        sections: z.array(z.string()).optional(),
-        ctaLabel: z.string().optional(),
-        aesthetic: z.string().optional(),
+        brand: z.string().describe('brand name'),
+        keyword: z.string().optional().describe('primary SEO keyword'),
+        pageType: z.string().optional().describe('home / landing / about / contact / page'),
+        sections: z.array(z.string()).optional().describe('section labels the user confirmed'),
+        ctaLabel: z.string().optional().describe('primary CTA button text'),
+        aesthetic: z.string().optional().describe('chosen aesthetic'),
+        motion: z.string().optional().describe('DiviTheatre motion preference: yes / want / no'),
       },
       async (a) => {
-        // Carry the approved mockup path so Stage 2 matches the draft, not just the text brief.
-        s.sink?.event('gen_intent', s.lastMockupPath ? { ...a, mockupPath: s.lastMockupPath } : a);
-        return { content: [{ type: 'text', text: 'Generate card shown to the user. They can click Start to generate and preview the page. Offer to refine the brief or wait for their result.' }] };
+        // Persistent per-build dir (mirrors /generate's resolveOutputDir — never /tmp).
+        const dir = path.join(s.genOutputs, String(Date.now()));
+        try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
+
+        // Insert the generation row up front (status 'running'), same columns as
+        // /generate, so the build is visible in the Generations tab while it runs
+        // and the eventual deliver_page registration just flips it to complete.
+        const sectionsArr = Array.isArray(a.sections) ? a.sections : [];
+        let genId = null;
+        try {
+          genId = db.prepare(`
+            INSERT INTO generations (brand, keyword, sections, aesthetic, cta_label, cta_url, output_dir, export_path, what_it_does, page_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).run(
+            a.brand || '', a.keyword || '', JSON.stringify(sectionsArr), a.aesthetic || '',
+            a.ctaLabel || '', '', dir, null, '', a.pageType || ''
+          ).lastInsertRowid;
+          s.lastBuild = { genId, dir };
+        } catch (e) {
+          return { content: [{ type: 'text', text: `start_build failed to create a generation row: ${e.message}` }] };
+        }
+
+        // Tell the UI to switch the canvas into a "building" state.
+        s.sink?.event('building', { genId, brand: a.brand, keyword: a.keyword });
+        s.sink?.event('status', { text: 'Building the Divi 5 page…' });
+
+        // The exact instructions the agent follows to run the skill headlessly.
+        // The skill's headless/brief mode runs fully autonomously to file
+        // delivery when a complete brief is supplied (SKILL.md Stage 1).
+        const brief = [
+          `/divi5generate:divi5-page-generator`,
+          `Build a ${a.pageType || 'landing'} page for ${a.brand}.`,
+          a.keyword ? `Primary keyword: ${a.keyword}.` : '',
+          sectionsArr.length ? `Sections: ${sectionsArr.join(', ')}.` : 'Sections: Hero, Features, CTA.',
+          a.aesthetic ? `Aesthetic: ${a.aesthetic}.` : '',
+          a.ctaLabel ? `Primary CTA: "${a.ctaLabel}".` : '',
+          a.motion ? `DiviTheatre motion: ${a.motion}.` : '',
+          (s.lastMockupPath && fs.existsSync(s.lastMockupPath))
+            ? `APPROVED MOCKUP: the user approved an HTML mockup at ${s.lastMockupPath}. Read it with the Read tool and reproduce its layout, section order, colours, fonts and copy as faithfully as possible in Divi 5.`
+            : '',
+          `Write all output files (the [brand]-landing-page.json, seo-meta.json, schema.json and a preview-[brand].html) into this directory: ${dir}`,
+          `This is HEADLESS/BRIEF MODE: run fully autonomously to file delivery. Do NOT ask any questions and do NOT stop for approval. The run is only complete when a validated [brand]-landing-page.json (valid et_builder JSON) exists in ${dir}.`,
+        ].filter(Boolean).join('\n');
+
+        return {
+          content: [{ type: 'text', text:
+            `Build started (generation #${genId}). Output directory:\n${dir}\n\n` +
+            `Now run the page-generator skill with exactly this prompt:\n\n${brief}\n\n` +
+            `When the [brand]-landing-page.json exists in that directory, call deliver_page with dirPath="${dir}". ` +
+            `Do NOT tell the user to click anything — you are doing the build.` }],
+        };
       },
     );
 
-    return createSdkMcpServer({ name: 'divi-inputs', version: '1.0.0', tools: [colour, number, form, mockup, propose, extract, saveBrand] });
+    // deliver_page: the agent calls this after the skill has written the JSON.
+    // Registers the outputs through the SAME helper as /generate (identical
+    // success contract: JSON validation, output_files, style-check, preview,
+    // design promotion) and emits a page_built event the UI renders in-canvas.
+    const deliverPage = tool(
+      'deliver_page',
+      'Call this AFTER the divi5-page-generator skill has written the [brand]-landing-page.json into the build directory. Registers the generated page with the app (so it appears in the Generations tab, canvas preview, and import flow) and shows the preview to the user. Pass the same dirPath that start_build returned.',
+      { dirPath: z.string().describe('the build output directory start_build returned') },
+      async (a) => {
+        const dir = a.dirPath;
+        if (!dir || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
+          return { content: [{ type: 'text', text: `deliver_page: directory not found: ${dir}. Did the build write its outputs?` }] };
+        }
+        const build = s.lastBuild || {};
+        const genId = build.genId;
+        if (!genId) {
+          return { content: [{ type: 'text', text: 'deliver_page: no active build to register. Call start_build first.' }] };
+        }
+
+        // Copy the Stage-1 mockup into the output dir so /preview-html/:id finds it.
+        if (s.lastMockupPath && fs.existsSync(s.lastMockupPath)) {
+          try { fs.copyFileSync(s.lastMockupPath, path.join(dir, 'mockup-preview.html')); } catch (_) {}
+        }
+
+        // Register via the shared helper — identical contract to /generate.
+        const { status, files, hasPreview, pageProblem } = registerGenerationFromDir({
+          genId, outputPath: dir, exitCode: 0, exportPath: null,
+        });
+
+        s.sink?.event('page_built', { genId, status, hasPreview, files });
+
+        if (status === 'complete') {
+          return { content: [{ type: 'text', text:
+            `Page delivered — generation #${genId} is complete and the preview is showing in the canvas. ` +
+            `The user can import it to WordPress from the canvas. Offer to refine anything.` }] };
+        }
+        return { content: [{ type: 'text', text:
+          `Build finished with status "${status}". ${pageProblem ? 'The page JSON was missing or malformed — re-run the page-generator skill and call deliver_page again.' : 'Check the output directory and try again.'}` }] };
+      },
+    );
+
+    return createSdkMcpServer({ name: 'divi-inputs', version: '1.0.0', tools: [colour, number, form, mockup, startBuild, deliverPage, extract, saveBrand] });
   } catch (e) {
     console.warn('[claude-agent] custom input tools disabled:', e.message);
     return null;
@@ -273,10 +372,10 @@ async function startRunner(s) {
 // Start a new turn (creating the session on first call). Returns the sessionId,
 // whether it was newly created, and a `done` promise that resolves when this
 // turn's response is complete (so the caller can end the HTTP response).
-async function startOrContinue({ sessionId, text, cwd, appBase, sink }) {
+async function startOrContinue({ sessionId, text, cwd, appBase, genOutputs, sink }) {
   let s = sessionId && sessions.get(sessionId);
   const isNew = !s;
-  if (!s) s = newSession(cwd, appBase);
+  if (!s) s = newSession(cwd, appBase, genOutputs);
   s.sink = sink;
   resetIdle(s);
   const done = new Promise((resolve) => { s.onTurnEnd = resolve; });
