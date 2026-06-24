@@ -116,6 +116,8 @@ const migrations = [
   // Persist the Stage 2 HTML preview in the DB so /preview-html survives the
   // output dir being cleaned (e.g. a /tmp purge) — the file on disk is fragile.
   `ALTER TABLE generations ADD COLUMN preview_html TEXT`,
+  // Claude SDK session UUID — enables conversation resume on re-run (#2/#5/#6).
+  `ALTER TABLE generations ADD COLUMN sdk_session_id TEXT`,
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch (_) {}

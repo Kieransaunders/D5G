@@ -1,16 +1,12 @@
 // claude-agent.js — interactive, multi-turn Claude sessions via the Agent SDK.
 //
-// v2: persistent session per chat (SDK streaming input), so follow-up messages
-// ("make the purple darker", "try a serif") iterate on the SAME page with the
-// session's full tool/context state — not a fresh run each time. Adds:
-//   • AskUserQuestion round-trip (incl. multiSelect, handled client-side)
-//   • Custom input tools (pick_colour / pick_number / collect_fields) via an
-//     in-process SDK MCP server — for inputs AskUserQuestion can't express.
+// v3: resume-based model — each turn is a fresh query({ prompt, options: { resume } })
+// instead of a held-open streaming-input generator. Simpler, less version-sensitive,
+// and enables restart-persistence (sdkSessionId survives in DB/memory between turns).
 //
-// Auth: none here. The SDK spawns the `claude` CLI and uses your `claude login`
-// (subscription) session. No ANTHROPIC_API_KEY.
-//
-// CommonJS importing an ESM-only SDK → dynamic import().
+// Auth: SDK spawns `claude` CLI using your `claude login` subscription session.
+
+'use strict';
 
 const { randomUUID } = require('node:crypto');
 const fs = require('node:fs');
@@ -19,24 +15,21 @@ const { db } = require('../db');
 const { registerGenerationFromDir } = require('./generation-registrar');
 
 // ── State ────────────────────────────────────────────────────────────────────
-const sessions = new Map(); // sessionId → Session
-const pending  = new Map(); // reqId → { resolve, reject, sessionId }  (questions + custom inputs)
-const IDLE_MS  = 15 * 60 * 1000; // close a session after 15 min of no activity
+const sessions = new Map(); // appSessionId → Session
+const pending  = new Map(); // reqId → { resolve, reject, sessionId }
+const IDLE_MS  = 15 * 60 * 1000;
 
 // ── Session ──────────────────────────────────────────────────────────────────
 function newSession(cwd, appBase, genOutputs) {
   const s = {
     id: randomUUID(),
+    sdkSessionId: null,   // filled from system/init; passed as options.resume next turn
     cwd,
-    appBase,           // e.g. http://127.0.0.1:3747 — so tools can call the app's own endpoints
-    genOutputs,        // persistent dir under which in-chat builds write their outputs
-    lastMockupPath: null, // path of the most recent Stage-1 mockup HTML (fed to Stage 2)
-    lastBuild: null,   // { genId, dir } of the current/last Stage-2 in-chat build
-    sink: null,        // current SSE writer { event, data } for the active turn
-    queue: [],         // SDKUserMessages waiting to be pulled by the input generator
-    waiters: [],       // resolvers parked when the generator is awaiting input
-    closed: false,
-    onTurnEnd: null,   // resolve() the current turn's HTTP response on `result`
+    appBase,
+    genOutputs,
+    lastMockupPath: null,
+    lastBuild: null,
+    sink: null,           // current SSE writer; updated each turn
     idleTimer: null,
   };
   sessions.set(s.id, s);
@@ -46,32 +39,14 @@ function newSession(cwd, appBase, genOutputs) {
 
 function resetIdle(s) {
   if (s.idleTimer) clearTimeout(s.idleTimer);
-  s.idleTimer = setTimeout(() => closeSession(s.id), IDLE_MS);
-}
-
-// The async iterable handed to query(). Stays open for the life of the session;
-// yields each user message as it's pushed, parking when the queue is empty.
-async function* inputStream(s) {
-  while (!s.closed) {
-    if (s.queue.length) { yield s.queue.shift(); continue; }
-    await new Promise((r) => s.waiters.push(r));
-  }
-}
-
-function pushMessage(s, text) {
-  s.queue.push({ type: 'user', message: { role: 'user', content: [{ type: 'text', text }] } });
-  const w = s.waiters.shift();
-  if (w) w();
-  resetIdle(s);
+  s.idleTimer = setTimeout(() => sessions.delete(s.id), IDLE_MS);
 }
 
 function closeSession(id) {
   const s = sessions.get(id);
   if (!s) return;
-  s.closed = true;
   if (s.idleTimer) clearTimeout(s.idleTimer);
-  s.waiters.splice(0).forEach((w) => w());            // unblock the generator → query() ends
-  for (const [rid, p] of pending) {                   // reject outstanding asks
+  for (const [rid, p] of pending) {
     if (p.sessionId === id) { p.reject(new Error('session closed')); pending.delete(rid); }
   }
   sessions.delete(id);
@@ -79,11 +54,10 @@ function closeSession(id) {
 
 function detachSink(id, sink) {
   const s = sessions.get(id);
-  if (s && s.sink === sink) s.sink = null;            // turn's client went away; keep session
+  if (s && s.sink === sink) s.sink = null;
 }
 
 // ── Browser round-trip ───────────────────────────────────────────────────────
-// Emit an SSE event and block until the browser POSTs the answer to /agent/answer.
 function askBrowser(s, eventName, data) {
   return new Promise((resolve, reject) => {
     if (!s.sink) return reject(new Error('no client attached to answer'));
@@ -93,8 +67,6 @@ function askBrowser(s, eventName, data) {
   });
 }
 
-// Resolve a parked question/input. Value is a plain string (multiSelect joined
-// client-side; form values JSON-stringified client-side).
 function answerInput(id, value) {
   const p = pending.get(id);
   if (!p) return false;
@@ -103,7 +75,7 @@ function answerInput(id, value) {
   return true;
 }
 
-// ── canUseTool: auto-allow everything except AskUserQuestion (round-tripped) ──
+// ── canUseTool: intercept AskUserQuestion for browser round-trip ─────────────
 function makeCanUseTool(s) {
   return async (toolName, input) => {
     if (toolName !== 'AskUserQuestion') return { behavior: 'allow', updatedInput: input };
@@ -119,8 +91,6 @@ function makeCanUseTool(s) {
 }
 
 // ── Custom input tools (in-process SDK MCP server) ───────────────────────────
-// Degrades gracefully: if the SDK helpers or zod aren't present, returns null
-// and the chat runs without them (AskUserQuestion still works).
 function buildInputTools(s, sdk) {
   try {
     const { tool, createSdkMcpServer } = sdk;
@@ -148,23 +118,17 @@ function buildInputTools(s, sdk) {
       async (a) => ({ content: [{ type: 'text', text: await askBrowser(s, 'ask_input', { kind: 'form', fields: a.fields }) }] }),
     );
 
-    // STAGE 1 — show a fast, self-contained HTML mockup in the canvas. Cheap to
-    // regenerate, so the user iterates on it across turns before any Divi JSON
-    // is built. Fire-and-return; the HTML renders via srcdoc client-side.
     const mockup = tool(
       'show_mockup',
       'Show a self-contained HTML mockup of the page in the app canvas (Stage 1). Pass a complete <html> document using the brand colours/fonts. Call this FIRST, before proposing real generation, and call it again each time the user asks for a change so they see it update. This is a draft preview, not the final Divi page.',
       { html: z.string().describe('a complete, self-contained HTML document'), title: z.string().optional() },
       async (a) => {
-        // Persist the latest mockup so Stage 2 (/generate) can match it.
         try { s.lastMockupPath = path.join(s.cwd, `mockup-${s.id}.html`); fs.writeFileSync(s.lastMockupPath, a.html); } catch (_) {}
         s.sink?.event('mockup', { html: a.html, title: a.title || 'Mockup · draft' });
         return { content: [{ type: 'text', text: 'Mockup is showing in the canvas. Ask if they want changes; when they approve, call start_build to build the real Divi 5 page in-chat, then run the page-generator skill and call deliver_page.' }] };
       },
     );
 
-    // Extract brand tokens from a public URL, reusing the app's own robust
-    // parser (/brand/extract-url) rather than reinventing colour/og parsing.
     const extract = tool(
       'extract_brand',
       'Extract brand tokens (colours, fonts, logo, title, meta, OG image) from a public website URL. Use when the user gives a site to base the design on, then use the result to drive the mockup. Returns JSON.',
@@ -177,7 +141,6 @@ function buildInputTools(s, sdk) {
       },
     );
 
-    // Save a brand profile into the app's Brand section so it's reusable.
     const saveBrand = tool(
       'save_brand',
       'Save a brand profile (colours/fonts/logo/voice/tagline) into the app Brand section so it can be reused on future pages. Call after extracting a brand from a URL, a Divi export, or an uploaded image and the user wants to keep it.',
@@ -203,15 +166,6 @@ function buildInputTools(s, sdk) {
       },
     );
 
-    // STAGE 2 (BUILD) — two tools that keep the build entirely in-chat.
-    //
-    // start_build: called the moment the user approves the mockup. Allocates a
-    // persistent output dir + a generation row, tells the UI to show the
-    // spinner, and hands the agent the exact headless-build instructions (invoke
-    // the divi5-page-generator skill, write [brand]-landing-page.json into the
-    // dir). Fire-and-return — the agent then does the build, then calls
-    // deliver_page. This REPLACES the old propose_page → tab-switch → /generate
-    // handoff that ran the one-shot `claude -p` (the thing that hung).
     const startBuild = tool(
       'start_build',
       'Begin building the real Divi 5 page once the user approves the mockup. Call this INSTEAD of asking "shall I generate?" — the user cannot act on prose. Returns the output directory path and the exact build instructions; follow them, then call deliver_page with the same dirPath once the page JSON exists.',
@@ -225,35 +179,27 @@ function buildInputTools(s, sdk) {
         motion: z.string().optional().describe('DiviTheatre motion preference: yes / want / no'),
       },
       async (a) => {
-        // Persistent per-build dir (mirrors /generate's resolveOutputDir — never /tmp).
         const dir = path.join(s.genOutputs, String(Date.now()));
         try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
 
-        // Insert the generation row up front (status 'running'), same columns as
-        // /generate, so the build is visible in the Generations tab while it runs
-        // and the eventual deliver_page registration just flips it to complete.
         const sectionsArr = Array.isArray(a.sections) ? a.sections : [];
         let genId = null;
         try {
           genId = db.prepare(`
-            INSERT INTO generations (brand, keyword, sections, aesthetic, cta_label, cta_url, output_dir, export_path, what_it_does, page_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO generations (brand, keyword, sections, aesthetic, cta_label, cta_url, output_dir, export_path, what_it_does, page_type, sdk_session_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
             a.brand || '', a.keyword || '', JSON.stringify(sectionsArr), a.aesthetic || '',
-            a.ctaLabel || '', '', dir, null, '', a.pageType || ''
+            a.ctaLabel || '', '', dir, null, '', a.pageType || '', s.sdkSessionId || null
           ).lastInsertRowid;
           s.lastBuild = { genId, dir };
         } catch (e) {
           return { content: [{ type: 'text', text: `start_build failed to create a generation row: ${e.message}` }] };
         }
 
-        // Tell the UI to switch the canvas into a "building" state.
         s.sink?.event('building', { genId, brand: a.brand, keyword: a.keyword });
         s.sink?.event('status', { text: 'Building the Divi 5 page…' });
 
-        // The exact instructions the agent follows to run the skill headlessly.
-        // The skill's headless/brief mode runs fully autonomously to file
-        // delivery when a complete brief is supplied (SKILL.md Stage 1).
         const brief = [
           `/divi5generate:divi5-page-generator`,
           `Build a ${a.pageType || 'landing'} page for ${a.brand}.`,
@@ -279,10 +225,6 @@ function buildInputTools(s, sdk) {
       },
     );
 
-    // deliver_page: the agent calls this after the skill has written the JSON.
-    // Registers the outputs through the SAME helper as /generate (identical
-    // success contract: JSON validation, output_files, style-check, preview,
-    // design promotion) and emits a page_built event the UI renders in-canvas.
     const deliverPage = tool(
       'deliver_page',
       'Call this AFTER the divi5-page-generator skill has written the [brand]-landing-page.json into the build directory. Registers the generated page with the app (so it appears in the Generations tab, canvas preview, and import flow) and shows the preview to the user. Pass the same dirPath that start_build returned.',
@@ -298,12 +240,10 @@ function buildInputTools(s, sdk) {
           return { content: [{ type: 'text', text: 'deliver_page: no active build to register. Call start_build first.' }] };
         }
 
-        // Copy the Stage-1 mockup into the output dir so /preview-html/:id finds it.
         if (s.lastMockupPath && fs.existsSync(s.lastMockupPath)) {
           try { fs.copyFileSync(s.lastMockupPath, path.join(dir, 'mockup-preview.html')); } catch (_) {}
         }
 
-        // Register via the shared helper — identical contract to /generate.
         const { status, files, hasPreview, pageProblem } = registerGenerationFromDir({
           genId, outputPath: dir, exitCode: 0, exportPath: null,
         });
@@ -327,9 +267,30 @@ function buildInputTools(s, sdk) {
   }
 }
 
-// ── Runner: one long-lived query() per session ───────────────────────────────
-async function startRunner(s) {
-  const sdk = await import('@anthropic-ai/claude-agent-sdk');
+// ── Public API ───────────────────────────────────────────────────────────────
+// Run one turn. Creates a new in-memory session on first call; resumes via the
+// SDK session id (options.resume) on subsequent turns. Awaits the full turn so
+// the caller's HTTP response stays open for the duration.
+//
+// onSession(id, isNew) fires as soon as the session is identified (before the
+// turn completes), so the caller can wire up disconnect handlers early.
+//
+// resumeSdkSession: a claude SDK session UUID from a previous server run (e.g.
+// looked up from the DB on /rerun). Seeds the first turn's options.resume so
+// the conversation history is restored from ~/.claude/projects/.
+async function startOrContinue({ sessionId, resumeSdkSession, text, cwd, appBase, genOutputs, sink, onSession }) {
+  let s = sessionId && sessions.get(sessionId);
+  const isNew = !s;
+  if (!s) {
+    s = newSession(cwd, appBase, genOutputs);
+    if (resumeSdkSession) s.sdkSessionId = resumeSdkSession;
+  }
+  s.sink = sink;
+  resetIdle(s);
+
+  if (onSession) onSession(s.id, isNew);
+
+  const sdk = _sdkOverride || await import('@anthropic-ai/claude-agent-sdk');
   const { query } = sdk;
   const inputServer = buildInputTools(s, sdk);
 
@@ -337,51 +298,36 @@ async function startRunner(s) {
     model: 'sonnet',
     cwd: s.cwd,
     permissionMode: 'default',
-    settingSources: ['user', 'project'], // loads this repo's divi5generate skills (verified via smoke test)
+    settingSources: ['user', 'project'],
     canUseTool: makeCanUseTool(s),
   };
+  if (s.sdkSessionId) options.resume = s.sdkSessionId;
   if (inputServer) options.mcpServers = { 'divi-inputs': inputServer };
 
-  (async () => {
-    try {
-      for await (const msg of query({ prompt: inputStream(s), options })) {
-        const sink = s.sink;
-        if (!sink) continue; // no client attached for this moment; drop UI events
-        if (msg.type === 'system' && msg.subtype === 'init') {
-          sink.event('status', { text: 'thinking…' });
-        } else if (msg.type === 'assistant') {
-          for (const b of msg.message.content) {
-            if (b.type === 'text') sink.data({ chunk: b.text });
-            else if (b.type === 'tool_use') sink.event('tool_use', { name: b.name });
-          }
-        } else if (msg.type === 'result') {
-          sink.event('turn_done', {});
-          if (s.onTurnEnd) { const f = s.onTurnEnd; s.onTurnEnd = null; f(); }
+  try {
+    for await (const msg of query({ prompt: text, options })) {
+      if (msg.type === 'system' && msg.subtype === 'init') {
+        // Capture the SDK session id on the first turn; subsequent turns reuse it.
+        if (!s.sdkSessionId) s.sdkSessionId = msg.session_id;
+        s.sink?.event('status', { text: 'thinking…' });
+      } else if (msg.type === 'assistant') {
+        for (const b of msg.message.content) {
+          if (b.type === 'text') s.sink?.data({ chunk: b.text });
+          else if (b.type === 'tool_use') s.sink?.event('tool_use', { name: b.name });
         }
+      } else if (msg.type === 'result') {
+        s.sink?.event('turn_done', {});
       }
-    } catch (err) {
-      s.sink?.data({ chunk: `\n⚠ ${err.message || err}` });
-      if (s.onTurnEnd) { const f = s.onTurnEnd; s.onTurnEnd = null; f(); }
-    } finally {
-      closeSession(s.id);
     }
-  })();
+  } catch (err) {
+    s.sink?.data({ chunk: `\n⚠ ${err.message || err}` });
+  }
+
+  return { sessionId: s.id, isNew };
 }
 
-// ── Public API ───────────────────────────────────────────────────────────────
-// Start a new turn (creating the session on first call). Returns the sessionId,
-// whether it was newly created, and a `done` promise that resolves when this
-// turn's response is complete (so the caller can end the HTTP response).
-async function startOrContinue({ sessionId, text, cwd, appBase, genOutputs, sink }) {
-  let s = sessionId && sessions.get(sessionId);
-  const isNew = !s;
-  if (!s) s = newSession(cwd, appBase, genOutputs);
-  s.sink = sink;
-  resetIdle(s);
-  const done = new Promise((resolve) => { s.onTurnEnd = resolve; });
-  if (isNew) await startRunner(s);
-  pushMessage(s, text);
-  return { sessionId: s.id, isNew, done };
-}
+// ponytail: test seam — lets tests inject a mock SDK without mocking the ESM loader.
+let _sdkOverride = null;
+function _setSdkForTest(mock) { _sdkOverride = mock; }
 
-module.exports = { startOrContinue, answerInput, detachSink, closeSession };
+module.exports = { startOrContinue, answerInput, detachSink, closeSession, _setSdkForTest };

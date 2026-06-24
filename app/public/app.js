@@ -733,6 +733,7 @@ async function sendChat() {
 // AskUserQuestion arrive as ask_question cards; custom tools (colour/slider/
 // form) arrive as ask_input widgets. Both round-trip via POST /agent/answer.
 let chatSessionId = null;
+let chatResumeSession = null; // SDK session UUID to resume on the next new chat (set by re-run)
 let chatBusy = false;   // guards against a second send while a turn is in flight
 function setChatBusy(b) { chatBusy = b; const el = document.getElementById('chatSend'); if (el) el.disabled = b; }
 
@@ -842,7 +843,7 @@ async function sendChatAgent() {
     const res = await fetch('/agent/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, ctx: chatCtx, sessionId: chatSessionId, attachments }),
+      body: JSON.stringify({ message, ctx: chatCtx, sessionId: chatSessionId, resumeSdkSession: chatSessionId ? null : (chatResumeSession || null), attachments }),
     });
     const reader = res.body.getReader();
     const dec = new TextDecoder();
@@ -862,6 +863,7 @@ async function sendChatAgent() {
         const d = JSON.parse(line.slice(6));
         if (eventName === 'session') {
           chatSessionId = d.id;
+          chatResumeSession = null; // consumed
           eventName = null;
         } else if (eventName === 'ask_question') {
           awaitingUser = true; stopWorking();   // your turn — pause the spinner
@@ -875,6 +877,7 @@ async function sendChatAgent() {
           awaitingUser = false;
           showMockupInCanvas(d.html, d.title);   // Stage 1: draft preview
           if (!reply) setReply('✓ Mockup ready — showing on the right →');
+          appendMockupGenerateCard();
           eventName = null;
         } else if (eventName === 'gen_intent') {
           awaitingUser = false;
@@ -1129,6 +1132,24 @@ async function startGenerationFromIntent(intent, card) {
 }
 
 let pendingChatGeneration = null;
+
+// Append a "Generate Divi Page" action card after a Stage-1 mockup is shown.
+function appendMockupGenerateCard() {
+  const el = document.getElementById('chatMessages');
+  const card = document.createElement('div');
+  card.className = 'gen-card gen-card-import';
+  card.innerHTML = `
+    <div class="gen-card-title">Ready to build</div>
+    <button type="button" class="btn-import" data-mockup-generate>Generate Divi Page</button>`;
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+  card.querySelector('[data-mockup-generate]').addEventListener('click', (e) => {
+    e.target.disabled = true;
+    e.target.textContent = 'Building…';
+    chatInputEl.value = 'Build the Divi 5 page now.';
+    sendChatAgent();
+  });
+}
 
 // Append inline preview + file + import cards into the chat stream for a gen.
 function appendGenerationCards(genId, files, hasPreview) {
@@ -1638,6 +1659,23 @@ async function rerunGeneration(id, event) {
 
     // Capture revision notes before switching tabs
     const revisionNotes = (document.getElementById(`revision-${id}`)?.value || '').trim();
+
+    // If this generation was built in-chat, resume the conversation instead of
+    // re-submitting the old form — the full context (mockup, prior turns, brand)
+    // is still in the Claude SDK session stored in ~/.claude/projects/.
+    if (data.sdk_session_id) {
+      chatSessionId = null;                          // start a fresh in-memory session
+      chatResumeSession = data.sdk_session_id;       // SDK resume for the first turn
+      document.querySelector('.tab[data-tab=chat]').click();
+      const input = document.getElementById('chatInput');
+      if (input) {
+        input.value = revisionNotes
+          ? `I want to revise this page. Revision notes: ${revisionNotes}`
+          : 'I want to revisit and refine this page.';
+        input.focus();
+      }
+      return;
+    }
 
     const form = document.getElementById('genForm');
     form.querySelector('[name=brand]').value             = data.brand || '';

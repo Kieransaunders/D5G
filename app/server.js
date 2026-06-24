@@ -607,10 +607,11 @@ const AGENT_GUIDE = [
 ].join('\n');
 
 app.post('/agent/chat', async (req, res) => {
-  const { message, ctx = {}, sessionId = null } = req.body || {};
+  const { message, ctx = {}, sessionId = null, resumeSdkSession = null } = req.body || {};
   // Brand/design preamble + stage guidance only on the first turn; the SDK
   // session retains context after that, so follow-ups send just the raw message.
-  const text = sessionId ? message : [AGENT_GUIDE, buildChatPreamble(ctx), `User: ${message}`].filter(Boolean).join('\n\n');
+  const isResume = !sessionId && resumeSdkSession;
+  const text = (sessionId || isResume) ? message : [AGENT_GUIDE, buildChatPreamble(ctx), `User: ${message}`].filter(Boolean).join('\n\n');
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -627,6 +628,11 @@ app.post('/agent/chat', async (req, res) => {
   // ping every 15s keeps it open. Client ignores lines that aren't data:/event:.
   const keepAlive = setInterval(() => { try { res.write(': ping\n\n'); } catch (_) {} }, 15000);
 
+  // Wire up disconnect handler early (before the turn starts) so a client drop
+  // mid-turn detaches the sink without killing the in-progress query().
+  let sid = null;
+  res.on('close', () => { clearInterval(keepAlive); if (sid) detachSink(sid, sink); });
+
   // Attached uploads (from /agent/upload): tell the agent the paths so it can
   // Read them (images via vision, exports/PDFs as files).
   const attachments = Array.isArray(req.body?.attachments) ? req.body.attachments : [];
@@ -634,13 +640,16 @@ app.post('/agent/chat', async (req, res) => {
     ? `${text}\n\n[Attached files — open with the Read tool: ${attachments.join(', ')}]`
     : text;
 
-  let sid = sessionId;
   try {
-    const r = await startOrContinue({ sessionId, text: text2, cwd: AGENT_CWD, appBase: `http://127.0.0.1:${PORT}`, genOutputs: GEN_OUTPUTS, sink });
-    sid = r.sessionId;
-    if (r.isNew) sink.event('session', { id: sid });
-    res.on('close', () => { clearInterval(keepAlive); detachSink(sid, sink); }); // client left mid-turn; keep session
-    await r.done;                                  // resolves on this turn's `result`
+    await startOrContinue({
+      sessionId, resumeSdkSession, text: text2,
+      cwd: AGENT_CWD, appBase: `http://127.0.0.1:${PORT}`, genOutputs: GEN_OUTPUTS,
+      sink,
+      onSession: (id, isNew) => {
+        sid = id;
+        if (isNew) sink.event('session', { id });
+      },
+    });
   } catch (e) {
     try { sink.data({ chunk: `\n⚠ ${e.message}` }); } catch (_) {}
   } finally {
@@ -1395,6 +1404,7 @@ app.post('/rerun/:id', (req, res) => {
     output_dir:         gen.output_dir,
     export_path:        gen.export_path,
     et_template:        gen.et_template || null,
+    sdk_session_id:     gen.sdk_session_id || null,
   });
 });
 

@@ -16,7 +16,9 @@ _Last updated: 24/06/2026._
 
 ## Parked — to revisit
 
-### 1. Stage 2 should run IN the chat, agent-built  ⭐ decided
+### 1. Stage 2 should run IN the chat, agent-built  ✅ BUILT (24/06, pending on-Mac smoke test)
+**Status:** implemented end-to-end. `propose_page` → `gen_intent` → tab-switch is replaced by two in-chat tools, `start_build` + `deliver_page` (`lib/claude-agent.js`); the legacy `/generate` registration logic was extracted into a shared `lib/generation-registrar.js` (`registerGenerationFromDir`) used by both paths. Frontend handles new SSE events `building` + `page_built` (renders the real preview in-canvas via `showInCanvas` + drops file/import cards via `appendGenerationCards`); `tool_use` labels cover `start_build`/`deliver_page`. The `claude -p` form path stays as a manual fallback. **All four files pass `node --check`; the live SDK round-trip still needs verifying on the Mac** (`better-sqlite3` is native + needs `claude login`) — run `agent-smoke.js` then a real approve→build→deliver in chat. The old `gen_intent`/`propose_page` frontend handler is kept only as a harmless legacy fallback.
+
 **Target:** generation lives in the chat screen. When a mockup is approved, the **agent builds the Divi 5 JSON in-session** from the approved mockup (it already has the `divi5-page-generator` skill loaded), streaming progress with the spinner and dropping the preview into the canvas. No tab switch, no legacy `claude -p`, no hang.
 
 **Current (problem) behaviour:** `propose_page` → `gen_intent` → `appendIntentCard` → **switches to the Generate tab** and submits the old form-based `/generate`, which runs the one-shot `claude -p` pipeline — the very thing that hangs. Symptom seen 24/06: user approved a mockup, got dumped on the structured-brief form with "Generating…" stuck for minutes.
@@ -29,7 +31,7 @@ _Last updated: 24/06/2026._
 - Retire or hide the tab-switch path for chat-originated builds. Leave the manual Generate form as-is for direct use.
 - Watch: the page-generator skill can be slow — rely on `tool_use`/spinner heartbeats (already in place) rather than a blunt hang-guard.
 
-### 2. Resume-based session model  ⭐ decided (do after keep-alive confirmed)
+### 2. Resume-based session model  ✅ BUILT (24/06)
 Switch multi-turn from the held-open `query()` + streaming-input generator to the email-agent pattern: each turn is a fresh `query({ prompt, options: { resume: sdkSessionId } })`, capturing `session_id` from the `system/init` message. **Net simplification** (deletes the generator/waiters/`onTurnEnd`), less version-sensitive, and enables restart-persistence. One file (`lib/claude-agent.js`); endpoints + frontend unchanged. ~60–90 lines, low risk (old `/chat` fallback intact). Verify: `resume` coexists with the in-process MCP tools (smoke test).
 
 ### 3. Subscribe / reconnect decoupling  (optional, robustness)
@@ -42,8 +44,21 @@ Relevant existing skills: `design-sync` (brand ↔ Claude Design Design System) 
 
 **Open:** confirm this is actually wanted before building.
 
-### 5. Session persistence across restarts
-Once on the resume model, persist `sdkSessionId` (e.g. a column) so a conversation survives a server restart. Small add on top of #2.
+### 5. Session persistence across restarts  ✅ BUILT (24/06)
+`sdk_session_id TEXT` column added to `generations` via migration. Set in `start_build` when a generation row is created. Survives server restarts.
+
+### 6. Re-run reopens the chat session (not the form)  ✅ BUILT (24/06)
+**Depends on #2 + #5.** Today Re-run (`rerunGeneration` → `POST /rerun/:id`) refetches the saved *brief* fields, repopulates the structured form, drops in revision notes, and auto-submits a stateless `claude -p` run — no mockup, no prior turns, no context. The user just sees the old brief form, divorced from the conversation that produced the page.
+
+**Target:** Re-run reads the generation's stored `sdkSessionId`, opens the **chat** tab, and resumes that session (`query({ resume: sdkSessionId })`) so the user iterates conversationally with full context — the mockup, the earlier turns, the brand — instead of re-deriving it.
+
+**Dependency chain:** #1 (generation runs *in* the chat session, so a generation belongs to a conversation) → #2 (sessions resumable + `sdkSessionId` captured) → #5 (id persisted on the generation row) → this. Without #2/#5 there is no session id to reconnect to.
+
+**Implementation sketch when we pick it up:**
+- `/rerun/:id` returns the generation's `sdkSessionId` (added by #5) alongside the brief.
+- Frontend Re-run: if a `sdkSessionId` exists, open the chat tab and start a turn with `sessionId` set to it (resume) instead of filling + submitting the form.
+- Fallback: form-originated generations (no session id) keep today's form-based Re-run.
+- Seed the resumed turn with a short "the user wants to revise this page" nudge so the agent re-engages on the existing page rather than starting fresh.
 
 ## Verification still pending
 
