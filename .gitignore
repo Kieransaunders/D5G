@@ -31,3 +31,17 @@ skills/divi5-page-generator/references/Divi-5-Design-System/
 /.design-sync/
 /.playwright-mcp/
 graphify-out/
+
+# Generated page/section JSON, tokens, and preview artefacts at repo root
+/epm-*.json
+/epm-*.js
+/epm-*.html
+/invoicing-*.json
+/invoicing-*.js
+/invoicing-*.html
+/roastery-*.json
+/roastery-*.html
+/payload*.json
+/preview-ledge-coffee.jpg
+/epm-services-*.png
+/ui-contrast-mockup.html

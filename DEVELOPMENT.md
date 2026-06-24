@@ -172,7 +172,7 @@ All endpoints at `/wp-json/divi-tools/v1/*`. **All require** `X-Divi-Tools-Key` 
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/import` | Create a draft page from generated JSON |
+| POST | `/import` | Create a page from generated JSON. Defaults to **publish** (≥1.5.4) so the page is live & screenshot-readable; pass `publish:false` for a draft |
 | POST | `/preview` | Render a page server-side (no page created) — verify output before import |
 | GET | `/export?slug=<slug>` | Export a page with presets + global colours |
 | POST | `/presets/import` | Import a preset pack independently |
@@ -185,6 +185,27 @@ All endpoints at `/wp-json/divi-tools/v1/*`. **All require** `X-Divi-Tools-Key` 
 `/pages` only ever lists/deletes pages this plugin created: `PageImporter` stamps
 `_dti_imported = 1` on import, and both endpoints filter on that meta key so they
 never touch hand-built Divi pages.
+
+## App QA loop — live screenshot + compare
+
+The app's reason to exist is verifying that a generated page **renders** the way
+the mockup intended. The loop: generate → import (publishes live) → screenshot
+the live page → compare against the Stage 2 mockup.
+
+| App endpoint | Purpose |
+|---|---|
+| `GET /screenshot?url=…` | Full-page PNG of a live URL via `lib/screenshot.js`. SSRF-guarded (localhost/loopback/.local allowed; private ranges blocked). Cache by `url\|width`; `&fresh=1` bypasses. |
+| `POST /preview/:id` | Passthrough to the plugin's `POST /preview` — real server-rendered Divi preview (fixed `dti-live-preview` draft, no litter). |
+| `GET /test-connection` | Enriched with `pluginVersion` + `versionOk` to drive the Settings health chips. |
+
+**Screenshot engine** — `playwright-core` driving the **system Chrome** (no
+browser download, works for any user with Chrome/Chromium installed). True
+full-page capture (`fullPage: true`), cached at
+`~/Library/Application Support/Divi5Generator/screenshots/`.
+
+**Version-sync invariant** — `EXPECTED_DTI_VERSION` in `app/server.js` must match
+`DTI_VERSION` in the plugin PHP. Drift here silently breaks live QA (an older
+plugin imports as draft). `tests/screenshot-contract.test.js` fails on divergence.
 
 ## App data model (`app/db.js`)
 

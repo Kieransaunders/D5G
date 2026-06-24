@@ -45,10 +45,12 @@ test('buildImportPayload only emits keys the plugin understands', () => {
   }
 });
 
-test('publish flag maps correctly; defaults to draft', () => {
-  assert.equal(buildImportPayload({ layout: {} }).publish, false);
-  assert.equal(buildImportPayload({ layout: {}, publish: true }).publish, true);
-  assert.equal(buildImportPayload({ layout: {}, publish: 'yes' }).publish, true);
+test('publish flag maps correctly; defaults to true (live for QA)', () => {
+  // Plugin ≥ 1.5.4 + this builder default to publish=true so imported pages
+  // render live (screenshot-readable without a WP login). Drafts 404 headlessly.
+  assert.equal(buildImportPayload({ layout: {} }).publish, true);
+  assert.equal(buildImportPayload({ layout: {}, publish: false }).publish, false);
+  assert.equal(buildImportPayload({ layout: {}, publish: 'no' }).publish, true); // truthy string coerced
   // No legacy `draft` key should ever be emitted.
   assert.equal('draft' in buildImportPayload({ layout: {} }), false);
 });

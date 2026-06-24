@@ -248,6 +248,7 @@
       <div id="settingsSaved" class="save-confirm" hidden>Settings saved ✓</div>
       <button type="button" class="btn-secondary" id="testConnection" style="margin-top:8px">Test Connection</button>
       <div id="connectionResult" style="margin-top:8px;font-size:0.8125rem"></div>
+      <div id="connectionHealth" class="health-row" hidden style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
 
       <div class="section-label" style="margin-top:20px">Imported Pages</div>
       <p class="field-hint" style="margin-bottom:8px">Pages this app has imported into the connected site. Delete drafts you no longer need to keep things tidy.</p>
@@ -407,18 +408,35 @@
 
     <!-- ── Chat tab ── -->
     <div id="tab-chat" style="display:flex;flex-direction:column;flex:1;gap:8px">
-      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between">
-        <span>Ask Claude about your Divi page</span>
-        <button type="button" class="btn-link" id="chatOpenBrief" style="font-size:0.75rem;color:var(--accent)">Structured brief →</button>
-      </div>
+      <div class="section-label"><span>Ask Claude about your Divi page</span></div>
       <div id="chatMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0;padding-right:4px"></div>
       <div id="chatContextChips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-      <div style="display:flex;gap:8px;align-items:flex-end;position:relative">
-        <textarea id="chatInput" placeholder="Ask anything — refine a generated page, get section ideas, troubleshoot… (type / for shortcuts)" style="flex:1;min-width:0;resize:none;height:72px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.8125rem;font-family:inherit"></textarea>
-        <button type="button" class="btn-generate" id="chatSend" style="height:72px;width:auto;flex:none;min-width:64px;padding-left:16px;padding-right:16px">Send</button>
+      <div class="chat-composer">
+        <textarea id="chatInput" rows="1" placeholder="Write a message…"></textarea>
+        <input type="file" id="chatFile" hidden accept="image/*,.json,.pdf,.svg,.webp,.png,.jpg,.jpeg">
+        <div class="chat-toolbar">
+          <div class="chat-toolbar-left">
+            <button type="button" id="chatAttach" class="chat-tool" title="Attach an image or file" aria-label="Attach an image or file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <button type="button" id="chatOpenBrief" class="chat-tool" title="Switch to the structured brief form">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+              Brief
+            </button>
+          </div>
+          <div class="chat-toolbar-right">
+            <button type="button" id="chatSend" class="chat-send-btn" title="Send — Enter" aria-label="Send">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+              Send
+            </button>
+          </div>
+        </div>
         <div id="slashMenu" class="slash-menu" hidden></div>
       </div>
-      <button type="button" class="btn-link" id="chatClear" style="font-size:0.75rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;text-align:left">Clear conversation</button>
+      <div id="chatAttachList" style="display:flex;flex-wrap:wrap;gap:6px;font-size:0.7rem;color:var(--muted);margin-top:4px"></div>
+      <div class="chat-footer">
+        <button type="button" class="btn-link" id="chatClear">Clear conversation</button>
+      </div>
     </div>
 
   </aside>
@@ -463,6 +481,30 @@
           <div class="canvas-empty-sub">Describe a page in the chat and hit <strong>Start</strong> — the generated layout renders here, then you can import it to WordPress.</div>
         </div>
         <iframe id="canvasFrame" hidden sandbox="allow-same-origin allow-scripts"></iframe>
+
+        <!-- QA compare layer: shown after import. Mockup vs live screenshot. -->
+        <div class="qa-compare" id="qaCompare" hidden>
+          <div class="qa-toolbar">
+            <div class="qa-tabs" id="qaTabs">
+              <button type="button" data-qa="compare" class="active">Compare</button>
+              <button type="button" data-qa="live">Live render</button>
+              <button type="button" data-qa="mockup">Mockup</button>
+            </div>
+            <button type="button" class="btn-link" id="qaRefresh" title="Re-render the live screenshot (bypasses cache)">↻ Re-shoot</button>
+            <a class="btn-link" id="qaOpenLive" target="_blank" style="font-size:0.78rem;color:var(--accent)">Open live ↗</a>
+          </div>
+          <div class="qa-stage">
+            <div class="qa-pane" data-qa-pane="mockup">
+              <div class="qa-label">Stage 2 mockup</div>
+              <iframe id="qaMockupFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+            </div>
+            <div class="qa-pane" data-qa-pane="live">
+              <div class="qa-label">Live Divi render</div>
+              <img id="qaLiveImg" alt="Live page screenshot" />
+              <div class="qa-shot-loading" id="qaShotLoading" hidden>Rendering live page…</div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="canvas-status" id="canvasStatus"></div>
     </div>

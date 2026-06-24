@@ -22,11 +22,30 @@ The unused plugin routes are exactly the high-value UX pieces.
 |---|---|---|
 | `GET /pages` | ✅ done (PR #2 follow-up) | "Imported pages" list in Settings |
 | `DELETE /pages/{slug}` | ✅ done | One-click no-litter cleanup of drafts |
-| `POST /preview` | todo | True server-rendered live preview (app currently fakes it with local `/preview-html`) |
+| `POST /preview` | ✅ done | Real server-rendered preview via `app.post('/preview/:id')`; the chat/canvas flow still uses the local mockup, but the plugin preview is now wired for the QA flow |
 | `GET /export` | todo | Pull an existing live page back into the app to refine/re-import |
 
 Each app route is backed by a `lib/` helper with its own contract test, mirroring
 Phase 0 (`lib/wp-pages.js` + `tests/wp-pages-contract.test.js`).
+
+## Phase 3 — The verify/refine loop ✅ (the app's real reason to exist)
+Generate → import → **auto-screenshot the live page → compare against the mockup** →
+accept or refine → or discard (`DELETE /pages/{slug}`). The screenshot loop is the
+core fidelity gate and the app's reason to exist; it landed here.
+
+- `lib/screenshot.js` — `playwright-core` driving the **system Chrome** (no browser
+  download, works for any user with Chrome installed). True full-page capture,
+  cached by `url|width` hash so re-imports of the same slug are instant.
+- `GET /screenshot?url=…` — renders the live URL, returns the PNG. SSRF-guarded:
+  localhost/loopback/.local allowed (your own WP site); private ranges blocked.
+- Post-import, the canvas flips to a **QA compare layer** — two panes side-by-side:
+  the Stage 2 mockup vs the live Divi render. Tabs: Compare / Live render / Mockup,
+  plus a ↻ Re-shoot (cache bypass) and Open-live link.
+- `buildImportPayload` defaults `publish=true` (matches plugin ≥1.5.4) so the
+  imported page is live and screenshot-readable; drafts 404 headlessly.
+- Contract tests pin the invariants: `tests/screenshot-contract.test.js` checks
+  cacheKey determinism and the version-sync invariant (app `EXPECTED_DTI_VERSION`
+  must equal the plugin's `DTI_VERSION`).
 
 ## Phase 2 — Connection & onboarding hub
 - Lean into `/download-plugin` (already builds the zip): a guided "Connect your
@@ -40,10 +59,19 @@ Generate → live preview (`/preview`) → accept or refine → publish (now wir
 or discard (`DELETE /pages/{slug}`). The plugin is headless WP code; the human
 judgement loop lives only in the app.
 
+✅ The screenshot-driven compare loop landed (see the Phase 3 entry in this doc's
+Phase 1 table above for the full breakdown). The remaining piece is surfacing the
+human verdict back into the app as a structured "accept/refine" card.
+
 ## Phase 4 — Reliability & trust
-- Map plugin HTTP responses to clear UI states (401 key, 404 plugin-not-installed,
-  422 bad layout, 5xx) instead of raw `WordPress returned ${status}: ${text}`.
-- A "plugin health" panel (reachable / authed / version) on the settings page.
+- ✅ Plugin HTTP errors map to clear UI messages (`mapImportError` in server.js:
+  401→key, 404→plugin-inactive, 422→bad-layout, 429→rate-limited, 5xx→server).
+- ✅ **Plugin health panel**: `/test-connection` now returns `pluginVersion` +
+  `versionOk`; the Settings tab renders health chips (Divi 5 ✓ / SEO plugin /
+  plugin version, with a **version-drift warning** when the deployed plugin is
+  behind what the app expects — the silent cause of broken live QA).
+- A dedicated "plugin health" panel on a dashboard (beyond the Settings chips)
+  is still open but lower-value now that the chips exist.
 
 ## Phase 5 — Brand → page → import pipeline (optional, higher effort)
 Wire brand profiles + `global-variables`/`presets` push so a brand profile
