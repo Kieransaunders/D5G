@@ -3,8 +3,11 @@
 :root {
   --bg:        #0f172a;
   --surface:   #1e293b;
+  --surface-2: #243244;  /* one step above surface — interactive cards read as distinct */
   --border:    #334155;
+  --border-2:  #475569;  /* stronger border for resting interactive cards/inputs */
   --text:      #e2e8f0;
+  --text-2:    #cbd5e1;  /* secondary/body text — ~9:1 on surface, replaces opacity dimming */
   --muted:     #94a3b8;
   --accent:    #f75d00;  /* iConnectIT brand orange */
   --accent-h:  #ff7a2b;  /* lighter orange for hover */
@@ -57,6 +60,58 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .canvas-empty-sub { font-size: 0.8125rem; color: var(--muted); line-height: 1.6; max-width: 380px; }
 .canvas-status { padding: 0 16px; }
 .canvas-status:not(:empty) { padding: 10px 16px; font-size: 0.8125rem; border-top: 1px solid var(--border); }
+
+/* ─── QA compare layer (post-import: mockup vs live screenshot) ─────────────── */
+.qa-compare {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  background: repeating-conic-gradient(#0b1322 0% 25%, #0e1626 0% 50%) 50% / 22px 22px;
+}
+.qa-toolbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface, #111c30);
+  flex-wrap: wrap;
+}
+.qa-tabs { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 2px; }
+.qa-tabs button {
+  border: none; background: none; color: var(--muted); cursor: pointer;
+  padding: 5px 12px; font-size: 0.8rem; font-family: inherit; border-radius: 6px;
+}
+.qa-tabs button.active { background: var(--accent); color: #fff; }
+.qa-stage {
+  flex: 1; display: flex; gap: 1px; overflow: auto;
+  background: var(--border);
+}
+.qa-pane {
+  flex: 1; min-width: 0; display: flex; flex-direction: column;
+  background: #0b1322;
+}
+.qa-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--border);
+  background: var(--surface, #111c30);
+}
+.qa-pane iframe { width: 100%; flex: 1; border: 0; background: #fff; min-height: 200px; }
+.qa-pane img { width: 100%; height: auto; display: block; }
+.qa-shot-loading {
+  padding: 16px; font-size: 0.8rem; color: var(--muted); text-align: center;
+}
+/* Single-pane views: hide the pane that isn't active */
+.qa-compare[data-qa-view="live"]   .qa-pane[data-qa-pane="mockup"],
+.qa-compare[data-qa-view="mockup"] .qa-pane[data-qa-pane="live"] {
+  display: none;
+}
+.qa-compare[data-qa-view="mockup"] .qa-pane iframe,
+.qa-compare[data-qa-view="live"]   .qa-pane img { flex: 1; }
+
+/* ─── Health chips (connection panel) ──────────────────────────────────────── */
+.health-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.72rem; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+}
+.health-chip.ok   { color: #34d399; border-color: #10b98155; background: #10b98114; }
+.health-chip.warn { color: #fbbf24; border-color: #f59e0b55; background: #f59e0b14; }
+.health-chip.bad  { color: #f87171; border-color: #ef444455; background: #ef444414; }
 
 /* ── Chat empty-state / onboarding ── */
 .chat-empty { display: flex; flex-direction: column; gap: 12px; padding: 8px 2px; }
@@ -247,6 +302,117 @@ select option { background: var(--surface); }
 .step.active .dot { animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+/* ── Chat working indicator (iConnectIT mark, breathing) ── */
+/* Gentle "breathing" pulse — scale + opacity easing in/out — rather than a
+   spin. Reads as calm thinking, like Claude's own thinking indicator. */
+@keyframes d5breathe {
+  0%, 100% { transform: scale(0.82); opacity: 0.45; }
+  50%      { transform: scale(1.04); opacity: 1; }
+}
+.chat-working { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.8125rem; }
+.chat-logo-spin {
+  width: 18px; height: 18px; flex: none;
+  animation: d5breathe 1.8s ease-in-out infinite;
+}
+/* Fallback dot if the logo image fails to load — also breathes. */
+.chat-spinner {
+  width: 12px; height: 12px; flex: none; border-radius: 50%;
+  background: var(--accent);
+  animation: d5breathe 1.8s ease-in-out infinite;
+}
+
+/* ── Chat composer (unified card with toolbar, Claude-style) ── */
+.chat-composer {
+  display: flex; flex-direction: column; position: relative;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: var(--surface); padding: 4px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.chat-composer:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.chat-composer textarea {
+  width: 100%; box-sizing: border-box; resize: none;
+  min-height: 52px; max-height: 200px; overflow-y: auto;
+  border: none; background: transparent; color: var(--text);
+  font-size: 0.875rem; font-family: inherit; line-height: 1.4;
+  padding: 10px 10px 6px; outline: none;
+}
+.chat-composer textarea::placeholder { color: var(--muted); }
+.chat-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 2px 4px 2px;
+}
+.chat-toolbar-left, .chat-toolbar-right { display: inline-flex; align-items: center; gap: 2px; }
+/* Left-side ghost tools (attach, brief) */
+.chat-tool {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 30px; padding: 0 8px; border: none; border-radius: 8px;
+  background: transparent; color: var(--muted);
+  font-size: 0.72rem; font-family: inherit; line-height: 1; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.chat-tool:hover { background: color-mix(in srgb, var(--text) 9%, transparent); color: var(--text); }
+.chat-tool svg { width: 16px; height: 16px; opacity: .85; }
+/* Right-side send pill */
+.chat-send-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 14px; border: none; border-radius: 9px;
+  background: var(--accent); color: #fff;
+  font-size: 0.78rem; font-weight: 600; font-family: inherit; cursor: pointer;
+  transition: filter .15s, opacity .15s;
+}
+.chat-send-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.chat-send-btn:disabled { opacity: .45; cursor: default; }
+.chat-send-btn svg { width: 14px; height: 14px; }
+.chat-tool:focus-visible, .chat-send-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chat-footer { display: flex; justify-content: flex-start; align-items: center; margin-top: 4px; }
+.chat-footer .btn-link { font-size: 0.72rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; }
+
+/* ── Structured-brief pill (chat header secondary action) ── */
+.chat-brief-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border: 1px solid var(--border); border-radius: 999px;
+  background: transparent; color: var(--muted);
+  font-size: 0.7rem; font-weight: 500; font-family: inherit; line-height: 1;
+  cursor: pointer; transition: color .15s, border-color .15s, background .15s;
+}
+.chat-brief-btn svg { opacity: .75; }
+.chat-brief-btn:hover {
+  color: var(--accent); border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.chat-brief-btn:hover svg { opacity: 1; }
+.chat-brief-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Markdown inside assistant chat bubbles ── */
+.msg.md { white-space: normal; }
+.msg.md > :first-child { margin-top: 0; }
+.msg.md > :last-child { margin-bottom: 0; }
+.msg.md p { margin: 0.4em 0; }
+.msg.md h1, .msg.md h2, .msg.md h3 { margin: 0.6em 0 0.3em; line-height: 1.3; }
+.msg.md h1 { font-size: 1.05rem; }
+.msg.md h2 { font-size: 1rem; }
+.msg.md h3 { font-size: 0.9rem; }
+.msg.md ul, .msg.md ol { margin: 0.4em 0; padding-left: 1.3em; }
+.msg.md li { margin: 0.15em 0; }
+.msg.md a { color: var(--accent); text-decoration: underline; }
+.msg.md code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: color-mix(in srgb, var(--text) 12%, transparent); padding: 1px 4px; border-radius: 4px; }
+.msg.md pre { background: color-mix(in srgb, var(--text) 8%, transparent); padding: 10px; border-radius: 6px; overflow-x: auto; margin: 0.5em 0; }
+.msg.md pre code { background: none; padding: 0; font-size: 0.8em; }
+
+/* ── Accessibility: visible focus + respect reduced motion ── */
+#chatInput:focus-visible, .chat-icon-btn:focus-visible, .q-opt:focus-visible,
+.ci-send:focus-visible, .q-done:focus-visible, .q-free-send:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-spinner, .chat-logo-spin, .step.active .dot { animation: none !important; }
+}
+.chat-working .dots::after { content: ''; animation: d5dots 1.2s steps(4, end) infinite; }
+@keyframes d5dots { 0% { content: ''; } 25% { content: '·'; } 50% { content: '··'; } 75% { content: '···'; } }
+
 /* ── Log terminal ── */
 .log-wrap {
   background: #0a0f1a;
@@ -323,6 +489,8 @@ select option { background: var(--surface); }
   justify-content: space-between;
 }
 .history-item:hover { border-color: var(--accent); }
+.history-item-dead { opacity: 0.55; }
+.history-item-dead:hover { border-color: var(--border); cursor: default; }
 .history-item .h-brand { font-size: 0.875rem; font-weight: 600; }
 .history-item .h-meta  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 
@@ -724,6 +892,45 @@ select option { background: var(--surface); }
 .intent-card-title { font-weight: 600; }
 .intent-card-rows { display: flex; flex-direction: column; gap: 2px; color: var(--text); }
 .intent-card-actions { display: flex; justify-content: flex-end; gap: 10px; align-items: center; }
+
+/* ── AskUserQuestion option cards (accessible contrast) ─────────────────────── */
+.q-opts { display: flex; flex-direction: column; gap: 8px; }
+.q-opt {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.q-opt:hover { border-color: var(--accent); background: #27384e; }
+.q-opt .opt-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.q-opt .opt-desc  { font-size: 0.8rem; color: var(--text-2); margin-top: 3px; }  /* was opacity:.8 */
+/* selected (multi-select): ring + tint + colour is not the only signal */
+.q-opt.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* ── Free-text answer row ── */
+.q-free { display: flex; gap: 8px; margin-top: 10px; }
+.q-free-input {
+  flex: 1; padding: 9px 11px;
+  border: 1px solid var(--border-2); border-radius: 6px;
+  background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.85rem;
+}
+.q-free-input::placeholder { color: var(--muted); }
+.q-free-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+/* Send promoted from faint text-link to a clearly-readable bordered button */
+.q-free-send {
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border-2); border-radius: 6px;
+  padding: 9px 16px; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.q-free-send:hover { border-color: var(--accent); color: #fff; background: #27384e; }
 
 /* ── Inline generation cards (chat) ─────────────────────────────────────────── */
 .gen-cards { display: flex; flex-direction: column; gap: 8px; align-self: stretch; }

@@ -270,15 +270,18 @@ async function loadHistory() {
       const statusIcon = r.status === 'complete' ? '✓' : r.status === 'failed' ? '✖' : '…';
       const statusColor = r.status === 'complete' ? 'var(--success)' : r.status === 'failed' ? 'var(--danger)' : 'var(--warn)';
       const hasPreview = r.status === 'complete' && !!r.has_preview;
+      const viewable = !!r.viewable;
+      const deadHint = viewable ? '' : `<div class="h-meta" style="color:var(--warn)">⚠ preview purged — re-run to restore</div>`;
       return `
-        <div class="history-item" onclick="loadGeneration(${r.id})">
+        <div class="history-item${viewable ? '' : ' history-item-dead'}" onclick="${viewable ? `loadGeneration(${r.id})` : ''}">
           <div>
             <div class="h-brand">${r.brand}</div>
             <div class="h-meta">${r.keyword} · ${r.sections.join(', ')}</div>
             <div class="h-meta">${r.created_at}</div>
+            ${deadHint}
           </div>
           <div style="display:flex;align-items:center;gap:6px">
-            ${hasPreview ? `<button type="button" class="btn-view" onclick="viewMockup(${r.id}, event)" title="View mockup">View</button>` : ''}
+            ${hasPreview && viewable ? `<button type="button" class="btn-view" onclick="viewMockup(${r.id}, event)" title="View mockup">View</button>` : ''}
             <button type="button" class="btn-rerun" onclick="openRevisionDrawer(${r.id}, event)">Re-run</button>
             <button type="button" class="btn-delete" onclick="deleteGeneration(${r.id}, event)" title="Delete">✕</button>
             <span style="color:${statusColor};font-weight:600">${statusIcon}</span>
@@ -653,12 +656,25 @@ async function sendChat() {
   const message = input.value.trim();
   if (!message) return;
   input.value = '';
-  input.style.height = '72px';
-  document.getElementById('chatSend').disabled = true;
+  input.style.height = '';
+  setChatBusy(true);
 
   appendChatMsg('user', message);
   const replyEl = appendChatMsg('assistant', 'Thinking… (first reply can take ~30s while Claude spins up)');
   let reply = '';
+
+  // Watchdog: if no chunk arrives within the window, tell the user the
+  // generation is still running (or may have stalled) instead of leaving them
+  // staring at "Thinking…" until the browser throws "Failed to fetch".
+  let lastChunkAt = Date.now();
+  const watchdog = setInterval(() => {
+    const idle = Math.round((Date.now() - lastChunkAt) / 1000);
+    if (idle >= 30) {
+      replyEl.textContent = reply
+        ? `${reply}\n\n…still working (${idle}s since last output — large generations can take a few minutes)`
+        : `Still working… ${idle}s and no output yet. If this drags on, the page-generator skill may be stuck — try the Structured brief form instead, or cancel and retry.`;
+    }
+  }, 10000);
 
   try {
     const res = await fetch('/chat', {
@@ -673,6 +689,7 @@ async function sendChat() {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      lastChunkAt = Date.now();  // any traffic resets the watchdog
       buf += dec.decode(value, { stream: true });
       const lines = buf.split('\n');
       buf = lines.pop();
@@ -692,13 +709,343 @@ async function sendChat() {
       }
     }
   } catch (e) {
-    reply = `Error: ${e.message}`;
+    // "Failed to fetch" happens when the streaming connection drops (often
+    // because a hung generation timed out). Give a useful message, not the raw
+    // network error.
+    const msg = e.message === 'Failed to fetch'
+      ? 'Connection dropped — the generation may still be running on the server, or the page-generator skill stalled. Check the History tab in a minute, or retry with the Structured brief form.'
+      : `Error: ${e.message}`;
+    reply = reply ? `${reply}\n\n⚠ ${msg}` : `⚠ ${msg}`;
     replyEl.textContent = reply;
+  } finally {
+    clearInterval(watchdog);
   }
 
   chatHistory.push({ role: 'user', content: message });
   chatHistory.push({ role: 'assistant', content: reply });
-  document.getElementById('chatSend').disabled = false;
+  setChatBusy(false);
+}
+
+// ─── Interactive (Agent SDK) chat — multi-turn ──────────────────────────────
+// Talks to /agent/chat, which keeps a persistent Claude session. The first turn
+// returns a session id (event: session); we send it on every follow-up so
+// "make the purple darker" iterates on the SAME page with full context. Skills'
+// AskUserQuestion arrive as ask_question cards; custom tools (colour/slider/
+// form) arrive as ask_input widgets. Both round-trip via POST /agent/answer.
+let chatSessionId = null;
+let chatBusy = false;   // guards against a second send while a turn is in flight
+function setChatBusy(b) { chatBusy = b; const el = document.getElementById('chatSend'); if (el) el.disabled = b; }
+
+// Minimal, dependency-free, XSS-safe Markdown → HTML for assistant replies.
+// Everything is HTML-escaped FIRST, then only a fixed allow-list of tags is
+// introduced (strong/em/code/pre/a[http]/h1-3/ul/ol/li/p). No raw HTML survives.
+function renderMarkdown(src) {
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const blocks = [];
+  // pull fenced code blocks out before escaping the rest
+  src = String(src).replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, _lang, code) => {
+    blocks.push(`<pre><code>${esc(code.replace(/\n$/, ''))}</code></pre>`);
+    return ` ${blocks.length - 1} `;
+  });
+  let out = esc(src);
+  out = out.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const lines = out.split('\n');
+  let html = '', list = null;
+  const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const line of lines) {
+    const h = line.match(/^(#{1,3})\s+(.*)$/);
+    const ul = line.match(/^\s*[-*]\s+(.*)$/);
+    const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+    if (h) { closeList(); html += `<h${h[1].length}>${h[2]}</h${h[1].length}>`; }
+    else if (ul) { if (list !== 'ul') { closeList(); html += '<ul>'; list = 'ul'; } html += `<li>${ul[1]}</li>`; }
+    else if (ol) { if (list !== 'ol') { closeList(); html += '<ol>'; list = 'ol'; } html += `<li>${ol[1]}</li>`; }
+    else if (line.trim() === '') { closeList(); }
+    else if (/^ \d+ $/.test(line.trim())) { closeList(); html += line.trim(); }
+    else { closeList(); html += `<p>${line}</p>`; }
+  }
+  closeList();
+  return html.replace(/ (\d+) /g, (_, i) => blocks[+i]);
+}
+let chatAttachments = [];   // absolute paths returned by /agent/upload, sent with next message
+
+// Attach button → file picker → upload → chip. Paths ride the next message.
+document.getElementById('chatAttach')?.addEventListener('click', () => document.getElementById('chatFile').click());
+document.getElementById('chatFile')?.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const list = document.getElementById('chatAttachList');
+  const chip = document.createElement('span');
+  chip.textContent = `⏳ ${file.name}`;
+  list.appendChild(chip);
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch('/agent/upload', { method: 'POST', body: fd }).then(r => r.json());
+    if (r.path) { chatAttachments.push(r.path); chip.textContent = `📎 ${r.filename}`; }
+    else { chip.textContent = `⚠ ${file.name}`; }
+  } catch { chip.textContent = `⚠ ${file.name}`; }
+});
+
+async function sendChatAgent() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  input.style.height = '';
+  setChatBusy(true);
+
+  appendChatMsg('user', message);
+  const replyEl = appendChatMsg('assistant', '');
+  let reply = '';
+  const scrollChat = () => { document.getElementById('chatMessages').scrollTop = 999999; };
+  const setReply = (t) => { replyEl.style.display = ''; replyEl.textContent = t; scrollChat(); };
+  // Render the assistant reply as Markdown (headings, bold, lists, code, links).
+  const renderReply = () => {
+    replyEl.style.display = '';
+    replyEl.style.whiteSpace = 'normal';   // markdown blocks manage their own spacing
+    replyEl.classList.add('md');
+    replyEl.innerHTML = renderMarkdown(reply);
+    scrollChat();
+  };
+  // Branded spinner while Claude works (no text yet); hidden while waiting on the
+  // user or when the bubble is empty at end of turn.
+  const showWorking = (label, secs) => {
+    replyEl.style.display = '';
+    replyEl.innerHTML = `<span class="chat-working"><img class="chat-logo-spin" src="/iconnectit.png" alt="" onerror="this.outerHTML='&lt;span class=\\'chat-spinner\\'&gt;&lt;/span&gt;'"><span>${escapeHtml(label)}${secs ? ` · ${secs}s` : ''}</span></span>`;
+    scrollChat();
+  };
+  const stopWorking = () => { if (!reply) replyEl.style.display = 'none'; };
+
+  // Feedback watchdog: after answering a question Claude can work silently for a
+  // bit (e.g. building a mockup). Keep the spinner alive with elapsed time; the
+  // server's keep-alive ping prevents the connection actually dropping. Paused
+  // while we're awaiting the user's answer to a card.
+  let lastBeat = Date.now();
+  let working = 'Thinking';
+  let awaitingUser = false;
+  const beat = () => { lastBeat = Date.now(); };
+  showWorking(working);
+  const watchdog = setInterval(() => {
+    if (awaitingUser || reply) return;
+    const idle = Math.round((Date.now() - lastBeat) / 1000);
+    showWorking(working, idle >= 4 ? idle : 0);
+  }, 1000);
+
+  try {
+    const attachments = chatAttachments;
+    chatAttachments = [];
+    document.getElementById('chatAttachList').innerHTML = '';
+    const res = await fetch('/agent/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, ctx: chatCtx, sessionId: chatSessionId, attachments }),
+    });
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    let eventName = null;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      beat();                               // any traffic (incl. keep-alive pings) resets the watchdog
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (line === '') { eventName = null; continue; }
+        if (line.startsWith('event: ')) { eventName = line.slice(7).trim(); continue; }
+        if (!line.startsWith('data: ')) continue;
+        const d = JSON.parse(line.slice(6));
+        if (eventName === 'session') {
+          chatSessionId = d.id;
+          eventName = null;
+        } else if (eventName === 'ask_question') {
+          awaitingUser = true; stopWorking();   // your turn — pause the spinner
+          appendQuestionCard(d.id, d.question);
+          eventName = null;
+        } else if (eventName === 'ask_input') {
+          awaitingUser = true; stopWorking();
+          appendInputCard(d.id, d);
+          eventName = null;
+        } else if (eventName === 'mockup') {
+          awaitingUser = false;
+          showMockupInCanvas(d.html, d.title);   // Stage 1: draft preview
+          if (!reply) setReply('✓ Mockup ready — showing on the right →');
+          eventName = null;
+        } else if (eventName === 'gen_intent') {
+          awaitingUser = false;
+          appendIntentCard(d);                    // Stage 2: one-click Generate card
+          stopWorking();
+          eventName = null;
+        } else if (eventName === 'brand_saved') {
+          appendChatMsg('assistant', `✓ Saved brand "${d.name}" to your Brand tab.`);
+          if (typeof loadBrandGrid === 'function') { try { loadBrandGrid(); } catch {} }
+          eventName = null;
+        } else if (eventName === 'tool_use') {
+          awaitingUser = false;
+          working = d.name === 'show_mockup' ? 'Building the mockup'
+                  : d.name === 'extract_brand' ? 'Reading the site'
+                  : d.name === 'propose_page' ? 'Preparing the build' : `Running ${d.name}`;
+          if (!reply) showWorking(working);
+          eventName = null;
+        } else if (eventName === 'status') {
+          awaitingUser = false;
+          working = (d.text || working).replace(/[…\.]+$/, '');
+          if (!reply) showWorking(working);
+          eventName = null;
+        } else if (eventName === 'turn_done') {
+          eventName = null;                   // turn complete; response will end
+        } else if (d.chunk) {
+          awaitingUser = false;
+          reply += d.chunk;
+          renderReply();
+        }
+      }
+    }
+  } catch (e) {
+    const msg = e.message === 'Failed to fetch'
+      ? 'Connection dropped — the run may still be going on the server. Check History, or retry.'
+      : `Error: ${e.message}`;
+    reply = reply ? `${reply}\n\n⚠ ${msg}` : `⚠ ${msg}`;
+    renderReply();
+  } finally {
+    clearInterval(watchdog);
+    stopWorking();   // hide the spinner bubble if the turn ended with no text
+  }
+
+  chatHistory.push({ role: 'user', content: message });
+  chatHistory.push({ role: 'assistant', content: reply });
+  setChatBusy(false);
+}
+
+// Append a locked-state confirmation line to a question/input card.
+function lockCard(card, chosen) {
+  card.querySelectorAll('button,input').forEach(b => b.disabled = true);
+  const t = document.createElement('div');
+  t.style.cssText = 'margin-top:6px;font-size:.75rem;opacity:.8';
+  t.textContent = `✓ ${chosen}`;
+  card.appendChild(t);
+}
+
+// Render an AskUserQuestion. Single-select: click an option → answer immediately.
+// Multi-select: toggle options, then a Done button sends the joined labels.
+function appendQuestionCard(id, q) {
+  const el = document.getElementById('chatMessages');
+  const card = document.createElement('div');
+  card.className = 'intent-card';
+  const multi = !!q.multiSelect;
+  const opts = (q.options || []).map((o) => {
+    // o.preview is sanitised server-side (SDK strips <script>/<style>); only
+    // present when HTML previews are enabled. Off by default → label+description.
+    const preview = o.preview ? `<div class="q-preview" style="margin-top:6px">${o.preview}</div>` : '';
+    return `<button type="button" class="q-opt" data-label="${escapeHtml(o.label)}">
+      <div class="opt-title">${multi ? '☐ ' : ''}${escapeHtml(o.label)}</div>
+      ${o.description ? `<div class="opt-desc">${escapeHtml(o.description)}</div>` : ''}
+      ${preview}
+    </button>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="intent-card-title">${escapeHtml(q.header || 'Question')}${multi ? ' · pick any' : ''}</div>
+    <div style="font-size:.8125rem;margin:4px 0 8px">${escapeHtml(q.question || '')}</div>
+    <div class="q-opts">${opts}</div>
+    ${multi ? '<button type="button" class="q-done btn-generate" style="min-width:auto;height:auto;padding:6px 14px;margin-top:6px">Done →</button>' : ''}
+    <div class="q-free">
+      <input type="text" class="q-free-input" placeholder="…or type your own answer">
+      <button type="button" class="q-free-send">Send</button>
+    </div>`;
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+
+  if (multi) {
+    const chosen = new Set();
+    card.querySelectorAll('.q-opt').forEach(b => b.addEventListener('click', () => {
+      const lbl = b.dataset.label;
+      const head = b.querySelector('div');
+      if (chosen.has(lbl)) { chosen.delete(lbl); head.textContent = '☐ ' + lbl; b.classList.remove('selected'); }
+      else { chosen.add(lbl); head.textContent = '☑ ' + lbl; b.classList.add('selected'); }
+    }));
+    card.querySelector('.q-done').addEventListener('click', () => {
+      if (!chosen.size) return;
+      const joined = [...chosen].join(', ');
+      postAnswer(id, joined); lockCard(card, joined);
+    });
+  } else {
+    card.querySelectorAll('.q-opt').forEach(b =>
+      b.addEventListener('click', () => { postAnswer(id, b.dataset.label); lockCard(card, b.dataset.label); }));
+  }
+  const freeInput = card.querySelector('.q-free-input');
+  const sendFree = () => { const v = freeInput.value.trim(); if (v) { postAnswer(id, v); lockCard(card, v); } };
+  card.querySelector('.q-free-send').addEventListener('click', sendFree);
+  freeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendFree(); } });
+}
+
+// Render a custom input tool (ask_input): colour picker, slider, or mini form.
+function appendInputCard(id, d) {
+  const el = document.getElementById('chatMessages');
+  const card = document.createElement('div');
+  card.className = 'intent-card';
+  let body = '';
+  if (d.kind === 'colour') {
+    body = `
+      <div class="intent-card-title">${escapeHtml(d.label || 'Pick a colour')}</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        <input type="color" class="ci-colour" value="${escapeHtml(d.default || '#7c3aed')}" style="width:48px;height:36px;border:1px solid var(--border);border-radius:6px;background:none">
+        <input type="text" class="ci-hex" value="${escapeHtml(d.default || '#7c3aed')}" style="width:110px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace">
+        <button type="button" class="ci-send btn-generate" style="min-width:auto;height:auto;padding:6px 14px">Use →</button>
+      </div>`;
+  } else if (d.kind === 'slider') {
+    const unit = d.unit || '';
+    body = `
+      <div class="intent-card-title">${escapeHtml(d.label || 'Pick a value')}</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        <input type="range" class="ci-range" min="${d.min}" max="${d.max}" step="${d.step || 1}" value="${d.default}" style="flex:1">
+        <span class="ci-val" style="min-width:64px;font-family:monospace">${d.default}${escapeHtml(unit)}</span>
+        <button type="button" class="ci-send btn-generate" style="min-width:auto;height:auto;padding:6px 14px">Use →</button>
+      </div>`;
+  } else if (d.kind === 'form') {
+    const fields = (d.fields || []).map(f =>
+      `<label style="display:block;margin:6px 0 2px;font-size:.75rem;opacity:.85">${escapeHtml(f.label || f.name)}</label>
+       <input type="text" class="ci-field" data-name="${escapeHtml(f.name)}" placeholder="${escapeHtml(f.placeholder || '')}" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px">`).join('');
+    body = `
+      <div class="intent-card-title">A few details</div>
+      ${fields}
+      <button type="button" class="ci-send btn-generate" style="min-width:auto;height:auto;padding:6px 14px;margin-top:8px">Submit →</button>`;
+  }
+  card.innerHTML = body;
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+
+  if (d.kind === 'colour') {
+    const swatch = card.querySelector('.ci-colour');
+    const hex = card.querySelector('.ci-hex');
+    swatch.addEventListener('input', () => { hex.value = swatch.value; });
+    hex.addEventListener('input', () => { if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) swatch.value = hex.value; });
+    card.querySelector('.ci-send').addEventListener('click', () => { postAnswer(id, hex.value); lockCard(card, hex.value); });
+  } else if (d.kind === 'slider') {
+    const range = card.querySelector('.ci-range');
+    const val = card.querySelector('.ci-val');
+    const unit = d.unit || '';
+    range.addEventListener('input', () => { val.textContent = range.value + unit; });
+    card.querySelector('.ci-send').addEventListener('click', () => { const out = range.value + unit; postAnswer(id, out); lockCard(card, out); });
+  } else if (d.kind === 'form') {
+    card.querySelector('.ci-send').addEventListener('click', () => {
+      const obj = {};
+      card.querySelectorAll('.ci-field').forEach(i => { obj[i.dataset.name] = i.value; });
+      postAnswer(id, JSON.stringify(obj)); lockCard(card, 'submitted');
+    });
+  }
+}
+
+function postAnswer(id, value) {
+  return fetch('/agent/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, value }),
+  });
 }
 
 // Render a generation proposal card from a GEN_INTENT payload. "Start" fills the
@@ -732,6 +1079,12 @@ function fillFormFromIntent(intent) {
   if (intent.sections) f.elements.sections.value = Array.isArray(intent.sections) ? intent.sections.join(', ') : intent.sections;
   if (intent.ctaLabel && f.elements.cta_label) f.elements.cta_label.value = intent.ctaLabel;
   if (intent.aesthetic) f.elements.aesthetic.value = intent.aesthetic;
+  // Carry the approved mockup path through a hidden field so /generate matches it.
+  if (intent.mockupPath) {
+    let h = f.elements.mockupPath;
+    if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = 'mockupPath'; f.appendChild(h); }
+    h.value = intent.mockupPath;
+  }
   document.querySelector('.tab[data-tab=generate]').click();
 }
 
@@ -801,23 +1154,48 @@ async function chatImport(genId, btn) {
   if (status) status.textContent = 'Importing…';
   try {
     const r = await fetch(`/import/${genId}`, { method: 'POST' }).then(r => r.json());
-    if (status) status.innerHTML = r.ok && r.previewUrl
-      ? `✅ Imported — <a href="${r.previewUrl}" target="_blank">view</a>`
-      : `⚠️ ${escapeHtml(r.error || 'import failed')}`;
+    if (r.ok && r.previewUrl) {
+      const liveLink = r.liveUrl || r.previewUrl;
+      const verdict = r.status === 'publish'
+        ? `✅ Live — <a href="${liveLink}" target="_blank">view</a>`
+        : `✅ Imported — <a href="${r.previewUrl}" target="_blank">view</a>`;
+      if (status) status.innerHTML = verdict;
+      // If the page went live, open the QA compare layer (mockup vs screenshot).
+      if (r.liveUrl) showQaCompare(genId, r.liveUrl);
+    } else if (status) {
+      status.innerHTML = `⚠️ ${escapeHtml(r.error || 'import failed')}`;
+    }
   } catch (e) {
     if (status) status.textContent = `⚠️ ${e.message}`;
   }
   btn.disabled = false;
 }
 
-document.getElementById('chatSend').addEventListener('click', sendChat);
+// Interactive (Agent SDK) chat is the default. To fall back to the old one-shot
+// `claude -p` path, set USE_AGENT_CHAT = false.
+const USE_AGENT_CHAT = true;
+const chatSubmit = () => { if (chatBusy) return; return USE_AGENT_CHAT ? sendChatAgent() : sendChat(); };
+document.getElementById('chatSend').addEventListener('click', chatSubmit);
 document.getElementById('chatInput').addEventListener('keydown', e => {
-  // Enter inserts a newline (default). Cmd/Ctrl+Enter sends.
-  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendChat(); }
+  // Enter sends; Shift+Enter inserts a newline (standard chat behaviour).
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    e.preventDefault();
+    const sm = document.getElementById('slashMenu'); if (sm) sm.hidden = true;
+    chatSubmit();
+  }
 });
+// Auto-grow the textarea with content (min/max via CSS).
+(() => {
+  const ta = document.getElementById('chatInput');
+  if (!ta) return;
+  const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'; };
+  ta.addEventListener('input', grow);
+})();
 document.getElementById('chatClear').addEventListener('click', () => {
   chatHistory.length = 0;
+  chatSessionId = null;                 // start a fresh Claude session next message
   document.getElementById('chatMessages').innerHTML = '';
+  resetCanvas();                        // blank the preview — no stale generation
   renderChatEmptyState();
 });
 
@@ -1030,11 +1408,14 @@ document.getElementById('importBtn').addEventListener('click', async () => {
 // ─── Test connection ──────────────────────────────────────────────────────────
 document.getElementById('testConnection').addEventListener('click', async () => {
   const el = document.getElementById('connectionResult');
+  const health = document.getElementById('connectionHealth');
   el.textContent = 'Testing…';
+  if (health) health.hidden = true;
   try {
     const data = await fetch('/test-connection').then(r => r.json());
     if (data.ok) {
       el.innerHTML = '<span class="style-pass">Connected successfully</span>';
+      renderHealthChips(data);
     } else {
       el.innerHTML = `<span class="style-fail">Failed: ${data.error}</span>`;
     }
@@ -1042,6 +1423,35 @@ document.getElementById('testConnection').addEventListener('click', async () => 
     el.innerHTML = `<span class="style-fail">Error: ${err.message}</span>`;
   }
 });
+
+// Render the plugin health chips from the enriched /test-connection response.
+// Surfaces Divi 5, SEO plugin, and — critically — a version-drift warning when
+// the deployed plugin is behind what the app expects (silent cause of broken
+// live QA: an older plugin imports as draft, not publish).
+function renderHealthChips(data) {
+  const health = document.getElementById('connectionHealth');
+  if (!health) return;
+  health.innerHTML = '';
+  const chip = (label, tone) => {
+    const c = document.createElement('span');
+    c.className = `health-chip ${tone}`;
+    c.textContent = label;
+    return c;
+  };
+  health.appendChild(chip(data.divi5 ? 'Divi 5 ✓' : 'Divi 5 missing', data.divi5 ? 'ok' : 'bad'));
+  if (data.yoast)      health.appendChild(chip('Yoast ✓', 'ok'));
+  else if (data.rankmath) health.appendChild(chip('RankMath ✓', 'ok'));
+  else                 health.appendChild(chip('No SEO plugin', 'warn'));
+  if (data.pluginVersion) {
+    const tone = data.versionOk === 'ok' ? 'ok'
+      : data.versionOk === 'behind' ? 'bad' : 'warn';
+    const label = data.versionOk === 'behind'
+      ? `Plugin ${data.pluginVersion} — update needed (expected ${data.expectedVersion})`
+      : `Plugin v${data.pluginVersion}`;
+    health.appendChild(chip(label, tone));
+  }
+  health.hidden = false;
+}
 
 // ─── Imported pages: list + delete (no-litter cleanup) ────────────────────────
 async function loadWpPages() {
@@ -1339,11 +1749,85 @@ document.getElementById('saveBriefBtn').addEventListener('click', async () => {
 
 // ─── Design canvas (persistent live preview on the right) ─────────────────────
 let canvasGenId = null;
+// ─── QA compare layer (post-import: mockup vs live screenshot) ──────────────
+// After a successful import, the canvas switches from "just the mockup" to a
+// compare view: the Stage 2 mockup beside a real full-page screenshot of the
+// live Divi page. This is the visual fidelity gate — if the live render drifts
+// from the mockup, it shows here.
+let qaActiveGenId = null;
+let qaLiveUrl = null;
+
+function setQaView(view) {
+  const panel = document.getElementById('qaCompare');
+  if (panel) panel.dataset.qaView = view;
+  document.querySelectorAll('#qaTabs button').forEach(b =>
+    b.classList.toggle('active', b.dataset.qa === view));
+}
+
+// Render the QA layer for a generation. liveUrl is the published page permalink.
+async function showQaCompare(genId, liveUrl) {
+  qaActiveGenId = genId;
+  qaLiveUrl = liveUrl;
+  const panel = document.getElementById('qaCompare');
+  const frame = document.getElementById('canvasFrame');
+  const empty = document.getElementById('canvasEmpty');
+  if (!panel) return;
+
+  // Mockup pane: mirror the canvas iframe's mockup into the QA compare pane.
+  const mockupFrame = document.getElementById('qaMockupFrame');
+  if (mockupFrame) mockupFrame.src = `/preview-html/${genId}?t=${Date.now()}`;
+
+  // Open-live link + re-shoot button.
+  const openLive = document.getElementById('qaOpenLive');
+  if (openLive) { openLive.href = liveUrl; openLive.hidden = false; }
+
+  // Reveal the QA layer over the canvas stage.
+  if (empty) empty.hidden = true;
+  if (frame) frame.hidden = true;   // mockup now lives in the QA pane
+  panel.hidden = false;
+  setQaView('compare');
+
+  await loadQaScreenshot(liveUrl, false);
+}
+
+// Fetch the live screenshot and load it into the <img>. fresh=true bypasses cache.
+async function loadQaScreenshot(liveUrl, fresh) {
+  const img = document.getElementById('qaLiveImg');
+  const loading = document.getElementById('qaShotLoading');
+  if (!img || !liveUrl) return;
+  if (loading) loading.hidden = false;
+  img.style.opacity = '0.4';
+  try {
+    const u = `/screenshot?url=${encodeURIComponent(liveUrl)}${fresh ? '&fresh=1' : ''}&t=${Date.now()}`;
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('screenshot load failed'));
+      img.src = u;
+    });
+    img.style.opacity = '1';
+  } catch (e) {
+    if (loading) loading.textContent = '⚠️ Could not render live page. Is the site reachable & Chrome installed?';
+  } finally {
+    if (loading) loading.hidden = true;
+  }
+}
+
+// QA tabs (Compare / Live / Mockup).
+document.getElementById('qaTabs')?.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-qa]');
+  if (btn) setQaView(btn.dataset.qa);
+});
+// Re-shoot button bypasses cache.
+document.getElementById('qaRefresh')?.addEventListener('click', () => {
+  if (qaLiveUrl) loadQaScreenshot(qaLiveUrl, true);
+});
+
 function showInCanvas(genId, meta = {}) {
   const frame = document.getElementById('canvasFrame');
   if (!frame) return;
   canvasGenId = genId;
   const url = `/preview-html/${genId}?t=${Date.now()}`;
+  frame.removeAttribute('srcdoc');   // clear any Stage-1 draft (srcdoc beats src)
   frame.src = url;
   frame.hidden = false;
   document.getElementById('canvasEmpty').hidden = true;
@@ -1352,6 +1836,35 @@ function showInCanvas(genId, meta = {}) {
   newTab.href = url; newTab.hidden = false;
   document.getElementById('canvasImport').hidden = false;
   document.getElementById('canvasStatus').textContent = '';
+  document.getElementById('canvasPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Blank the canvas — used when starting a fresh chat session so a previous
+// generation's preview (or draft mockup) doesn't linger.
+function resetCanvas() {
+  canvasGenId = null;
+  const frame = document.getElementById('canvasFrame');
+  if (frame) { frame.removeAttribute('srcdoc'); frame.src = ''; frame.hidden = true; }
+  const empty = document.getElementById('canvasEmpty'); if (empty) empty.hidden = false;
+  const title = document.getElementById('canvasTitle'); if (title) title.textContent = 'Preview';
+  ['canvasNewTab', 'canvasImport'].forEach(id => { const e = document.getElementById(id); if (e) e.hidden = true; });
+  const st = document.getElementById('canvasStatus'); if (st) st.textContent = '';
+}
+
+// Stage 1: render an HTML mockup draft in the canvas via srcdoc (no saved
+// generation). Import is hidden — it's a draft until the real Divi page is built.
+function showMockupInCanvas(html, title) {
+  const frame = document.getElementById('canvasFrame');
+  if (!frame) return;
+  canvasGenId = null;
+  frame.removeAttribute('src');
+  frame.srcdoc = html;
+  frame.hidden = false;
+  document.getElementById('canvasEmpty').hidden = true;
+  document.getElementById('canvasTitle').textContent = title || 'Mockup · draft';
+  const newTab = document.getElementById('canvasNewTab'); if (newTab) newTab.hidden = true;
+  const imp = document.getElementById('canvasImport'); if (imp) imp.hidden = true;
+  document.getElementById('canvasStatus').textContent = 'Draft mockup — ask for changes, or approve to build the real Divi 5 page';
   document.getElementById('canvasPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1380,9 +1893,16 @@ document.getElementById('canvasImport')?.addEventListener('click', async (e) => 
   btn.disabled = true; status.textContent = 'Importing…';
   try {
     const r = await fetch(`/import/${canvasGenId}`, { method: 'POST' }).then(r => r.json());
-    status.innerHTML = r.ok && r.previewUrl
-      ? `✅ Imported as a draft — <a href="${r.previewUrl}" target="_blank" style="color:var(--accent)">view in WordPress ↗</a>`
-      : `⚠️ ${escapeHtml(r.error || 'import failed')}`;
+    if (r.ok && r.previewUrl) {
+      const link = r.liveUrl || r.previewUrl;
+      status.innerHTML = r.status === 'publish'
+        ? `✅ Live — <a href="${link}" target="_blank" style="color:var(--accent)">view in WordPress ↗</a>`
+        : `✅ Imported — <a href="${r.previewUrl}" target="_blank" style="color:var(--accent)">view ↗</a>`;
+      // If published, open the QA compare layer (mockup vs live screenshot).
+      if (r.liveUrl) showQaCompare(canvasGenId, r.liveUrl);
+    } else {
+      status.textContent = `⚠️ ${r.error || 'import failed'}`;
+    }
   } catch (err) { status.textContent = `⚠️ ${err.message}`; }
   btn.disabled = false;
 });
