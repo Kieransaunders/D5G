@@ -25,6 +25,14 @@ It prints the path to the finished zip (e.g. `~/Downloads/divi-tools-importer.zi
 
 After activation they go to **Settings → Divi Tools Importer** to copy their site URL and API key.
 
+## Output location
+
+This skill reads a generated layout and writes temporary payloads (`payload.json`, `preview-payload.json`). All of these live in the **Divi5 output folder**, never the plugin repo: `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages`. Run shell steps from there so bare filenames resolve:
+
+```bash
+cd "${DIVI5_OUT:-$HOME/Desktop/Divi5 Pages}"
+```
+
 ## Non-negotiable rules
 
 1. **Publish on import, always.** Always pass `"status": "publish"` — never draft. Divi draft previews require WP login and do not fully render presets or CSS. The only way to verify a page is designed correctly is to see it live. After the quality loop is complete, the user can unpublish manually if needed.
@@ -41,7 +49,7 @@ After activation they go to **Settings → Divi Tools Importer** to copy their s
 
 ### 1. Resolve inputs
 
-**Layout JSON** — explicit path if given; otherwise the most recent `*-landing-page.json` or `*-section.json` in the working directory. Confirm if ambiguous.
+**Layout JSON** — explicit path if given; otherwise the most recent `*-landing-page.json` or `*-section.json` in the output folder (`${DIVI5_OUT:-~/Desktop/Divi5 Pages}`). Confirm if ambiguous.
 
 Check the `context` field to determine import type:
 - `"context": "et_builder"` → **page import** (standard flow below)
@@ -118,7 +126,7 @@ Report what was detected: Divi 5, Yoast, RankMath. **If no SEO plugin is present
 
 ### 4. Build the payload and import
 
-Assemble `payload.json` in the working directory:
+Assemble `payload.json` in the output folder (`${DIVI5_OUT:-~/Desktop/Divi5 Pages}`):
 
 ```json
 {

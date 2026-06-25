@@ -42,12 +42,35 @@ const PLUGIN_DIR  = path.resolve(__dirname, '..');
 // after a few days and reboots wipe it — which later breaks /preview-html and
 // /download with no obvious cause. Redirect volatile paths to the app data dir.
 const GEN_OUTPUTS = path.join(DATA_DIR, 'outputs');
-function resolveOutputDir(outputDir) {
+
+// Default home for generated pages: a folder on the user's Desktop, so outputs
+// land somewhere obvious and never inside the plugin repo. Desktop is persistent
+// (never auto-purged), so /preview-html and /download stay valid.
+const DESKTOP_OUTPUTS = path.join(os.homedir(), 'Desktop', 'Divi5 Pages');
+
+// The output-folder UI field lets users type "~/Desktop/...". fs APIs do not
+// expand ~, so without this a literal "~" folder would be created in cwd.
+function expandTilde(p) {
+  if (!p) return p;
+  if (p === '~') return os.homedir();
+  if (p.startsWith('~/') || p.startsWith('~' + path.sep)) {
+    return path.join(os.homedir(), p.slice(2));
+  }
+  return p;
+}
+
+function slugify(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function resolveOutputDir(outputDir, brand) {
+  outputDir = expandTilde(outputDir);
   const isVolatile = p =>
     /^(\/private)?\/tmp(\/|$)/.test(p) ||
     p === os.tmpdir() || p.startsWith(os.tmpdir() + path.sep);
+  // No folder chosen (or a volatile one) → a readable per-run folder on the Desktop.
   if (!outputDir || isVolatile(outputDir)) {
-    return path.join(GEN_OUTPUTS, String(Date.now()));
+    return path.join(DESKTOP_OUTPUTS, `${slugify(brand) || 'page'}-${Date.now()}`);
   }
   return outputDir;
 }
@@ -120,7 +143,7 @@ app.post('/generate', upload.single('exportFile'), (req, res) => {
   } = req.body;
 
   const sectionsArr = Array.isArray(sections) ? sections : (sections ? [sections] : []);
-  const outputPath  = resolveOutputDir(outputDir);
+  const outputPath  = resolveOutputDir(outputDir, brand);
   try {
     fs.mkdirSync(outputPath, { recursive: true });
   } catch (e) {
@@ -240,6 +263,9 @@ function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
   const proc = spawn(claudeBin, ['-p', '--dangerously-skip-permissions',
     '--plugin-dir', PLUGIN_DIR, fullPrompt], {
     cwd: outputPath,
+    // DIVI5_OUT is the explicit contract with the page-generator/extract-style/
+    // import-to-local skills: write all artefacts here, never into the repo.
+    env: { ...process.env, DIVI5_OUT: outputPath },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   proc.stdin.end(); // send immediate EOF so claude doesn't wait for stdin
@@ -309,7 +335,7 @@ app.post('/design-handoff', upload.single('bundle'), (req, res) => {
   const { brand, brandId, outputDir, publish } = req.body;
   if (!req.file) return res.status(400).json({ error: 'No hand-off bundle uploaded' });
 
-  const outputPath = resolveOutputDir(outputDir);
+  const outputPath = resolveOutputDir(outputDir, brand);
   try {
     fs.mkdirSync(outputPath, { recursive: true });
   } catch (e) {

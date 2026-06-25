@@ -38,6 +38,16 @@ Then open Claude Code Desktop — it picks up the install automatically from `~/
 }
 ```
 
+## Output location (generated artefacts)
+
+Generated pages, sections, previews, tokens, SEO meta and `generate-*.js` scripts **must never be written into this repo**. The canonical output folder is:
+
+- `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages`.
+
+The app (`app/server.js`) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `import-to-local`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
+
+`.gitignore` keeps only a safety-net for stray root artefacts — the real fix is that nothing should be written here in the first place.
+
 ## Skills
 
 All skills live in `skills/`. Each `SKILL.md` requires:

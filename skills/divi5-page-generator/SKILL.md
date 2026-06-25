@@ -20,6 +20,34 @@ This skill runs in three modes. **Detect the mode from the prompt before doing a
 
 ---
 
+## Output location (read first — never write into the repo)
+
+All generated artefacts — page/section JSON, `*.tokens.js`, `*-seo-meta.json`, `*-schema.json`, HTML previews, payloads, and the `generate-*.js` script itself — go to the **Divi5 output folder**, never into the Divi5Generate plugin repo or its source tree.
+
+Resolve the output dir once, in this order:
+
+1. `process.env.DIVI5_OUT` if set — the app passes this when it runs you; always honour it.
+2. Otherwise `~/Desktop/Divi5 Pages` (the default; create it if absent).
+
+Every `generate-*.js` script must compute `OUT` and write only into it:
+
+```js
+const os = require('os'), path = require('path'), fs = require('fs');
+const OUT = process.env.DIVI5_OUT || path.join(os.homedir(), 'Desktop', 'Divi5 Pages');
+fs.mkdirSync(OUT, { recursive: true });
+// e.g. fs.writeFileSync(path.join(OUT, `${brand}-landing-page.json`), JSON.stringify(json));
+```
+
+Read inputs back from the same `OUT` folder (most recent `*-landing-page.json`, `*.tokens.js`, `brief.json`, etc.). When you finish, tell the user the full path you wrote to. Where instructions below say "working directory", they mean `OUT`.
+
+**Run shell steps from inside `OUT`.** The validator, taste-check, style-check, preview and on-disk gate commands below take bare filenames, so `cd` into the output folder first (the app already runs you there; a manual run does not):
+
+```bash
+cd "${DIVI5_OUT:-$HOME/Desktop/Divi5 Pages}"
+```
+
+---
+
 ## Section mode
 
 A single, self-contained Divi 5 section importable via **Divi Library → Add to Library → Section**.
@@ -224,7 +252,7 @@ const P = {
 
 For brand-specific presets not in the ET library (custom colors, pill buttons etc.), use the **two-step approach**: `POST /presets/import` first, then `GET /presets` to get the registry, then generate the page without re-sending presets.
 
-**Classic workflow (still valid for quick jobs).** Write `generate-[brand].js` in the user's working directory following [examples/example-page.js](examples/example-page.js), requiring the builder from `${CLAUDE_SKILL_DIR}/scripts/divi-builder.js`: tokens → global colours → presets → sections → `assemble()` → write. **Always write output files to `process.cwd()`**, not `__dirname` — the example uses `__dirname` because it lives inside the skill, but generated scripts run from the user's project directory.
+**Classic workflow (still valid for quick jobs).** Write `generate-[brand].js` into the output folder (`OUT`, see "Output location" above) following [examples/example-page.js](examples/example-page.js), requiring the builder from `${CLAUDE_SKILL_DIR}/scripts/divi-builder.js`: tokens → global colours → presets → sections → `assemble()` → write. **Always write output files to `OUT`** (`process.env.DIVI5_OUT || ~/Desktop/Divi5 Pages`), never to `__dirname` (that is inside the skill) and never to the plugin repo. The example uses `__dirname` only because it lives inside the skill; your generated script must resolve `OUT` as shown above and write there.
 2. Output files:
    - `[brand]-landing-page.json` (`et_builder` context — page import)
    - `[brand]-seo-meta.json` — keyword, title tag (≤60 chars, keyword first), meta description (≤155, with CTA), slug

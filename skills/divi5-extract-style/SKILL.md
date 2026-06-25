@@ -14,6 +14,7 @@ Convert brand guidelines or design tokens into a Divi 5 Global Variables import 
 1. **Extract only explicit values.** Never invent brand colours or sizes. If the guide says "our blue" without a hex, list it in the missing-values report instead of guessing. Derived shades (hover states, tints) are allowed only when the user asks for them, and must be labelled as derived.
 2. **Every token gets a stable, readable id**: `gcid-<kebab-label>` for colours, `gvid-<kebab-label>` for numbers/strings. Lowercase alphanumeric + hyphens.
 3. **Output is a single importable JSON file** — no placeholders.
+4. **Write outputs to the Divi5 output folder, never the plugin repo** — `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages` (create it if absent). In Node: `const OUT = process.env.DIVI5_OUT || require('path').join(require('os').homedir(),'Desktop','Divi5 Pages')`. This also applies to any rasters (PNGs) saved during image/Canva extraction.
 
 ## Output format
 
@@ -53,7 +54,7 @@ Convert brand guidelines or design tokens into a Divi 5 Global Variables import 
 ## Deliverables (in order)
 
 1. Suggested filename: `<Brand>_Global-Variables.json`
-2. The JSON file, written to the working directory
+2. The JSON file, written to the output folder (`${DIVI5_OUT:-~/Desktop/Divi5 Pages}`, see Rule 4)
 3. A token report table: id, label, value, type, source (quoted from the guide)
 4. Missing/ambiguous checklist: anything the guide mentions without an explicit value
 
@@ -138,7 +139,7 @@ Pull a brand from a Canva design when the user has the **Canva connector** conne
 **Steps:**
 
 1. **Find the source design.** If the user pasted a Canva link, resolve it (`resolve-shortlink` → design id); otherwise `search-designs` by name, or `list-brand-templates` and take the one they mean. `list-brand-kits` only returns kit `id`/`name`/`thumbnail` — useful for picking, not for tokens.
-2. **Get a raster.** Prefer `export-design` to a PNG (higher resolution → better palette) over `get-design-thumbnail` (faster, lower res, fine for a quick read). Save the PNG to the working directory.
+2. **Get a raster.** Prefer `export-design` to a PNG (higher resolution → better palette) over `get-design-thumbnail` (faster, lower res, fine for a quick read). Save the PNG to the output folder (`${DIVI5_OUT:-~/Desktop/Divi5 Pages}`).
 3. **Colours →** run the **Image mode** palette+vision step above on that PNG. Tag results `source: "canva"`.
 4. **Fonts →** call `get-design-content` and read the font `family` off the design's text elements — this is *real* data from the design, not a vision guess, so prefer it. Map the largest/heading text → `fonts.heading`, body text → `fonts.body`, `source: "canva"`. Only fall back to a vision guess if content has no font info, and then leave it empty rather than invent.
 5. **Logo / voice / tagline** — leave empty unless the user states them in chat (then `source: "chat"` for those fields).
