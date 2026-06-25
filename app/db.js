@@ -101,6 +101,37 @@ db.exec(`
   );
 `);
 
+// ─── Chat sessions + transcript (resume-after-restart) ───────────────────────
+// A chat session is identified by its durable Claude SDK session UUID
+// (sdk_session_id) — that survives an app restart in ~/.claude/projects/, so it
+// is the stable key. app_session_id is the *current* in-memory handle, which
+// changes whenever a session is resumed into a fresh server process. We persist
+// the visible transcript (chat_messages) so the left panel repopulates exactly
+// as it was, and last_mockup_html / gen_id so the canvas can be restored too.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS chat_sessions (
+    sdk_session_id   TEXT PRIMARY KEY,
+    app_session_id   TEXT,
+    title            TEXT,
+    last_mockup_html TEXT,
+    last_mockup_title TEXT,
+    gen_id           INTEGER,
+    created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS chat_messages (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    sdk_session_id TEXT NOT NULL REFERENCES chat_sessions(sdk_session_id),
+    role           TEXT NOT NULL,
+    content        TEXT NOT NULL,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_chat_messages_session
+    ON chat_messages (sdk_session_id, id);
+`);
+
 // ─── Migrations: add new columns if they don't exist ────────────────────────
 const migrations = [
   `ALTER TABLE generations ADD COLUMN import_status TEXT`,
@@ -273,8 +304,70 @@ function deleteDesignProject(id, keepPages = true) {
   db.prepare('DELETE FROM design_projects WHERE id=?').run(id);
 }
 
+// ─── Chat session helpers ────────────────────────────────────────────────────
+
+// Derive a short, human title from the first user message of a session.
+function deriveSessionTitle(firstUserMessage) {
+  const t = String(firstUserMessage || '').replace(/\s+/g, ' ').trim();
+  if (!t) return 'Untitled chat';
+  return t.length > 60 ? t.slice(0, 57) + '…' : t;
+}
+
+// Insert or update the session row keyed by the durable SDK session id. Only
+// sets the title on first insert (the first user message names the chat).
+// Patch fields (appSessionId, mockup, genId) update in place when provided.
+function upsertChatSession({ sdkSessionId, appSessionId = null, title = null, lastMockupHtml = undefined, lastMockupTitle = undefined, genId = undefined }) {
+  if (!sdkSessionId) return;
+  const existing = db.prepare('SELECT sdk_session_id FROM chat_sessions WHERE sdk_session_id=?').get(sdkSessionId);
+  if (!existing) {
+    db.prepare(`INSERT INTO chat_sessions (sdk_session_id, app_session_id, title) VALUES (?, ?, ?)`)
+      .run(sdkSessionId, appSessionId, title || 'Untitled chat');
+  }
+  const sets = ['updated_at=datetime(\'now\')'];
+  const args = [];
+  if (appSessionId != null)        { sets.push('app_session_id=?');    args.push(appSessionId); }
+  if (lastMockupHtml !== undefined){ sets.push('last_mockup_html=?');  args.push(lastMockupHtml); }
+  if (lastMockupTitle !== undefined){ sets.push('last_mockup_title=?'); args.push(lastMockupTitle); }
+  if (genId !== undefined)         { sets.push('gen_id=?');            args.push(genId); }
+  args.push(sdkSessionId);
+  db.prepare(`UPDATE chat_sessions SET ${sets.join(', ')} WHERE sdk_session_id=?`).run(...args);
+}
+
+function addChatMessage({ sdkSessionId, role, content }) {
+  if (!sdkSessionId || !role) return;
+  db.prepare(`INSERT INTO chat_messages (sdk_session_id, role, content) VALUES (?, ?, ?)`)
+    .run(sdkSessionId, role, String(content == null ? '' : content));
+  db.prepare(`UPDATE chat_sessions SET updated_at=datetime('now') WHERE sdk_session_id=?`).run(sdkSessionId);
+}
+
+// Recent sessions for the picker, newest first, with a message count.
+function listChatSessions(limit = 30) {
+  return db.prepare(`
+    SELECT s.sdk_session_id, s.title, s.gen_id, s.created_at, s.updated_at,
+           (SELECT COUNT(*) FROM chat_messages m WHERE m.sdk_session_id = s.sdk_session_id) AS message_count
+    FROM chat_sessions s
+    WHERE EXISTS (SELECT 1 FROM chat_messages m WHERE m.sdk_session_id = s.sdk_session_id)
+    ORDER BY s.updated_at DESC
+    LIMIT ?`).all(limit);
+}
+
+// Full session for restore: row + ordered transcript.
+function getChatSession(sdkSessionId) {
+  const session = db.prepare('SELECT * FROM chat_sessions WHERE sdk_session_id=?').get(sdkSessionId);
+  if (!session) return null;
+  const messages = db.prepare('SELECT role, content, created_at FROM chat_messages WHERE sdk_session_id=? ORDER BY id').all(sdkSessionId);
+  return { session, messages };
+}
+
+function deleteChatSession(sdkSessionId) {
+  db.prepare('DELETE FROM chat_messages WHERE sdk_session_id=?').run(sdkSessionId);
+  db.prepare('DELETE FROM chat_sessions WHERE sdk_session_id=?').run(sdkSessionId);
+}
+
 module.exports = {
   db, DATA_DIR, EXPORTS_DIR,
+  deriveSessionTitle, upsertChatSession, addChatMessage,
+  listChatSessions, getChatSession, deleteChatSession,
   createBrandProfile, getBrandProfile, listBrandProfiles,
   updateBrandProfile, deleteBrandProfile,
   createDesignProject, getDesignProject, listDesignProjects,

@@ -23,6 +23,12 @@ const { db, promoteIfEligible } = require('../db');
 function classifyKind(filename) {
   if (filename.includes('seo-meta')) return 'seo-meta';
   if (filename.includes('schema'))   return 'schema';
+  // A "-base-page" file is the cloned ET premade layout used as a STRUCTURAL
+  // REFERENCE only — it still carries the template's stock content. It must NOT
+  // be classified as 'page', or /import can pick it over the real deliverable
+  // (the generated landing-page) and push the template's content live instead
+  // of the generated page. Tag it 'base' so it's a fallback, never the default.
+  if (filename.includes('-base-page')) return 'base';
   if (filename.includes('landing-page') || filename.includes('-page')) return 'page';
   return 'other';
 }

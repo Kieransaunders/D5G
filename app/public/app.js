@@ -791,6 +791,10 @@ document.getElementById('chatFile')?.addEventListener('change', async (e) => {
   } catch { chip.textContent = `⚠ ${file.name}`; }
 });
 
+// Set by the active chat turn so postAnswer() can resume the "thinking" spinner
+// the instant the user submits a card answer. Null when no turn is streaming.
+let chatResumeThinking = null;
+
 async function sendChatAgent() {
   const input = document.getElementById('chatInput');
   const message = input.value.trim();
@@ -835,6 +839,16 @@ async function sendChatAgent() {
     const idle = Math.round((Date.now() - lastBeat) / 1000);
     showWorking(working, idle >= 4 ? idle : 0);
   }, 1000);
+
+  // The user just answered a card (colour / form / question). The next server
+  // event can be ~30s away while Claude spins up, so resume the spinner now to
+  // close the dead-air gap. Registered for postAnswer() to call.
+  chatResumeThinking = () => {
+    awaitingUser = false;
+    beat();
+    working = 'Thinking';
+    if (!reply) showWorking(working);
+  };
 
   try {
     const attachments = chatAttachments;
@@ -943,6 +957,7 @@ async function sendChatAgent() {
     renderReply();
   } finally {
     clearInterval(watchdog);
+    chatResumeThinking = null;
     stopWorking();   // hide the spinner bubble if the turn ended with no text
   }
 
@@ -1070,6 +1085,9 @@ function appendInputCard(id, d) {
 }
 
 function postAnswer(id, value) {
+  // Immediately bring the spinner back so the user sees Claude is working again,
+  // rather than dead air until the next server event lands.
+  if (typeof chatResumeThinking === 'function') chatResumeThinking();
   return fetch('/agent/answer', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1238,13 +1256,138 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
   const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'; };
   ta.addEventListener('input', grow);
 })();
-document.getElementById('chatClear').addEventListener('click', () => {
+// ─── Saved chat sessions: resume + transcript restore ────────────────────────
+// Sessions are persisted server-side (keyed by the durable Claude SDK session
+// id) so a chat survives an app restart or the 15-min idle close. We replay the
+// stored transcript into the panel and set chatResumeSession so the next message
+// continues the SAME Claude conversation with full context.
+
+// Append a stored message, rendering assistant turns as Markdown like the live
+// stream does (user turns stay plain text). Reuses appendChatMsg's bubble.
+function appendChatMsgRich(role, text) {
+  const div = appendChatMsg(role, '');
+  if (role === 'assistant') {
+    div.classList.add('md');
+    div.style.whiteSpace = 'normal';
+    div.innerHTML = renderMarkdown(text || '');
+  } else {
+    div.textContent = text || '';
+  }
+  return div;
+}
+
+function startNewChat() {
   chatHistory.length = 0;
-  chatSessionId = null;                 // start a fresh Claude session next message
+  chatSessionId = null;          // fresh in-memory session next message
+  chatResumeSession = null;      // not resuming anything
   document.getElementById('chatMessages').innerHTML = '';
-  resetCanvas();                        // blank the preview — no stale generation
+  resetCanvas();                 // blank the preview — no stale generation
   renderChatEmptyState();
+  hideSessionsMenu();
+}
+
+function hideSessionsMenu() {
+  const m = document.getElementById('chatSessionsMenu');
+  if (m) m.hidden = true;
+}
+
+// Pull a saved chat back into the panel and reconnect it for continuation.
+async function restoreChatSession(sdkId, opts = {}) {
+  try {
+    const res = await fetch(`/agent/sessions/${encodeURIComponent(sdkId)}`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    chatHistory.length = 0;
+    document.getElementById('chatMessages').innerHTML = '';
+    for (const m of (data.messages || [])) {
+      appendChatMsgRich(m.role, m.content);
+      chatHistory.push({ role: m.role, content: m.content });
+    }
+    // Reconnect: send no live sessionId, but resume the SDK conversation by id
+    // on the next message (server seeds options.resume from it).
+    chatSessionId = null;
+    chatResumeSession = sdkId;
+    // Bring the canvas back: prefer the built page, else the last mockup draft.
+    const sess = data.session || {};
+    if (sess.gen_id != null && typeof showInCanvas === 'function') {
+      showInCanvas(sess.gen_id, { title: `Preview · generation #${sess.gen_id}` });
+    } else if (sess.last_mockup_html && typeof showMockupInCanvas === 'function') {
+      showMockupInCanvas(sess.last_mockup_html, sess.last_mockup_title || 'Mockup · draft');
+    }
+    if (!(data.messages || []).length) renderChatEmptyState();
+    hideSessionsMenu();
+    return true;
+  } catch (e) {
+    if (!opts.silent) alert('Could not restore that chat: ' + e.message);
+    return false;
+  }
+}
+
+// Render the Recent-chats dropdown from the server list.
+async function loadChatSessions() {
+  const menu = document.getElementById('chatSessionsMenu');
+  if (!menu) return [];
+  let sessions = [];
+  try { sessions = (await fetch('/agent/sessions').then(r => r.json())).sessions || []; }
+  catch { sessions = []; }
+  if (!sessions.length) {
+    menu.innerHTML = `<div class="chat-session-empty">No saved chats yet</div>`;
+    return sessions;
+  }
+  menu.innerHTML = sessions.map(s => {
+    const when = (s.updated_at || '').replace('T', ' ').slice(0, 16);
+    return `<div class="chat-session-row" data-sdk="${escapeHtml(s.sdk_session_id)}">
+      <button type="button" class="chat-session-open" data-sdk="${escapeHtml(s.sdk_session_id)}">
+        <span class="chat-session-title">${escapeHtml(s.title || 'Untitled chat')}</span>
+        <span class="chat-session-meta">${escapeHtml(when)} · ${s.message_count} msg${s.message_count === 1 ? '' : 's'}</span>
+      </button>
+      <button type="button" class="chat-session-del" title="Delete chat" data-sdk="${escapeHtml(s.sdk_session_id)}">×</button>
+    </div>`;
+  }).join('');
+  menu.querySelectorAll('.chat-session-open').forEach(b =>
+    b.addEventListener('click', () => restoreChatSession(b.dataset.sdk)));
+  menu.querySelectorAll('.chat-session-del').forEach(b =>
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('Delete this saved chat?')) return;
+      await fetch(`/agent/sessions/${encodeURIComponent(b.dataset.sdk)}`, { method: 'DELETE' });
+      if (chatResumeSession === b.dataset.sdk) chatResumeSession = null;
+      loadChatSessions();
+    }));
+  return sessions;
+}
+
+document.getElementById('chatNew')?.addEventListener('click', startNewChat);
+document.getElementById('chatRecent')?.addEventListener('click', async () => {
+  const menu = document.getElementById('chatSessionsMenu');
+  if (!menu) return;
+  if (!menu.hidden) { menu.hidden = true; return; }
+  await loadChatSessions();
+  menu.hidden = false;
 });
+// Click-away closes the menu.
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('chatSessionsMenu');
+  if (!menu || menu.hidden) return;
+  if (e.target.closest('#chatSessionsMenu') || e.target.closest('#chatRecent')) return;
+  menu.hidden = true;
+});
+
+// "Clear conversation" now keeps the saved chat (it's safe on the server) and
+// just starts a fresh one in the panel.
+document.getElementById('chatClear').addEventListener('click', startNewChat);
+
+// On load, repopulate the most recent chat so a restart doesn't lose your place.
+// Only when the panel is empty (no in-progress message) — never clobbers a live
+// conversation. Silent: a missing/empty history just leaves the empty state.
+(async function restoreMostRecentChat() {
+  try {
+    const msgs = document.getElementById('chatMessages');
+    if (!msgs || msgs.querySelector('.msg')) return;
+    const sessions = await loadChatSessions();
+    if (sessions && sessions.length) await restoreChatSession(sessions[0].sdk_session_id, { silent: true });
+  } catch {}
+})();
 
 // ─── Chat context chips + slash hints (5.7) ──────────────────────────────────
 // Chips show the active brand/design/page sent in the chat preamble. Click a

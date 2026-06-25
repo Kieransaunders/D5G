@@ -323,7 +323,11 @@ async function startOrContinue({ sessionId, resumeSdkSession, text, cwd, appBase
     s.sink?.data({ chunk: `\n⚠ ${err.message || err}` });
   }
 
-  return { sessionId: s.id, isNew };
+  // sdkSessionId is the durable key the server persists the transcript under
+  // (it survives an app restart in ~/.claude/projects/). It's known by now —
+  // captured from the system/init message above — unless the turn errored
+  // before init, in which case it's null and the server skips persistence.
+  return { sessionId: s.id, isNew, sdkSessionId: s.sdkSessionId };
 }
 
 // ponytail: test seam — lets tests inject a mock SDK without mocking the ESM loader.

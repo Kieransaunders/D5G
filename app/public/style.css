@@ -367,8 +367,32 @@ select option { background: var(--surface); }
 .chat-send-btn:disabled { opacity: .45; cursor: default; }
 .chat-send-btn svg { width: 14px; height: 14px; }
 .chat-tool:focus-visible, .chat-send-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chat-footer { display: flex; justify-content: flex-start; align-items: center; margin-top: 4px; }
+.chat-footer { position: relative; display: flex; justify-content: flex-start; align-items: center; gap: 14px; margin-top: 4px; }
 .chat-footer .btn-link { font-size: 0.72rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; }
+.chat-footer .btn-link:hover { color: var(--text, #fff); text-decoration: underline; }
+
+/* ── Recent-chats dropdown (saved sessions) ── */
+.chat-sessions-menu {
+  position: absolute; bottom: 100%; left: 0; margin-bottom: 6px; z-index: 40;
+  width: min(360px, 90%); max-height: 280px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35); padding: 4px;
+}
+.chat-sessions-menu[hidden] { display: none; }
+.chat-session-empty { font-size: 0.75rem; color: var(--muted); padding: 10px 12px; }
+.chat-session-row { display: flex; align-items: stretch; gap: 4px; border-radius: 6px; }
+.chat-session-row:hover { background: rgba(255,255,255,.05); }
+.chat-session-open {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;
+  background: none; border: none; cursor: pointer; padding: 8px 10px; text-align: left;
+}
+.chat-session-title { font-size: 0.8rem; color: var(--text, #fff); line-height: 1.3; }
+.chat-session-meta { font-size: 0.68rem; color: var(--muted); }
+.chat-session-del {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1rem; line-height: 1; padding: 0 8px; border-radius: 6px;
+}
+.chat-session-del:hover { color: #ff6b6b; background: rgba(255,107,107,.12); }
 
 /* ── Structured-brief pill (chat header secondary action) ── */
 .chat-brief-btn {
@@ -881,7 +905,7 @@ select option { background: var(--surface); }
 .intent-card {
   align-self: stretch;
   background: var(--surface);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
   font-size: 0.8125rem;

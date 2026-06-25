@@ -12,6 +12,8 @@ const {
   updateBrandProfile, deleteBrandProfile,
   createDesignProject, getDesignProject, listDesignProjects,
   linkGenerationToDesign, deleteDesignProject,
+  deriveSessionTitle, upsertChatSession, addChatMessage,
+  listChatSessions, getChatSession, deleteChatSession,
 } = require('./db');
 const { isSafeHost } = require('./lib/ssrf-guard');
 const { extractIntent, stripIntent } = require('./lib/intent-marker');
@@ -617,9 +619,22 @@ app.post('/agent/chat', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.flushHeaders();
 
+  // Transcript capture: accumulate the assistant's visible text and note any
+  // mockup/page outcome so the turn can be persisted (and later restored). The
+  // raw sink still streams to the browser unchanged — we only observe it.
+  let assistantBuf = '';
+  let turnMockup = null;   // { html, title } from the last show_mockup this turn
+  let turnGenId  = null;   // generation id if the page was built this turn
   const sink = {
-    event: (name, obj) => res.write(`event: ${name}\ndata: ${JSON.stringify(obj)}\n\n`),
-    data:  (obj)        => res.write(`data: ${JSON.stringify(obj)}\n\n`),
+    event: (name, obj) => {
+      if (name === 'mockup')     turnMockup = { html: obj?.html || '', title: obj?.title || '' };
+      if (name === 'page_built' && obj?.genId != null) turnGenId = obj.genId;
+      res.write(`event: ${name}\ndata: ${JSON.stringify(obj)}\n\n`);
+    },
+    data:  (obj) => {
+      if (obj && typeof obj.chunk === 'string') assistantBuf += obj.chunk;
+      res.write(`data: ${JSON.stringify(obj)}\n\n`);
+    },
   };
 
   // Keep-alive: Claude can go silent for tens of seconds while it thinks or
@@ -640,22 +655,69 @@ app.post('/agent/chat', async (req, res) => {
     ? `${text}\n\n[Attached files — open with the Read tool: ${attachments.join(', ')}]`
     : text;
 
+  let firstTurn = !sessionId;   // true when this turn starts a brand-new chat
   try {
-    await startOrContinue({
+    const result = await startOrContinue({
       sessionId, resumeSdkSession, text: text2,
       cwd: AGENT_CWD, appBase: `http://127.0.0.1:${PORT}`, genOutputs: GEN_OUTPUTS,
       sink,
       onSession: (id, isNew) => {
         sid = id;
+        firstTurn = isNew;
         if (isNew) sink.event('session', { id });
       },
     });
+
+    // Persist the turn so the chat survives an app restart / idle close. Keyed
+    // by the durable SDK session id; skipped if the turn never got one (errored
+    // before init). Title is set from the first user message on insert only.
+    const sdkId = result?.sdkSessionId;
+    if (sdkId) {
+      try {
+        upsertChatSession({
+          sdkSessionId: sdkId,
+          appSessionId: result.sessionId,
+          title: firstTurn ? deriveSessionTitle(message) : null,
+          ...(turnMockup ? { lastMockupHtml: turnMockup.html, lastMockupTitle: turnMockup.title } : {}),
+          ...(turnGenId != null ? { genId: turnGenId } : {}),
+        });
+        addChatMessage({ sdkSessionId: sdkId, role: 'user', content: message });
+        // Fall back to a short outcome line when the turn produced only a
+        // mockup/page (no prose) — mirrors what the UI shows in the bubble.
+        const assistantContent = assistantBuf.trim()
+          || (turnGenId != null ? '✓ Page built — showing on the right →'
+              : turnMockup ? '✓ Mockup ready — showing on the right →' : '');
+        if (assistantContent) addChatMessage({ sdkSessionId: sdkId, role: 'assistant', content: assistantContent });
+      } catch (e) { console.error('[chat-persist]', e.message); }
+    }
   } catch (e) {
     try { sink.data({ chunk: `\n⚠ ${e.message}` }); } catch (_) {}
   } finally {
     clearInterval(keepAlive);
     try { sink.data({ done: true }); res.end(); } catch (_) {}
   }
+});
+
+// ─── Chat session persistence (resume after restart) ─────────────────────────
+// GET /agent/sessions          → recent chats for the picker
+// GET /agent/sessions/:sdkId   → one chat's transcript + last mockup/gen for restore
+// DELETE /agent/sessions/:sdkId → forget a chat
+app.get('/agent/sessions', (req, res) => {
+  try { res.json({ sessions: listChatSessions(40) }); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/agent/sessions/:sdkId', (req, res) => {
+  try {
+    const data = getChatSession(req.params.sdkId);
+    if (!data) return res.status(404).json({ error: 'session not found' });
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/agent/sessions/:sdkId', (req, res) => {
+  try { deleteChatSession(req.params.sdkId); res.json({ ok: true }); }
+  catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── POST /agent/answer — feed an AskUserQuestion pick or custom input back ───
@@ -716,7 +778,21 @@ app.post('/import/:id', async (req, res) => {
     const { siteUrl, apiKey } = settings;
     if (!siteUrl || !apiKey) return res.status(400).json({ error: 'WordPress settings not configured' });
 
-    const pageFile  = db.prepare(`SELECT * FROM output_files WHERE generation_id=? AND kind='page'`).get(id);
+    // Prefer the generated landing-page deliverable; fall back to a base clone
+    // only if no real page exists. The ORDER BY also self-heals generations
+    // registered before classifyKind tagged base clones as 'base' (where both
+    // files share kind='page'), so a re-import sends the right file without a
+    // re-run. Without this, a '-base-page' clone could win and push the ET
+    // template's stock content live instead of the generated page.
+    const pageFile  = db.prepare(`
+      SELECT * FROM output_files
+      WHERE generation_id=? AND kind IN ('page','base')
+      ORDER BY
+        CASE WHEN kind='page' THEN 0 ELSE 1 END,
+        CASE WHEN filename LIKE '%-base-page%' THEN 1 ELSE 0 END,
+        CASE WHEN filename LIKE '%landing-page%' THEN 0 ELSE 1 END,
+        id
+      LIMIT 1`).get(id);
     const seoFile   = db.prepare(`SELECT * FROM output_files WHERE generation_id=? AND kind='seo-meta'`).get(id);
     const schemaFile= db.prepare(`SELECT * FROM output_files WHERE generation_id=? AND kind='schema'`).get(id);
 
