@@ -15,6 +15,8 @@
 const path = require('path');
 const { spawnSync } = require('child_process');
 
+// Goldens are regenerated from their builder scripts in examples/*.js.
+// iConnectITHomepage.json ← examples/iconnectit-homepage.js (Phase 5E rebuild).
 const ROOT     = path.resolve(__dirname, '..', '..');
 const VALIDATE = path.join(ROOT, 'scripts', 'validate.js');
 const TASTE    = path.join(ROOT, 'scripts', 'taste-check.js');
@@ -23,7 +25,7 @@ const EXAMPLES = path.join(ROOT, 'examples');
 const GOLDEN = [
   { file: 'divitheatre-landing-page.json', label: 'DiviTheatre landing page' },
   { file: 'example-landing-page.json',     label: 'Example landing page'     },
-  // TODO: add iConnectITHomepage.json after Phase 5E refactor (currently fails validate: phantom presets, no h1, raw hex)
+  { file: 'iConnectITHomepage.json',       label: 'iConnectIT homepage'       },
 ];
 
 let passed = 0;

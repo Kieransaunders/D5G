@@ -347,8 +347,9 @@ function runValidate(args, opts) {
       '  PASS  SEO: keyword in opening copy',
       '  PASS  SEO: title tag length ok (56)',
       '  PASS  SEO: meta description length ok (155)',
+      '  WARN  ANIMATION: no entrance animations found — consider adding anim() helpers for a polished feel',
       '',
-      '0 error(s), 0 warning(s)',
+      '0 error(s), 1 warning(s)',
       '',
     ].join('\n');
     eq('T6: validator report byte-identical to baseline (embedded)', actual, expected);

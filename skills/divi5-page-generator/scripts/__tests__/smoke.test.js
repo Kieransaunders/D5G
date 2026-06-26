@@ -107,7 +107,8 @@ if (fs.existsSync(pagePath)) {
 
   ok('validate.js exits 0 on the canonical example', val.status === 0,
     'exit=' + val.status + (val.stdout ? '\n' + val.stdout.slice(-400) : ''));
-  ok('validate.js reports 0 errors', /0 error\(s\), 0 warning\(s\)/.test(val.stdout));
+  // Assert 0 errors; advisory warnings (e.g. ANIMATION) are allowed.
+  ok('validate.js reports 0 errors', /\b0 error\(s\),/.test(val.stdout));
   ok('validate.js: JSON parses', /PASS\s+JSON parses/.test(val.stdout));
   ok('validate.js: hierarchy + balance checked',
     /PASS\s+\d+ blocks parsed, hierarchy \+ balance checked/.test(val.stdout));

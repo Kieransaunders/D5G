@@ -106,7 +106,7 @@ function run(script, args) {
 
 const changesPath = path.join(tmp, 'changes.json');
 const mutatedPath = path.join(tmp, 'test-page-mutated.json');
-const FIND_TEXT   = 'Build smarter. Connect faster. Scale effortlessly.';
+const FIND_TEXT   = 'Portals and apps that connect your whole business.';
 const REPLACE_TEXT = 'The IT partner that scales with you.';
 
 (function t4() {

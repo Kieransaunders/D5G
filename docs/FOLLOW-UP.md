@@ -2,7 +2,7 @@
 
 Parked items and decisions, so we can revisit without re-deriving context. Companion to [`interactive-chat-architecture.md`](./interactive-chat-architecture.md) (design) and [`INTERACTIVE-CHAT.md`](./INTERACTIVE-CHAT.md) (run/use/troubleshoot).
 
-_Last updated: 24/06/2026._
+_Last updated: 25/06/2026._
 
 ## Shipped (working)
 
@@ -17,6 +17,8 @@ _Last updated: 24/06/2026._
 - **Resume-based session model**: each turn is a fresh `query({ resume: sdkSessionId })`. Simpler, restart-safe.
 - **SDK session persistence**: `sdk_session_id` column on `generations`; set at `start_build` time.
 - **Re-run opens chat**: if a generation was built in-chat, Re-run resumes the conversation (full context, mockup, prior turns) instead of re-submitting the old brief form. Form-based generations fall back to the old behaviour.
+- **Chat session persistence — resume + transcript restore** (25/06): every `/agent/chat` turn auto-saves to `chat_sessions`/`chat_messages` keyed by the durable `sdk_session_id`. Survives app restart and the 15-min idle close. **Recent chats** menu + **+ New chat** in the footer; most-recent chat auto-restores on load (transcript replayed, mockup/preview back in canvas, conversation reconnected via `resumeSdkSession`). Endpoints: `GET /agent/sessions`, `GET /agent/sessions/:sdkId`, `DELETE /agent/sessions/:sdkId`. Tests: `tests/chat-sessions.test.js`.
+- **Import fix — generated page, not the base clone** (25/06): `classifyKind` now tags `*-base-page.json` (cloned ET layout) as `base`, not `page`; `/import` prefers the landing-page and self-heals already-registered generations. Was causing the ET template's stock content to go live instead of the generated page.
 
 ## Pending — needs on-Mac smoke test
 
@@ -28,6 +30,12 @@ All code passes `node --check` and unit tests pass. Needs a real `claude login` 
 
 ### 2. Keep-alive / network-error cleared
 Confirm the 15s ping actually cleared the "network error" symptom from 24/06. If it still drops, capture the stack from `npm run dev` terminal.
+
+### 2b. Session persistence smoke test (25/06)
+Code passes `node --check`; pure-logic checks pass. Native `better-sqlite3` can't load in the cross-arch sandbox, so verify on the Mac:
+- `node --test app/tests/chat-sessions.test.js` (DB layer).
+- Real flow: have a chat → restart the app → most-recent chat repopulates the panel, canvas restores, next message continues with context.
+- Re-import the existing "Clowns Are Us" generation → should now push the landing-page, not the ET About template.
 
 ## Parked — optional / open questions
 

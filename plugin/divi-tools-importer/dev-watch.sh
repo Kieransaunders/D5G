@@ -4,8 +4,11 @@
 # then clears the Divi CSS cache so changes are immediately visible in the browser.
 #
 # Usage:
-#   ./dev-watch.sh                              # deploy to default Local WP test site
+#   ./dev-watch.sh                              # auto-detect the RUNNING Local site
 #   ./dev-watch.sh /path/to/other/wp-content/plugins/divi-tools-importer
+#
+# Target resolution: explicit arg > running Local site (auto-detected) > first
+# Local site with the plugin installed. See deploy.sh for the detection logic.
 #
 # Prerequisite: fswatch (brew install fswatch)
 #
@@ -14,7 +17,43 @@
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
-DEST="${1:-/Users/boss/Local Sites/divi-5-airtable-plugin/app/public/wp-content/plugins/divi-tools-importer}"
+
+# ─── Resolve the running Local WP site's plugin dir (nginx-run dir → site root) ─
+running_local_plugin_dir() {
+  local line run_id conf_dir root plugin
+  line="$(ps -ax -o command= | grep '[n]ginx: master' | head -1)" || return 1
+  run_id="$(printf '%s\n' "$line" | grep -oE 'Local/run/[^/ ]+' | head -1 | sed 's|Local/run/||')"
+  [ -n "$run_id" ] || return 1
+  conf_dir="$HOME/Library/Application Support/Local/run/$run_id/conf/nginx"
+  [ -f "$conf_dir/site.conf" ] || return 1
+  root="$(grep -m1 -E '^[[:space:]]*root[[:space:]]+"' "$conf_dir/site.conf" \
+    | sed -E 's/.*root[[:space:]]+"([^"]+)".*/\1/')"
+  plugin="$root/wp-content/plugins/divi-tools-importer"
+  [ -d "$plugin" ] && printf '%s' "$plugin" || return 1
+}
+
+# ─── Fallback: first Local site (on disk) that has the plugin installed ─────────
+first_local_plugin_dir() {
+  local s
+  for s in "$HOME/Local Sites"/*/; do
+    [ -d "${s}app/public/wp-content/plugins/divi-tools-importer" ] || continue
+    printf '%s' "${s}app/public/wp-content/plugins/divi-tools-importer"
+    return 0
+  done
+  return 1
+}
+
+if [ -n "$1" ]; then
+  DEST="$1"
+elif DEST="$(running_local_plugin_dir)"; then
+  :
+elif DEST="$(first_local_plugin_dir)"; then
+  :
+else
+  echo "Error: no deploy target found." >&2
+  echo "Pass one explicitly:  ./dev-watch.sh /path/to/wp-content/plugins/divi-tools-importer" >&2
+  exit 1
+fi
 
 # Cache dir = sibling of plugins/ under wp-content/ → wp-content/et-cache/
 CACHE_DIR="$(dirname "$(dirname "$DEST")")/et-cache"

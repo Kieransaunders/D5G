@@ -35,12 +35,25 @@ All six test suites pass: `phase0`, `phase2`, `phase4b`, `regression`, `smoke`, 
 
 ## Open work
 
-### A. iConnectIT example refactor (Phase 5E) — *not started*
-`iConnectITHomepage.json` fails validate: phantom preset IDs, no h1, raw hex, em-dashes, `"harness"` AI-tell.
-Needs a full rebuild using `b.typeScale()`, `b.spacingPresets()`, `b.buttonPresets()`.
-Once it passes validate + taste, add it to the `GOLDEN` list in `regression.test.js` (there's already a TODO comment there).
+### A. iConnectIT example refactor (Phase 5E) — ✅ done (25/06/2026)
+Rebuilt via a new generator `examples/iconnectit-homepage.js` using `b.typeScale()`,
+`b.spaceScale()`, `b.spacingPresets()`, `b.buttonPresets()`, `b.headingPresets()`.
+Copy rewritten UK-English + on-brand (real stack, ALET portal), proper h1, refs not raw
+hex, hyphens not em-dashes, varied card lengths. `iConnectITHomepage.json` now passes
+validate (exit 0, 0 errors) and taste (exit 0, 0 warnings) and is in the `GOLDEN` list;
+regression suite 6/6.
 
-**Exit:** `node validate.js examples/iConnectITHomepage.json` exits 0; regression suite covers it.
+**Exit met:** `node validate.js examples/iConnectITHomepage.json` exits 0; regression covers it.
+
+### A1. Stale test baselines from commit 0e67926 — ✅ done (25/06/2026)
+The ANIMATION-warning commit (`0e67926`) added a validator warning but left suites asserting
+the old output. Fixed:
+- `phase0.test.js` T6 — embedded baseline updated to include the `WARN ANIMATION` line + `1 warning(s)`.
+- `smoke.test.js` — assertion relaxed to `0 error(s)` (advisory warnings allowed).
+- `phase2.test.js` T4 — `FIND_TEXT` was the old iConnectIT hero string removed in the Phase 5E
+  rebuild; repointed to the new h1 ("Portals and apps that connect your whole business.").
+
+All suites now pass (`e2e-render` skips without `DIVI_SITE_URL`/`DIVI_API_KEY`).
 
 ### D. Phase 3 taste/visual polish — *deferred, not started*
 - **3B** Playwright visual-diff with numeric fidelity score + threshold gate (today `e2e-render.test.js` renders but doesn't score).

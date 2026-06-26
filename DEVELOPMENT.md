@@ -220,6 +220,8 @@ Override the dir with `DIVI5_DATA_DIR` (used by the e2e test for isolation).
 | `brand_profiles` | Palette/fonts/voice JSON in `data`; `source_type` = url\|image\|export\|manual | — |
 | `design_projects` | Groups pages built on one brand + export | `brand_id`, `export_id` |
 | `design_pages` | Join: which generations belong to a project | `(design_id, generation_id)` |
+| `chat_sessions` | One saved chat: title, last mockup HTML, built `gen_id`, timestamps | keyed by `sdk_session_id` |
+| `chat_messages` | Persisted transcript (user/assistant turns), ordered by `id` | `sdk_session_id` |
 
 **Auto-promotion (`promoteIfEligible`)**: when a generation completes and a
 sibling shares the same `brand` + `export_path`, the two are promoted into a new
@@ -231,11 +233,38 @@ project). Wired in the `/generate` close handler in `server.js`.
 `gen_intent` SSE event for the proposal card, and strips the marker from the
 visible prose.
 
+**Chat session persistence (resume + transcript restore)**: a chat is keyed by
+its **durable Claude SDK session id** (`sdk_session_id`) — the thing that
+survives an app restart in `~/.claude/projects/`. The in-memory `sessions` Map in
+`lib/claude-agent.js` is ephemeral (dies on restart, idle-closed after 15 min),
+so it is **not** the identity. Every `/agent/chat` turn auto-saves the user +
+assistant messages, plus the last mockup HTML and built `gen_id`, via
+`upsertChatSession` / `addChatMessage` (db.js). `startOrContinue` returns
+`sdkSessionId` so the server can persist after the turn; persistence is skipped
+if the turn errored before the `system/init` message (no id yet). Title comes
+from the first user message (`deriveSessionTitle`), set on insert only.
+
+Restore endpoints (all under `/agent/`):
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /agent/sessions` | Recent chats for the picker (newest-first, message counts; empty sessions hidden). |
+| `GET /agent/sessions/:sdkId` | One chat's row + ordered transcript, for the front-end to replay. |
+| `DELETE /agent/sessions/:sdkId` | Forget a chat (messages + row). |
+
+Front-end (`public/app.js`): **Recent chats** menu, **+ New chat**, and an
+auto-restore-most-recent on load (only when the panel is empty). Restoring replays
+the transcript (assistant turns re-rendered as Markdown), brings the mockup/preview
+back into the canvas, and sets `chatResumeSession` so the next message continues
+the **same** SDK conversation. Covered by `tests/chat-sessions.test.js`
+(needs the on-Mac native `better-sqlite3` build; uses `DIVI5_DATA_DIR` isolation).
+
 ## Current development state
 
 - **Phase -1 (DONE):** Rebuilt stale zip from v1.2.0 source, removed duplicate repo-root directory. Committed in `6785d33` (2026-06-22).
 - **Phase 0 (DONE):** ET pack clone-first path. `scripts/et-pages.js` indexes the 24 premade pages and outputs importable JSON. SKILL.md Stage 0 makes the generator default to cloning from the ET pack before building from scratch.
 - **Phases 1–4:** Planned, not started. Full plan at `docs/plans/2026-06-22-amazing-generator-from-new-or-existing.md`.
+- **25/06/2026:** Fixed import shipping the ET base clone instead of the generated page (classifyKind/`/import` selection — self-heals existing generations, no re-run). Added chat-session persistence: resume + transcript restore across app restart (`chat_sessions`/`chat_messages`, `/agent/sessions` endpoints, Recent chats UI). Commit `068fe58`.
 
 ## Key decisions (don't re-litigate)
 
@@ -253,6 +282,7 @@ visible prose.
 5. **Per-page CSS cache at `et-cache/{post_id}/` is NOT cleared by Divi's global cache API.** The importer now handles this automatically in `PageImporter.php::clear_page_css_cache()`.
 6. **`$variable()$` refs in `decoration.background` inside presets produce no CSS.** Preset background MUST use raw hex. Font/text colours in presets CAN use variable refs.
 7. **Button custom styles require `enable: 'on'`** — `button.decoration.button.desktop.value.enable: 'on'` or Divi ignores all background/border/font styles and falls back to default blue.
+8. **Import can ship the base clone instead of the generated page.** `classifyKind` (generation-registrar.js) must tag `*-base-page.json` (the cloned ET premade layout — stock content) as `base`, **not** `page`. Both `*-base-page` and `*-landing-page` match the substring `-page`; if both are `kind='page'`, `/import`'s `.get()` returns whichever sorts first (the base clone) and WordPress renders the template, not the generated page. `/import` now selects `kind IN ('page','base')`, prefers landing-page, and only falls back to a base clone when no real page exists.
 
 ## Untapped resources
 
