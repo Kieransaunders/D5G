@@ -1,7 +1,6 @@
 ---
 name: brand-deploy
-description: "Deploy a saved Brand Profile (colours, variables, presets) from the Divi5Generator app to a target Divi 5 WordPress site — the agency starter-kit deploy step."
-when_to_use: "User wants to push a captured brand/design system onto a new or blank Divi 5 site. Triggers: deploy brand, push brand, brand deploy, import brand to site, agency starter kit deploy, apply brand profile, copy brand to new site, divi brand deploy."
+description: "Deploy a saved Brand Profile (colours, variables, presets) from the Divi5Generator app to a target Divi 5 WordPress site — the agency starter-kit deploy step. Use when pushing a captured brand/design system onto a new or blank Divi 5 site. Triggers: deploy brand, push brand, brand deploy, import brand to site, agency starter kit deploy, apply brand profile, copy brand to new site, divi brand deploy."
 argument-hint: "[brand-profile-id] [site-url] [api-key]  — or omit to be prompted"
 ---
 

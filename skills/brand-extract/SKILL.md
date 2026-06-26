@@ -1,7 +1,6 @@
 ---
 name: brand-extract
-description: "Extract a brand profile from a live Divi 5 WordPress site — pulls global variables (colours, spacing, typography tokens) and presets via the Divi Tools Importer plugin, then saves the result as a reusable Brand Profile in the app database."
-when_to_use: "User wants to capture the brand/design system from an existing Divi 5 site so it can be reused on new pages or deployed to a fresh site. Triggers: extract brand, capture brand, brand from site, pull brand from wordpress, extract divi brand, divi brand profile, extract design system, agency starter kit extract."
+description: "Extract a brand profile from a LIVE Divi 5 WordPress site via the Divi Tools Importer plugin — pulls global variables (colours, spacing, typography tokens) and presets, then saves them as a reusable Brand Profile in the app database. Use when capturing the design system from an existing live site so it can be reused or deployed elsewhere (for a JSON export file instead, use divi5-extract-style). Triggers: extract brand, capture brand, brand from site, pull brand from wordpress, extract divi brand, extract design system, agency starter kit extract."
 argument-hint: "[site-url] [api-key]  — or omit to be prompted"
 ---
 

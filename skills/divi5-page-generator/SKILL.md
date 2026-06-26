@@ -1,7 +1,6 @@
 ---
 name: divi5-page-generator
-description: "Divi 5 page and section generator — SEO-optimised, preset-driven, validated. Creates complete, importable Divi 5 JSON files for full pages or individual reusable sections using a bundled Node builder library."
-when_to_use: "Building Divi 5 pages or sections, creating Divi layouts, generating Divi JSON, making SEO pages for Divi 5 WordPress sites, adding a section to an existing Divi page. Triggers: divi, divi 5, divi json, divi page, divi layout, divi section, divi template, divi import, wordpress page divi, seo page divi, add divi section."
+description: "Divi 5 page and section generator — SEO-optimised, preset-driven, validated. Creates complete, importable Divi 5 JSON files for full pages or individual reusable sections using a bundled Node builder library. Use when building Divi 5 pages or sections, generating Divi JSON, or adding a section to an existing Divi page. Triggers: divi, divi 5, divi json, divi page, divi layout, divi section, divi template, wordpress page divi, seo page divi, add divi section."
 argument-hint: "[brief: brand, offer, primary keyword, sections, CTA] OR [--section <type> brief]"
 allowed-tools: Bash(node *), mcp__plugin_playwright_playwright__browser_navigate, mcp__plugin_playwright_playwright__browser_take_screenshot, mcp__plugin_playwright_playwright__browser_resize
 ---

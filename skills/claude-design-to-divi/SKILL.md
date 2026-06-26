@@ -1,7 +1,6 @@
 ---
 name: claude-design-to-divi
 description: "Turn a Claude Design hand-off into an importable Divi 5 page. Consumes the Claude Code hand-off bundle (design intent + component structure + styling context) — or a standalone HTML export as fallback — and drives the divi5-page-generator to emit validated Divi 5 JSON, ready for import-to-local. Use when a design built in Claude Design is ready to become a real Divi page. Triggers: claude design handoff, hand off to claude code, design bundle, claude design to divi, build this design in divi, mockup to divi, design export to wordpress."
-when_to_use: "A design produced in Claude Design (claude.ai/design) is ready to build, and the user wants it as a Divi 5 page on WordPress. Use on a hand-off bundle delivered to Claude Code, or a Claude Design HTML/standalone export. Triggers: claude design handoff, design bundle, mockup to divi, claude design to divi."
 argument-hint: "[path to hand-off bundle dir or export file] [--brand <name-or-id>] [--publish]"
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---

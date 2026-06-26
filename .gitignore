@@ -35,3 +35,16 @@ skills/divi5-page-generator/references/Divi-5-Design-System/
 /generate-*.js
 /payload*.json
 /preview-*.html
+
+# Same rule inside the page-generator skill root: demo/generated artefacts
+# (compare screenshots, previews, brand-specific generate scripts and JSON)
+# must not be committed — they belong in ~/Desktop/Divi5 Pages. Legit fixtures
+# live in scripts/, references/ and examples/, which are NOT matched below.
+skills/divi5-page-generator/compare-*.png
+skills/divi5-page-generator/preview-*.html
+skills/divi5-page-generator/preview-*.png
+skills/divi5-page-generator/generate-*.js
+skills/divi5-page-generator/*-landing-page.json
+skills/divi5-page-generator/*-registry.json
+skills/divi5-page-generator/*-seo-meta.json
+skills/divi5-page-generator/__unlink_probe*

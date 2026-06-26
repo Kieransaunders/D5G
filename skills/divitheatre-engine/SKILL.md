@@ -1,7 +1,6 @@
 ---
 name: divitheatre-engine
-description: "Theatre.js (@theatre/core 0.7.0) reference for building and debugging the DiviTheatre WordPress plugin's animation engine and motion presets. MOTION layer only."
-when_to_use: "Work touching DiviTheatre's motion layer: presets in src/presets/, src/engine.js or src/preset-registry.js, baking Theatre.js sequence/keyframe state as JSON, or wiring getProject, sheet.object, sequence.play, onValuesChange, createRafDriver, scroll-pinned scenes. Also silent-failure symptoms: animation never plays, project.ready hangs, element stuck at opacity 0, definitionVersion/baked-state mismatch. Triggers: Theatre.js, @theatre/core, getProject, sheet.object, sequence, onValuesChange, rafDriver, baked state, data-theatre, DiviTheatre preset. Not for module scaffolding, page JSON, design audits, or @theatre/r3f."
+description: "Theatre.js (@theatre/core 0.7.0) reference for building and debugging the DiviTheatre WordPress plugin's animation engine and motion presets. MOTION layer only. Use for DiviTheatre's motion layer: presets, engine/preset-registry, baking Theatre.js sequence state, or silent-failure symptoms (animation never plays, project.ready hangs, element stuck hidden). Triggers: Theatre.js, @theatre/core, getProject, sheet.object, sequence, onValuesChange, rafDriver, baked state, data-theatre, DiviTheatre preset. Not for module scaffolding, page JSON, design audits, or @theatre/r3f."
 ---
 
 # DiviTheatre engine — building with @theatre/core
@@ -17,7 +16,7 @@ those contracts and *why* they exist, so you can reason past the rote rules when
 comes up.
 
 For the WordPress plugin scaffolding, module.json, render callbacks, and the Visual Builder panel,
-defer to **`divi-5-module-development`** / **`divi-plugin-dev`**. This skill is the motion layer.
+defer to **`divi5-plugin-dev`**. This skill is the motion layer.
 
 ## How DiviTheatre uses Theatre.js (the mental model)
 

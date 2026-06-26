@@ -87,7 +87,7 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | Skill | Purpose |
 |---|---|
 | `divi5-page-generator` | Generate SEO-optimised Divi 5 page JSON (pages + sections) |
-| `import-to-local` | Import JSON into WordPress via REST API, open preview |
+| `import-to-local` | Import JSON into WordPress via REST API as a published page, screenshot it live, run accept/refine loop |
 | `launch-app` | Launch the Divi 5 Generator app |
 | `design-review` | Audit Divi 5 JSON for structure, SEO, spec compliance |
 | `divi5-extract-style` | Extract brand tokens from a Divi 5 export / brand guide |

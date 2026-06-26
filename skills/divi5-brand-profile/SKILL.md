@@ -1,7 +1,6 @@
 ---
 name: divi5-brand-profile
-description: "Brand Profiles for the Divi5Generator: the canonical schema for a brand (colours, fonts, logo, voice, tagline) and how it is extracted from a URL, a Divi 5 export, an image, a Canva design, a chat, or manual entry. Bridges raw brand input → a reusable, lockable profile that drives design-token extraction and page generation."
-when_to_use: "Working with Brand Profiles in the Divi5Generator app — creating one, extracting one from a source, or deciding which fields to lock vs re-extract. Triggers: brand profile, extract brand, brand colours, brand fonts, brand voice, lock brand colour, re-extract brand, brand from url, brand from logo, brand from canva, brand from chat."
+description: "Brand Profiles for the Divi5Generator: the canonical schema for a brand (colours, fonts, logo, voice, tagline) and how it is extracted from a URL, a Divi 5 export, an image, a Canva design, a chat, or manual entry. Bridges raw brand input into a reusable, lockable profile that drives design-token extraction and page generation. Use when creating a Brand Profile, extracting one from a source, or deciding which fields to lock vs re-extract. Triggers: brand profile, brand colours, brand fonts, brand voice, lock brand colour, re-extract brand, brand from url, brand from logo, brand from canva, brand from chat."
 ---
 
 # Divi 5 Brand Profile

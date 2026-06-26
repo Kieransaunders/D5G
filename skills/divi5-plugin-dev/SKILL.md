@@ -1,7 +1,6 @@
 ---
 name: divi5-plugin-dev
-description: "Divi 5 third-party plugin and custom module developer. Use when building, scaffolding, extending, or debugging a Divi 5 plugin that adds custom modules to the Divi Builder."
-when_to_use: "Building, scaffolding, or debugging a Divi 5 plugin that registers custom Builder modules. Triggers: Divi 5 module, Divi custom module, Divi extension, Divi plugin development, divi/module, ModuleRegistration, divi_module_library_modules_dependency_tree, module.json, registerModule, Visual Builder component, DependencyInterface, ModuleContainer, StyleContainer, elementClassnames, PackageBuildManager, add a module to Divi, custom Divi element, create a Divi block, et_builder_d5_enabled."
+description: "Divi 5 third-party plugin and custom module developer. Use when building, scaffolding, extending, or debugging a Divi 5 plugin that adds custom modules to the Divi Builder. Triggers: Divi 5 module, Divi custom module, Divi extension, Divi plugin development, divi/module, ModuleRegistration, divi_module_library_modules_dependency_tree, module.json, registerModule, Visual Builder component, DependencyInterface, ModuleContainer, StyleContainer, elementClassnames, PackageBuildManager, add a module to Divi, custom Divi element, create a Divi block, et_builder_d5_enabled."
 ---
 
 # Divi 5 Plugin Developer
