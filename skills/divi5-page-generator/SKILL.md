@@ -15,6 +15,8 @@ This skill runs in three modes. **Detect the mode from the prompt before doing a
 |---|---|
 | "add a [type] section", "create a features section", "I need a pricing section", `--section` flag | **Section mode** — single reusable section, `et_builder_layouts` context |
 | "edit this page", "update the copy on", "change the hero", "swap the colour", "from this export", `--mutate` flag, or a `.json` file path with a change description | **Mutate mode** — round-trip edit of an existing export JSON |
+| "overdrive", "maximum energy", "bold agency push", "go all out", `--overdrive` flag | **Overdrive mode** — Page mode with VARIANCE 9 / MOTION 7–8 / DENSITY 3; read [references/overdrive.md](references/overdrive.md), [references/bolder.md](references/bolder.md), and [references/delight.md](references/delight.md) before Stage 1 |
+| "polish this page", "final pass", "finishing details", `--polish` flag, or applied after Stage 4 | **Polish mode** — run the finishing pass checklist in [references/polish.md](references/polish.md) on an existing generated JSON; no structural changes |
 | Everything else (full page brief, SEO keywords, landing page, multi-section) | **Page mode** — full landing page, `et_builder` context |
 
 ---
@@ -226,6 +228,8 @@ The clone output includes the ET design system presets, global colours, and glob
 - Three dials, reasoned from the brief: **VARIANCE / MOTION / DENSITY** (landing baseline 7 / 4 / 4; trust-first drops VARIANCE to 3–4, agency pushes to 9).
 - Open [references/floria-top.png](references/floria-top.png) and [references/floria-bottom.png](references/floria-bottom.png) — that is the visual tier to aim for (asymmetric hero, image-led sections, editorial type). Divi cannot do GSAP scroll hijacks; use the Divi recipes in [references/layout-patterns.md](references/layout-patterns.md) instead.
 - Check the chosen preset against the taste.md guardrails: don't default-reach Vapor Clinic's AI-purple or Organic Tech's warm-craft palette; don't use Inter as a display font or Fraunces/Instrument Serif as a default drama serif.
+- **If VARIANCE ≥ 8 or the brief earns it:** read [references/bolder.md](references/bolder.md) and select which of the five bolder moves apply. Read [references/delight.md](references/delight.md) and choose 2–4 delight moments matched to the section types you're building. Plan both before Stage 2 HTML so they appear in the preview, not retrofitted into the JSON.
+- **In overdrive mode:** additionally read [references/overdrive.md](references/overdrive.md) and apply the overdrive section flow and per-preset overdrive state before designing anything.
 
 ### Stage 2 — HTML preview (taste gate + approval gate)
 
@@ -299,7 +303,11 @@ Then open `preview-[brand].html` (or use the cached `preview-[brand].png` from S
 | Inline stats/text unstyled | WordPress `wp_kses_post()` strips inline `style=""` on text module output | Replace inline-HTML styling with `numberCounter` modules and `decoration` attrs on `text()` presets |
 | Preset colours wrong after re-import | Stale `et-cache/{post_id}/*.css` — Divi CSS regenerated with old preset IDs | `rm -f wp-content/et-cache/{post_id}/*.css` then reload the page to trigger regeneration |
 
-If the live screenshot matches the mockup within acceptable tolerance — correct section order, correct colours, grid rendering — mark Stage 4 passed and deliver.
+If the live screenshot matches the mockup within acceptable tolerance — correct section order, correct colours, grid rendering — mark Stage 4 passed.
+
+### Stage 5 — Polish (mandatory before delivery)
+
+Run the polish pass from [references/polish.md](references/polish.md) on the final JSON. This catches spacing drift, typography inconsistencies, colour strays, and copy issues that the validator and taste-check scripts do not flag. The polish checklist must pass before the page is delivered. In overdrive or bolder mode this is non-optional — high-energy pages punish inconsistency more visibly than conservative ones.
 
 ## SEO requirements (summary — full rules in references/seo.md)
 
