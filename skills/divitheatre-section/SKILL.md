@@ -150,8 +150,8 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const PRESET = 'pin:product-reveal'; // set to the chosen preset
 const BRAND  = 'acme';               // set to the brand name
-const presetSlug = PRESET.toLowerCase().replace(/:/g, '-').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
-const brandSlug  = BRAND.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+const presetSlug = PRESET.toLowerCase().replace(/:/g, '-').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+const brandSlug  = BRAND.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 
 const builder = D.createBuilder();
 
@@ -172,6 +172,13 @@ const json = builder.assemble({
 
 const outFile = path.join(OUT, `${brandSlug}-${presetSlug}-section.json`);
 fs.writeFileSync(outFile, JSON.stringify(json, null, 2));
+
+// on-disk gate: validate immediately after writing
+const written = fs.readFileSync(outFile, 'utf8').trimStart();
+if (written[0] !== '{') { console.error('FAIL: not JSON'); process.exit(1); }
+const parsed = JSON.parse(written);
+if (parsed.context !== 'et_builder_layouts') { console.error('FAIL: wrong context:', parsed.context); process.exit(1); }
+console.log('OK: valid et_builder_layouts section JSON');
 console.log('Written:', outFile);
 ```
 
@@ -201,17 +208,7 @@ For section mode, omit `--keyword` and `--meta` (no SEO requirements). Fix all F
 
 #### On-disk gate (mandatory before delivery)
 
-```bash
-node -e '
-  const t = require("fs").readFileSync("${brandSlug}-${presetSlug}-section.json", "utf8").trimStart();
-  if (t[0] !== "{") { console.error("FAIL: not JSON"); process.exit(1); }
-  const j = JSON.parse(t);
-  if (j.context !== "et_builder_layouts") { console.error("FAIL: wrong context:", j.context); process.exit(1); }
-  console.log("OK: valid et_builder_layouts section JSON");
-'
-```
-
-Do not declare done until this prints `OK`.
+The gate runs automatically at the end of the generated script (see above). Do not declare done until the script prints `OK: valid et_builder_layouts section JSON`.
 
 ### Step 5 - Deliver
 
