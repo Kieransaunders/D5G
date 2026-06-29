@@ -40,24 +40,25 @@ class DTI_PagesLister {
 	}
 
 	/**
-	 * Best-effort brand/keyword hint from SEO meta (Yoast, RankMath, or the
-	 * plugin's own fallback keys). Empty string when nothing is set.
+	 * Best-effort brand/keyword hint from SEO meta. Walks every supported SEO
+	 * plugin's title key in turn (Yoast → Rank Math → AIOSEO → SEOPress → TSF),
+	 * then falls back to the plugin's own _dti_seo_* keys. Empty string when
+	 * nothing is set.
 	 */
 	private static function design_hint( int $post_id ): string {
-		// Yoast.
-		$yoast_title = get_post_meta( $post_id, '_yoast_wpseo_title', true );
-		if ( $yoast_title ) {
-			return wp_strip_all_tags( $yoast_title );
-		}
-		// RankMath.
-		$rankmath_title = get_post_meta( $post_id, 'rank_math_title', true );
-		if ( $rankmath_title ) {
-			return wp_strip_all_tags( $rankmath_title );
-		}
-		// Plugin fallback (written when no SEO plugin is active).
-		$dti_title = get_post_meta( $post_id, '_dti_seo_title', true );
-		if ( $dti_title ) {
-			return wp_strip_all_tags( $dti_title );
+		$keys = array(
+			'_yoast_wpseo_title',      // Yoast
+			'rank_math_title',         // Rank Math
+			'_aioseo_title',           // AIOSEO (flat key; envelope title not read here for perf)
+			'_seopress_titles_title',  // SEOPress
+			'_genesis_title',          // The SEO Framework
+			'_dti_seo_title',          // Plugin fallback
+		);
+		foreach ( $keys as $key ) {
+			$val = get_post_meta( $post_id, $key, true );
+			if ( $val ) {
+				return wp_strip_all_tags( $val );
+			}
 		}
 		return '';
 	}

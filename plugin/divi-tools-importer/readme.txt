@@ -4,7 +4,7 @@ Tags: divi, divi 5, landing page, seo, import
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.4.0
+Stable tag: 1.6.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,9 +38,21 @@ Divi Tools Importer closes the gap between Claude Code generating a Divi 5 landi
 **Compatible with:**
 
 * Divi 5 (full import — presets, global colours, global variables)
-* Yoast SEO (auto title tag + meta description)
-* Rank Math (auto title tag + meta description)
-* No SEO plugin (values stored in post meta with a warning)
+* Yoast SEO, Rank Math, All in One SEO (AIOSEO), SEOPress, The SEO Framework — full SEO meta (title, description, focus + secondary keywords, OpenGraph, Twitter, canonical, robots directives) written to each plugin's native meta keys
+* No SEO plugin (values stored in neutral post meta with a warning)
+
+== Supported SEO plugins ==
+
+The importer detects the active SEO plugin on every request and writes generated SEO values to that plugin's native post-meta keys, so an imported page is search-ready with zero manual cleanup. Detection order (override via the `dti/seo/adapter_order` filter):
+
+| Plugin | Detection signal | Fields written |
+|---|---|---|
+| Rank Math | `RankMath\File` class | title, description, focus + secondary keywords, OG, Twitter, canonical, robots |
+| Yoast SEO | `WPSEO_VERSION` | title, description, focus + secondary keywords, OG, Twitter, canonical, robots |
+| All in One SEO | `AIOSEO_VERSION` | title, description, keyphrase (flat + JSON envelope), OG, Twitter, canonical, robots |
+| SEOPress | `SEOPRESS_VERSION` | title, description, focus + secondary keyphrases, OG, Twitter, canonical, noindex |
+| The SEO Framework | `THE_SEO_FRAMEWORK_VERSION` | title, description, OG, Twitter, canonical, robots (no native focus-keyword field — value stored in `_dti_seo_focuskw` for traceability) |
+| *(none)* | — | title, description, focus keyword → neutral `_dti_seo_*` keys, with a warning |
 
 == Installation ==
 
@@ -60,7 +72,7 @@ The content will still import — the page will be created with the raw Divi blo
 
 = What if I don't have Yoast or Rank Math? =
 
-SEO values are stored in post meta (`_dti_seo_title`, `_dti_seo_description`) and a warning is returned. Set them manually in your SEO plugin.
+SEO values are now written natively to whichever of Yoast, Rank Math, All in One SEO, SEOPress, or The SEO Framework is active. If none of those are installed, the values are stored in neutral post meta (`_dti_seo_title`, `_dti_seo_description`, `_dti_seo_focuskw`) and a warning is returned so you can set them manually.
 
 = Can I publish immediately instead of creating a draft? =
 
@@ -72,9 +84,23 @@ Settings → Divi Tools Importer → Regenerate Key. Your old key stops working 
 
 == Changelog ==
 
+= 1.6.0 =
+* Full SEO meta persistence: focus keyword, secondary keywords, OpenGraph, Twitter, canonical, and robots directives now written to the active SEO plugin's native meta keys (previously only title + description were written).
+* Added support for All in One SEO (AIOSEO), SEOPress, and The SEO Framework. Detection order: Rank Math → Yoast → AIOSEO → SEOPress → TSF → neutral fallback.
+* `GET /ping` now reports the active SEO plugin via `seo_plugin` (one of `rank_math`, `yoast`, `aioseo`, `seopress`, `tsf`, or `null`).
+* `POST /import` response's `seo_plugin` field is now an object: `{ "plugin": "yoast", "fields_written": ["title","description","focusKeyword","og.title"] }` (was previously a bare string). Consumers reading the legacy string should switch to `seo_plugin.plugin`.
+* Expanded the accepted `seo` payload with optional `focusKeyword`, `secondaryKeywords[]`, `og{}`, `twitter{}`, `canonical`, `robots{}`. Legacy `{title, description, slug, keyword}` payloads keep working unchanged.
+* Adapter architecture: each SEO plugin is one class under `src/Seo/`, selected by `DTI_Seo_Detector`. Override the detection order via the `dti/seo/adapter_order` filter.
+* Added PHPUnit test suite (36 tests) covering the normaliser, detector precedence, every adapter's key map, AIOSEO JSON-envelope merge, and legacy-payload regression. The zip build script runs the suite and aborts on failure.
+
 = 1.4.0 =
 * Export endpoints for global variables and presets (GET /global-variables/export, GET /presets/export)
 * Brand extract and deploy routes in the companion app
 
 = 1.0.0 =
 * Initial release
+
+== Upgrade Notice ==
+
+= 1.6.0 =
+Adds full SEO meta (focus keyword, OpenGraph, Twitter, canonical, robots) and support for AIOSEO, SEOPress, and The SEO Framework. The `seo_plugin` field in the import response is now an object `{ plugin, fields_written }` — update any consumer that read it as a string.

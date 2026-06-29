@@ -39,7 +39,7 @@ cd "${DIVI5_OUT:-$HOME/Desktop/Divi5 Pages}"
 3. **Never touch any page other than the one keyed to this import's slug.**
 4. **Validator FAILs block import** — run `landing-page`'s `scripts/validate.js` first; fix all FAILs before sending. WARNs are reported but don't block.
 5. **Refinements amend the run's `generate-*.js` and regenerate** — never hand-edit the JSON.
-6. **Re-runs with the same slug update the same page in place.** No page litter.
+6. **Re-runs with the same slug update the same page in place.** No page litter. Note: re-importing **overwrites the page's SEO meta** with the incoming payload's values (matching the refine-loop behaviour for layout/presets). If the user manually tuned title/description/keywords in the SEO plugin UI between imports, warn them before re-importing — those manual edits will be replaced by the regenerated sidecar's values.
 7. **Never log or store the API key.** Use it only in the request header.
 
 ---
@@ -121,7 +121,7 @@ Check the response:
 
 > **Where this runs:** every call below curls the target site. If you're in an environment that can't reach `localhost` (e.g. a sandboxed/Cowork session, which can't reach the user's Mac at `localhost:10024`), target a **public** URL or drive the site via the browser extension instead. Under Claude Code on the Mac, `localhost` works fine.
 
-Report what was detected: Divi 5, Yoast, RankMath. **If no SEO plugin is present, DTI still persists SEO to post meta** (`dti_seo_title` / `dti_seo_description`) and stores/injects schema by slug — nothing is lost. "Set meta manually" only means surfacing it in an SEO plugin later if the user installs one.
+Report what was detected: the `seo_plugin` field in the ping response names the active SEO plugin (one of `rank_math`, `yoast`, `aioseo`, `seopress`, `tsf`, or `null`). The importer writes the full SEO sidecar — title, description, focus + secondary keywords, OpenGraph, Twitter, canonical, and robots directives — to whichever plugin is active, using its native post-meta keys. **If `seo_plugin` is `null`** (no supported plugin installed), DTI falls back to neutral `_dti_seo_*` keys and stores/injects schema by slug — nothing is lost, but the SEO plugin UI won't show the values until one is installed.
 
 ### 4. Build the payload and import
 
@@ -175,6 +175,7 @@ Show the user:
 - Page action (created / updated), slug, status
 - Screenshot of the live page
 - What was imported: presets, global colours, global variables
+- **SEO:** the `seo_plugin` field of the import response is `{ plugin, fields_written }`. `plugin` is the active SEO plugin's id (`rank_math` / `yoast` / `aioseo` / `seopress` / `tsf`) or `null` when none is active. `fields_written` lists which logical SEO fields landed in the plugin (e.g. `["title","description","focusKeyword","og.title"]`). If `plugin` is `null`, surface the warning to the user.
 - Any render issues found and fixed
 - Live URL: `<site-url>/<slug>/`
 
@@ -228,11 +229,13 @@ Returns an array:
 ### Delete a draft page
 
 ```bash
-curl -s -X DELETE "<site-url>/wp-json/divi-tools/v1/pages?slug=invoice-software" \
+curl -s -X DELETE "<site-url>/wp-json/divi-tools/v1/pages/<slug>" \
   -H "X-Divi-Tools-Key: <api-key>"
 ```
 
-Returns `{ "ok": true, "deleted": "invoice-software" }`. **Safety:** the endpoint refuses with HTTP `409` if the page is `publish`ed — it never deletes a live page. Trash a published page manually in WP Admin if you really mean to.
+The slug goes in the **path**, not as a query param — e.g. `/pages/invoice-software`, not `/pages?slug=invoice-software` (the query-param form returns 404 `rest_no_route`).
+
+Returns `{ "deleted": "invoice-software", "id": 123 }`. **Safety:** the endpoint refuses with HTTP `409` if the page is `publish`ed — it never deletes a live page. Trash a published page manually in WP Admin if you really mean to.
 
 ### Suggested workflow
 

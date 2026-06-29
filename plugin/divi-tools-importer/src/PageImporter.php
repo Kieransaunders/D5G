@@ -12,7 +12,7 @@ class DTI_PageImporter {
 	 * @param array $layout  Parsed et_builder export array.
 	 * @param array $seo     SEO meta (title, description, slug).
 	 * @param bool  $publish Create as published rather than draft.
-	 * @return array{page_id:int, action:string, slug:string, warnings:string[], seo_plugin:string, preview_url:string, edit_url:string}
+	 * @return array{page_id:int, action:string, slug:string, warnings:string[], seo_plugin:array{plugin:string|null, fields_written:string[]}, preview_url:string, edit_url:string}
 	 */
 	public static function import( array $layout, array $seo, bool $publish = false ): array {
 		$warnings = array();
@@ -162,9 +162,9 @@ class DTI_PageImporter {
 		// -----------------------------------------------------------------------
 		// 7. SEO meta.
 		// -----------------------------------------------------------------------
-		$seo_plugin = DTI_SeoWriter::write( $page_id, $seo );
-		if ( $seo_plugin === 'none' && ( ! empty( $seo['titleTag'] ) || ! empty( $seo['title'] ) ) ) {
-			$warnings[] = 'No Yoast or RankMath detected — SEO values stored in post meta (dti_seo_title / dti_seo_description). Set them manually in your SEO plugin.';
+		$seo_result = DTI_SeoWriter::write( $page_id, $seo );
+		if ( $seo_result['plugin'] === null && ( ! empty( $seo['titleTag'] ) || ! empty( $seo['title'] ) ) ) {
+			$warnings[] = 'No supported SEO plugin (Yoast, Rank Math, AIOSEO, SEOPress, or The SEO Framework) detected — SEO values stored in post meta (_dti_seo_title / _dti_seo_description). Set them manually in your SEO plugin.';
 		}
 
 		return [
@@ -178,7 +178,7 @@ class DTI_PageImporter {
 			'presets_imported'   => $presets_imported,
 			'colors_imported'    => $colors_imported,
 			'variables_imported' => $variables_imported,
-			'seo_plugin'         => $seo_plugin,
+			'seo_plugin'         => $seo_result,
 			'warnings'           => $warnings,
 		];
 	}

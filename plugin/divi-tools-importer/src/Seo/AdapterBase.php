@@ -1,0 +1,44 @@
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Shared helpers for concrete SEO adapters.
+ *
+ * Provides the bookkeeping every adapter needs: a `store()` helper that writes
+ * one meta key + records the logical field name in the running $written list,
+ * so adapters stay declarative. Subclasses implement id(), detect(), write().
+ */
+abstract class DTI_Seo_AdapterBase implements DTI_Seo_Adapter {
+
+	/**
+	 * Write a single post-meta value and record the logical field name.
+	 *
+	 * @param int    $page_id Target post.
+	 * @param string $key     Native meta key for the active plugin.
+	 * @param mixed  $value   Value (already sanitised by the Normaliser).
+	 * @param string $logical Logical field name (e.g. 'title', 'og.title').
+	 * @param array  $written Running list of written field names (by ref).
+	 */
+	protected function store( int $page_id, string $key, $value, string $logical, array &$written ): void {
+		update_post_meta( $page_id, $key, $value );
+		if ( ! in_array( $logical, $written, true ) ) {
+			$written[] = $logical;
+		}
+	}
+
+	/**
+	 * Build the standard return shape.
+	 *
+	 * @param string|null $plugin  Adapter id (null for the Fallback).
+	 * @param array       $written List of logical field names persisted.
+	 */
+	protected function result( ?string $plugin, array $written ): array {
+		return array(
+			'plugin'         => $plugin,
+			'fields_written' => array_values( $written ),
+		);
+	}
+}

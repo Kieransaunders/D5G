@@ -265,6 +265,8 @@ class DTI_RestApi {
 			'site'        => get_bloginfo( 'name' ),
 			'url'         => home_url(),
 			'divi5'       => class_exists( 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset' ),
+			'seo_plugin'  => DTI_Seo_Detector::detect_id(),
+			// Legacy boolean flags kept for back-compat — superseded by seo_plugin.
 			'yoast'       => defined( 'WPSEO_VERSION' ),
 			'rankmath'    => class_exists( 'RankMath' ),
 			'dti_version' => DTI_VERSION,
@@ -364,7 +366,7 @@ class DTI_RestApi {
 			'slug'       => $result['slug'],
 			'action'     => $result['action'],
 			'status'     => $result['status'],
-			'seo_plugin' => $result['seo_plugin'],
+			'seo_plugin' => $result['seo_plugin']['plugin'],
 			'warnings'   => $result['warnings'],
 		) );
 

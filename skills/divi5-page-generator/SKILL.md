@@ -316,6 +316,7 @@ Run the polish pass from [references/polish.md](references/polish.md) on the fin
 - FAQ questions written as real long-tail queries (People Also Ask targets); FAQPage schema generated from the same content.
 - Max two font families (Google Fonts cost CWV); no hero sliders/videos by default.
 - Descriptive anchor text — never "click here".
+- **`*-seo-meta.json` schema (plugin v1.6+):** emit `focusKeyword`, `secondaryKeywords[]`, `title`, `description`, `slug`, and (when the brief supplies them) `og{}`, `twitter{}`, `canonical`, `robots{}`. The Divi Tools Importer writes each field to the active SEO plugin's native meta keys — Yoast, Rank Math, All in One SEO, SEOPress, or The SEO Framework. See `references/seo.md` for the full shape. `keyword` remains as a backward-compatible alias for `focusKeyword`.
 
 ## Format essentials (full detail in references/module-reference.md)
 

@@ -22,15 +22,42 @@ Every brief must capture: primary keyword, 2–3 secondary keywords, search inte
 ## Companion artefacts (the layout JSON cannot carry page meta)
 
 ### `[brand]-seo-meta.json`
+
+The full schema (plugin v1.6+). Only `title`/`description`/`slug` are required; every other field is optional and is skipped (not written) when absent. Legacy `{title, description, slug, keyword}` payloads keep working unchanged — `keyword` is treated as a backward-compatible alias for `focusKeyword`.
+
 ```json
 {
-  "keyword": "primary keyword",
-  "title": "Keyword First | Benefit — Brand (≤60 chars)",
-  "description": "≤155 chars, includes keyword and a CTA.",
-  "slug": "keyword-slug"
+  "focusKeyword":      "primary keyword",
+  "secondaryKeywords": ["secondary kw 1", "secondary kw 2"],
+  "title":             "Keyword First | Benefit — Brand (≤60 chars)",
+  "description":       "≤155 chars, includes keyword and a CTA.",
+  "slug":              "keyword-slug",
+
+  "og": {
+    "title":       "OpenGraph title — falls back to page title if absent",
+    "description": "OpenGraph description — falls back to meta description if absent",
+    "image":       "https://cdn.brand.com/og/keyword.png"
+  },
+  "twitter": {
+    "title":       "Twitter card title",
+    "description": "Twitter card description",
+    "image":       "https://cdn.brand.com/og/keyword.png"
+  },
+  "canonical": "https://brand.com/keyword-slug",
+  "robots": {
+    "noindex":  false,
+    "nofollow": false,
+    "advanced": ""
+  }
 }
 ```
-User applies via Yoast/RankMath — or the Local WP add-on writes these to post meta via WP-CLI.
+
+**Aliases** (resolved by the importer's normaliser, highest-wins):
+- `titleTag` → `title`
+- `metaDescription` → `description`
+- `focusKeyword` → `keyword` (use `focusKeyword` for new sidecars; `keyword` is kept for back-compat)
+
+**Where it lands:** the Divi Tools Importer detects the active SEO plugin on the target site and writes each field to that plugin's native post-meta keys. Supported: Yoast, Rank Math, All in One SEO (AIOSEO), SEOPress, The SEO Framework. When no plugin is active, values land in neutral `_dti_seo_*` keys and a warning is returned. See `skills/import-to-local/SKILL.md` for the import flow.
 
 ### `[brand]-schema.json`
 JSON-LD for Divi > Theme Options > Integration > head:

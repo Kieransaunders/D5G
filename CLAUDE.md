@@ -100,3 +100,18 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | `divi5-plugin-dev` | Custom Divi 5 module/plugin development |
 | `divitheatre-engine` | Theatre.js motion engine reference |
 | `divitheatre-section` | Generate a single Divi 5 section showcasing one DiviTheatre animation preset (pin:product-reveal, stagger, parallax-scroll, etc.) |
+
+## SEO plugin support (Divi Tools Importer ≥ 1.6.0)
+
+The importer (`plugin/divi-tools-importer/`) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `dti/seo/adapter_order` filter):
+
+| Plugin | Adapter | Detection signal |
+|---|---|---|
+| Rank Math | `src/Seo/RankMath.php` | `RankMath\File` class |
+| Yoast SEO | `src/Seo/Yoast.php` | `WPSEO_VERSION` constant |
+| All in One SEO | `src/Seo/AIOSEO.php` | `AIOSEO_VERSION` constant |
+| SEOPress | `src/Seo/SEOPress.php` | `SEOPRESS_VERSION` constant |
+| The SEO Framework | `src/Seo/TSF.php` | `THE_SEO_FRAMEWORK_VERSION` constant |
+| *(none)* | `src/Seo/Fallback.php` | always — writes neutral `_dti_seo_*` keys |
+
+Each adapter implements the `DTI_Seo_Adapter` interface (`src/Seo/Adapter.php`). To add a sixth plugin, drop one class in `src/Seo/` and add one entry to `DTI_Seo_Detector::adapters()`. See `openspec/changes/seo-plugin-meta-integration/` for the full design and the spec (`specs/seo-meta-persistence/spec.md`). The PHPUnit suite (`tests/Seo/`) covers the normaliser, detector precedence, every adapter's key map, and legacy-payload regression.

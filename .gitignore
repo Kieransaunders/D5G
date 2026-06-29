@@ -16,6 +16,8 @@ skills/**/golden/*-diff.png
 .playwright-mcp/
 ds-bundle/
 graphify-out/
+.claude/
+.codex/
 
 # Large Divi 5 design-system reference data (96MB) — loaded locally, not shipped in git.
 # Source: ElegantThemes "Black Friday 2025 Divi 5 Freebie" design-system export.
@@ -48,3 +50,9 @@ skills/divi5-page-generator/*-landing-page.json
 skills/divi5-page-generator/*-registry.json
 skills/divi5-page-generator/*-seo-meta.json
 skills/divi5-page-generator/__unlink_probe*
+
+# Divi Tools Importer — dev tooling only (not shipped in the installable zip).
+# vendor/ is installed by `composer install`; tests/.phpunit.cache is PHPUnit's
+# result cache. Both are excluded from the zip by build-plugin-zip.sh.
+plugin/divi-tools-importer/vendor/
+plugin/divi-tools-importer/tests/.phpunit.cache/

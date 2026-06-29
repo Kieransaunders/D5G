@@ -4,46 +4,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * SEO persistence facade.
+ *
+ * Thin entry point kept for back-compat with the existing PageImporter call
+ * site. Delegates to the adapter selected by DTI_Seo_Detector after running
+ * the payload through DTI_Seo_Normaliser.
+ *
+ * Return shape (changed in 1.6.0):
+ *     array{ plugin: string|null, fields_written: string[] }
+ *
+ * `plugin` is null when no supported SEO plugin is active (Fallback adapter).
+ */
 class DTI_SeoWriter {
 
 	/**
-	 * Write SEO meta to whichever SEO plugin is active.
+	 * Normalise the payload, resolve the active adapter, and persist.
 	 *
-	 * @param int   $page_id
-	 * @param array $seo  Keys: title, description (and aliases titleTag, metaDescription)
-	 * @return string  Which plugin was used: 'yoast' | 'rankmath' | 'none'
+	 * @param int   $page_id Target post ID.
+	 * @param array $seo     Raw SEO payload (aliases and optional fields OK).
+	 * @return array{plugin:string|null, fields_written:string[]}
 	 */
-	public static function write( int $page_id, array $seo ): string {
-		$title = $seo['titleTag'] ?? $seo['title'] ?? '';
-		$desc  = $seo['metaDescription'] ?? $seo['description'] ?? '';
-
-		if ( ! $title && ! $desc ) {
-			return 'none';
-		}
-
-		if ( defined( 'WPSEO_VERSION' ) ) {
-			if ( $title ) {
-				update_post_meta( $page_id, '_yoast_wpseo_title', sanitize_text_field( $title ) );
-			}
-			if ( $desc ) {
-				update_post_meta( $page_id, '_yoast_wpseo_metadesc', sanitize_text_field( $desc ) );
-			}
-			return 'yoast';
-		}
-
-		if ( class_exists( 'RankMath' ) ) {
-			if ( $title ) {
-				update_post_meta( $page_id, 'rank_math_title', sanitize_text_field( $title ) );
-			}
-			if ( $desc ) {
-				update_post_meta( $page_id, 'rank_math_description', sanitize_text_field( $desc ) );
-			}
-			return 'rankmath';
-		}
-
-		// Fallback: store in our own meta so the admin can see the values.
-		update_post_meta( $page_id, '_dti_seo_title', sanitize_text_field( $title ) );
-		update_post_meta( $page_id, '_dti_seo_description', sanitize_text_field( $desc ) );
-		return 'none';
+	public static function write( int $page_id, array $seo ): array {
+		$normalised = DTI_Seo_Normaliser::normalise( $seo );
+		$adapter    = DTI_Seo_Detector::resolve();
+		return $adapter->write( $page_id, $normalised );
 	}
 }
