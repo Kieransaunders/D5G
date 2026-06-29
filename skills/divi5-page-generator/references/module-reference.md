@@ -117,3 +117,75 @@ Use `customCss.main` with a CSS transition rule as the workaround.
 
 **CSS specificity is unusually deep.**
 Generic selectors lose. When targeting via `customCss`, use full specificity chains or `!important`.
+
+---
+
+## Rendered CSS class reference (for `customCss` targeting)
+
+Divi 5 renders static classes — variables resolve to values, no `var()` in browser output.
+
+**Selectors to use in `customCss` blocks:**
+
+| Target | Selector |
+|---|---|
+| Section by position | `.et_pb_section_0`, `.et_pb_section_1` … |
+| Full-width section | `.et_pb_fullwidth_section` |
+| Section with background | `.et_pb_with_background` |
+| Row | `.et_pb_row`, `.et_pb_row_0` … |
+| Column widths | `.et_pb_column_4_4` (100%), `.et_pb_column_1_2` (50%), `.et_pb_column_1_3` (33%), `.et_pb_column_2_3` (66%), `.et_pb_column_1_4` (25%), `.et_pb_column_3_4` (75%) |
+| Text module | `.et_pb_text`, `.et_pb_text_0` … |
+| Button | `.et_pb_button` |
+| Image | `.et_pb_image` |
+| CTA | `.et_pb_cta` |
+| Dark bg utility | `.et_pb_bg_layout_dark` |
+| Light bg utility | `.et_pb_bg_layout_light` |
+| Text alignment | `.et_pb_text_align_left/center/right/justified` |
+| Border applied | `.et_pb_with_border` |
+| Box shadow applied | `.et_pb_with_box_shadow` |
+
+**Animation/state classes:**
+
+| Effect | Class |
+|---|---|
+| Fade in | `.et_pb_animation_fade_in` |
+| Slide from top/bottom/left/right | `.et_pb_animation_top/bottom/left/right` |
+| Animation complete | `.et_had_animation` |
+| Sticky active | `.et_pb_sticky` |
+| Sticky module (enabled) | `.et_pb_sticky_module` |
+| Scroll to top | `.et_pb_scroll_top` |
+
+These are render-output classes, not JSON attributes. Use them in `customCss` fields — not as block props.
+
+---
+
+## Fluid CSS functions in spacing/sizing attrs
+
+Any numeric field accepts `calc()`, `clamp()`, `min()`, `max()` as raw strings. Divi disables the unit picker's increment buttons when set — that's expected.
+
+| Use case | Value |
+|---|---|
+| Fluid hero padding | `clamp(60px, 10vw, 140px)` |
+| Fluid section padding | `clamp(30px, 6vw, 80px)` |
+| Fluid heading size | `clamp(32px, 5vw, 72px)` |
+| Fluid body text | `clamp(16px, 2vw + 10px, 24px)` |
+| Max content width | `min(90vw, 1200px)` |
+| Viewport minus header | `calc(100vh - 80px)` |
+| Padding minus gutter | `calc(50% - 24px)` |
+| Padding floor | `max(20px, 3vw)` |
+
+Go directly into `padding`, `fontSize`, `width` etc. in the block JSON — no wrapping needed.
+
+---
+
+## Overlay sections
+
+```js
+D.overlaySection({
+  image:   { src: 'https://...', parallax: 'off' },
+  overlay: { color: b.colorRef('Background Overlay - Dark'), opacity: 0.8, blend: 'multiply' },
+  padding: { top: '8vw', bottom: '8vw' },
+  adminLabel: 'Hero',
+}, rows)
+```
+
+Emits a `divi/section` with a two-layer background (image bottom, colour top). All other `section()` options (`theatre`, `preset`, etc.) pass through. The overlay colour, blend mode, and opacity are optional.

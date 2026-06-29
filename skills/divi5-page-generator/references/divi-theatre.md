@@ -1,8 +1,9 @@
 # DiviTheatre Motion Presets (Optional)
 
 > DiviTheatre is a separate WordPress plugin that adds Theatre.js-powered cinematic animations
-> to Divi 5. The landing-page generator supports it as an OPTIONAL motion layer. The user MUST
-> be asked before any `data-theatre` attributes are emitted. Never add motion without consent.
+> and CSS/WebGL effects to Divi 5. The landing-page generator supports it as an OPTIONAL motion
+> layer. The user MUST be asked before any `data-theatre` attributes are emitted. Never add motion
+> without consent.
 >
 > Repository: ask the user for the download/install URL when they say they want DiviTheatre.
 
@@ -12,9 +13,9 @@
 
 Before generating any `data-theatre` attributes, ask the user:
 
-> **"Do you have DiviTheatre installed? It adds cinematic animations (fade-up, stagger, parallax,
-> hero-reveal) to any Divi 5 element. Options: Yes (I'll add motion), No but I want it (I'll note
-> where to get it), No (static page only)."**
+> **"Do you have DiviTheatre installed? It adds cinematic animations and effects (blur-in, stagger,
+> marquee, spotlight, hero-reveal…) to any Divi 5 element. Options: Yes (I'll add motion), No but I
+> want it (I'll note where to get it), No (static page only)."**
 
 - **Yes:** read this file, map the MOTION dial to presets, emit `data-theatre` attributes via
   `D.theatreAttrs()` or the `theatre:` / `theatreOpts:` shortcut on any module function.
@@ -25,27 +26,53 @@ Before generating any `data-theatre` attributes, ask the user:
 
 ---
 
-## Preset catalogue
+## Preset categories
 
-| Preset | What it does | Recommended trigger | Best on |
+Presets fall into four categories that affect how the engine handles them:
+
+| Category | Driven by | `selfManaged` | Trigger options apply |
 |---|---|---|---|
-| `fade-up` | Fade in + translate up 50px | `onScroll` | Text modules, headings, sections |
-| `fade-left` | Fade in + slide from left | `onScroll` | Images, columns |
-| `fade-right` | Fade in + slide from right | `onScroll` | Images, columns |
-| `scale-in` | Scale 0.9 to 1 + fade | `onScroll` | Cards, images, blurb modules |
-| `stagger` | Each child fades up, 100ms offset | `onScroll` | Rows containing multiple columns |
-| `parallax-scroll` | Y-axis drift based on scroll | self-managed | Hero images, background sections |
-| `hover-grow` | Scale to 1.08 on hover, reverse on leave | self-managed | Buttons, CTAs, cards |
-| `hero-reveal` | Choreographed: bg fade, headline, text, CTA | `onLoad` | Hero sections |
-| `pin:product-reveal` | **Pinned scene** — section pins while a media element scales and content panels reveal in sequence, scrubbed by scroll (Apple-product-page style) | self-managed (scroll-scrubbed) | A whole section with one media element + 2–3 panels |
+| `element` | Theatre.js keyframe sequence | no | yes — `onScroll`, `onLoad`, `onClick`, `delay`, `duration` |
+| `scene` | Theatre.js + self-managed | yes | no (manages own triggers) |
+| `pin` | Scroll-scrubbed Theatre.js | yes | no — `distance` only |
+| `effect` | CSS / WebGL (no Theatre.js) | yes | no |
 
-`pin:product-reveal` is the only `pin:` (pinned-scene) preset. It is the heaviest, most cinematic effect — treat it as a section-level set piece, not a per-element flourish. See [Pinned scenes](#pinned-scenes-pin-category) below.
+**`effect` presets** are self-managed CSS or WebGL effects. They have no Theatre.js keyframe state. `data-theatre-duration` and `data-theatre-delay` do not apply to them. Use them for ambient and interactive visual polish that runs independently of the entrance-animation system.
 
 ---
 
-## Trigger options
+## Preset catalogue
 
-Set via `theatreOpts` on any module, or as data attributes in Divi's Advanced panel.
+### Entrance animations (`element` / `scene` / `pin`)
+
+| Preset | Category | What it does | Best on |
+|---|---|---|---|
+| `blur-in` | `element` | Fade in (opacity 0→1) + blur filter resolve (8px→0) over 0.8s | Text modules, headings, blurbs |
+| `fade-right` | `element` | Fade in + slide from right | Images, columns |
+| `stagger` | `element` | Each direct child fades up, 100 ms offset | Rows with multiple columns, feature grids |
+| `hero-reveal` | `scene` | Choreographed: bg fade, headline, sub-text, CTA in sequence | Hero sections |
+| `product-reveal` | `pin` | Section pins while a media element scales; content panels reveal in sequence, scrubbed by scroll (Apple-product-page style) | Whole section with one media + 2–3 panels |
+
+### Effects (`effect` — CSS/WebGL, no Theatre.js)
+
+| Preset | What it does | Best on |
+|---|---|---|
+| `aurora` | Animated multi-gradient background drifts slowly behind content (Aceternity aurora style) | Hero sections, dark-bg sections |
+| `depth-stack` | Direct children scroll at different Y rates, creating a parallax depth illusion | Rows with layered content |
+| `lamp` | Conic light beam fans down from the top of the element, reveals on scroll (Aceternity lamp style) | Hero sections |
+| `liquid-effect` | WebGL shallow-water ripple on a background image; pointer creates ripples with chromatic aberration + specular glint. **Requires Three.js bundle.** | Hero sections, image-heavy sections |
+| `magnetize` | Particles scatter around the element and snap to centre on hover (21st.dev magnetic button style) | CTAs, buttons, cards |
+| `marquee` | Infinite seamless horizontal scroll strip of cards/images with soft edge fade. Smart drill-down handles Divi's section→row→column nesting. | Image galleries, logo strips, client grids |
+| `mask-reveal` | SVG mask tiles or blinds progressively uncover the element on scroll. Pattern: `grid` or `blinds`. Graceful-degrades when `mask` CSS is unsupported. | Sections, images, feature blocks |
+| `particle-field` | WebGL floating particle field injected behind content; pointer scatters particles and they spring back. **Requires Three.js bundle.** | Hero sections, dark-bg panels |
+| `spotlight` | Radial glow tracks the cursor (Aceternity SpotlightCard style) | Cards, modules, CTAs |
+| `text-line-stagger` | Block-level text elements (h1–h6, p, li) inside the container slide up and fade in 60 ms apart. Apple-style easing. | Text modules, heading + body combos |
+
+---
+
+## Trigger options (entrance presets only)
+
+Applies to `element` category presets only. `scene`, `pin`, and `effect` presets manage their own triggers.
 
 | Option | Value | Description |
 |---|---|---|
@@ -53,82 +80,59 @@ Set via `theatreOpts` on any module, or as data attributes in Divi's Advanced pa
 | `trigger` | `onLoad` | Play on page load |
 | `trigger` | `onClick` | Play when element is clicked (once) |
 | `delay` | milliseconds | Delay before animation starts |
-| `duration` | milliseconds | Override preset duration (ignored by parallax-scroll and hero-reveal) |
+| `duration` | milliseconds | Override preset duration |
 | `mobile` | `true` | Override the <768px mobile skip (use sparingly) |
-
-Trigger, delay and duration do **not** apply to `pin:` presets — pinned scenes are scroll-scrubbed (the playhead is bound to scroll position), so they are self-managed. The only option a pin scene reads is `distance` (see below).
 
 ---
 
-## Pinned scenes (`pin:` category)
+## Pinned scene (`product-reveal`)
 
-A pinned scene tags a **whole section** (or container). On scroll the section pins in place while a composed timeline scrubs forward; scrolling back up reverses it symmetrically. The flagship preset is `pin:product-reveal`: a media element holds and scales up while content panels reveal in sequence.
-
-### Authoring a pinned scene
-
-Put `data-theatre="pin:product-reveal"` on the **section**, then mark its children by role:
+Tag a **whole section** with `data-theatre="product-reveal"`. The section pins while a composed timeline scrubs forward on scroll; scrolling back reverses it. Mark children by role:
 
 | Attribute | On | Purpose |
 |---|---|---|
-| `data-theatre="pin:product-reveal"` | the section/container | declares the pinned scene |
-| `data-theatre-distance` | the same section | runway length — how long it stays pinned. **Default `150vh`.** vh only (e.g. `200vh`). |
-| `data-theatre-part="media"` | one child (image/column) | the element that holds + scales |
-| `data-theatre-part="panel"` | 2–3 children | the content blocks that reveal in sequence |
+| `data-theatre="product-reveal"` | the section | declares the pinned scene |
+| `data-theatre-distance` | the same section | runway length (default `150vh`; vh only, e.g. `200vh`) |
+| `data-theatre-part="media"` | one child | the element that holds + scales |
+| `data-theatre-part="panel"` | 2–3 children | content blocks that reveal in sequence |
 
-If no `data-theatre-part` markers are present, DOM order is used: first child = media, the rest = panels. **Panels are capped at 3** — a 4th `panel` child is silently ignored (v1 limitation).
-
-There are two code-free authoring paths in Divi 5:
-1. **Raw attributes** — add the attributes above in Advanced → Attributes on the section and each child.
-2. **Pinned Scene wrapper module** — a DiviTheatre Divi 5 module that emits the same `data-theatre` / `data-theatre-distance` attributes for you (DiviTheatre Phase 05-03). Prefer this once shipped; it is the same engine underneath.
-
-### Builder emission
+Panels are capped at 3. Mobile (≤768px) and `prefers-reduced-motion` skip the pin — the section jumps to its end state. **Never nest inside an `overflow:hidden` ancestor** — sticky positioning requires a clean ancestor chain.
 
 ```javascript
-// section carries the pin preset + runway; children carry their part role
-D.section({ adminLabel: 'Product reveal', theatre: 'pin:product-reveal', theatreOpts: { distance: '200vh' } }, [
+D.section({ adminLabel: 'Product reveal', theatre: 'product-reveal', theatreOpts: { distance: '200vh' } }, [
   D.row({ structure: 'equal-columns_1' }, [
     D.column({}, [
       D.image({ src: '...', alt: 'Product', theatrePart: 'media' }),
-      D.text({ html: '<h2>Panel one</h2>', theatrePart: 'panel' }),
-      D.text({ html: '<p>Panel two</p>',  theatrePart: 'panel' }),
-      D.text({ html: '<p>Panel three</p>', theatrePart: 'panel' }),
+      D.text({ html: '<h2>Panel one</h2>',  theatrePart: 'panel' }),
+      D.text({ html: '<p>Panel two</p>',    theatrePart: 'panel' }),
+      D.text({ html: '<p>Panel three</p>',  theatrePart: 'panel' }),
     ]),
   ]),
 ]);
 ```
 
-The builder allowlists the preset name and the part role, and validates `distance` against `/^\d+vh$/` — a typo throws at generate time rather than shipping a dead attribute.
-
-### Behaviour you can rely on (handled by the engine)
-
-- **Mobile (≤768px) and `prefers-reduced-motion: reduce`:** the section does **not** pin. It jumps straight to the end state (media at final scale, panels visible) — no runway, no scroll-jacking, no rAF loop. Never promise pinning on mobile.
-- **Performance:** IntersectionObserver-gated `requestAnimationFrame`, zero scroll listeners; the loop is idle while the section is off-screen, and torn down on `pagehide`.
-- **FOUC:** the section and its children are visible from first paint.
-
-### Gotcha — sticky needs a clean ancestor chain
-
-The pin uses `position: sticky` on an inner wrapper. **Any ancestor with `overflow: hidden` silently kills sticky** and the section will scroll past without pinning. If a generated layout wraps the pin section in something that clips overflow, the scene won't pin. Keep pin sections as direct children of the page root where possible.
-
-### Collision guard
-
-Never put Divi's own native sticky (`decoration.sticky`) on the same block as a `pin:` attribute — two pinning systems fight. The validator FAILs on this (see `validate.js`).
+Never combine Divi's native `decoration.sticky` on the same element as `product-reveal` — two pinning systems fight. The validator FAILs on this.
 
 ---
 
 ## MOTION dial mapping
 
-The taste layer (`taste.md`) sets a MOTION dial (1 to 10). When DiviTheatre is installed, map it to presets:
+The taste layer (`taste.md`) sets a MOTION dial (1–10). When DiviTheatre is installed, map it to presets:
 
 | MOTION dial | Recommended presets |
 |---|---|
 | 1 to 3 (static) | None. Ship clean static layout. |
-| 4 to 5 (subtle) | `fade-up` on section content, `fade-left` on images |
-| 6 to 7 (fluid) | `fade-up` + `stagger` on rows, `scale-in` on cards, `hover-grow` on primary CTA |
-| 8 to 10 (cinematic) | `hero-reveal` on hero section, `stagger` on feature rows, `parallax-scroll` on images, `hover-grow` on all CTAs |
+| 4 to 5 (subtle) | `blur-in` on headings, `fade-right` on images |
+| 6 to 7 (fluid) | `blur-in` + `stagger` on rows, `text-line-stagger` on text modules, `spotlight` on cards, `magnetize` on primary CTA |
+| 8 to 10 (cinematic) | `hero-reveal` on hero, `stagger` on feature rows, `marquee` on image strips, `aurora` or `lamp` on dark-bg hero, `spotlight` or `mask-reveal` on key sections |
 
-**Pinned scenes (`pin:product-reveal`)** sit at the very top of the dial — only offer at **MOTION ≥ 7**, and only when there's a genuine product/feature reveal to choreograph. It's a section-level set piece, not decoration. At most one per page; on a trust-first or content-dense page, drop it. It is mobile-disabled by design (jumps to end state ≤768px), so never rely on it carrying the mobile experience.
+**Pinned scene (`product-reveal`)** sits at the very top of the dial — only offer at **MOTION ≥ 7**, and only when there's a genuine product/feature reveal to choreograph. At most one per page; never on trust-first or content-dense pages. Mobile-disabled by design.
 
-**Rule:** motion must be motivated (taste.md). Each animation should communicate hierarchy, storytelling, feedback, or state transition. If you cannot justify it in one sentence, drop the animation.
+**`effect` presets** are ambient/interactive — layer on top of entrance animations or stand alone. Don't pile multiple effects on the same element.
+
+**WebGL effects** (`particle-field`, `liquid-effect`) require the Three.js bundle — only emit them if the user confirms it's loaded, or you know they have the full DiviTheatre install.
+
+**Rule:** motion must be motivated (taste.md). Each animation should communicate hierarchy, storytelling, feedback, or state transition. If you cannot justify it in one sentence, drop it.
 
 ---
 
@@ -137,36 +141,28 @@ The taste layer (`taste.md`) sets a MOTION dial (1 to 10). When DiviTheatre is i
 ```javascript
 const D = require('./scripts/divi-builder');
 
-// Option 1: inline shortcut on any module (cleanest)
+// Entrance animation — inline shortcut
+D.heading({ text: 'Headline', level: 'h2', theatre: 'blur-in', theatreOpts: { trigger: 'onScroll', delay: 200 } });
+D.section({ adminLabel: 'Features', theatre: 'stagger' }, [ ...rows ]);
 D.section({ adminLabel: 'Hero', theatre: 'hero-reveal', theatreOpts: { trigger: 'onLoad' } }, [ ...rows ]);
-D.heading({ text: 'Headline', level: 'h2', theatre: 'fade-up', theatreOpts: { trigger: 'onScroll', delay: 200 } });
-D.button({ text: 'Get Started', url: '#', theatre: 'hover-grow' });
 
-// Option 2: explicit attrs (when you need more control)
-D.text({ html: '<p>Body</p>', attrs: D.theatreAttrs('fade-up', { trigger: 'onScroll' }) });
+// Effect — inline shortcut (no trigger opts needed)
+D.section({ adminLabel: 'Hero', theatre: 'aurora' }, [ ...rows ]);
+D.button({ text: 'Get Started', url: '#', theatre: 'magnetize' });
+D.section({ adminLabel: 'Gallery', theatre: 'marquee' }, [ ...rows ]);
+D.module({ theatre: 'spotlight' }, [ ...content ]);
+
+// Explicit attrs (when you need more control)
+D.text({ html: '<p>Body</p>', attrs: D.theatreAttrs('text-line-stagger') });
 ```
 
-Both produce the same `module.decoration.attributes.desktop.value.attributes` structure (an array of
-`{name, value, targetElement}`) that Divi 5 renders as HTML data attributes on the module wrapper.
-(Not `module.advanced.attributes` — that path renders nothing.)
+Both produce the same `module.decoration.attributes.desktop.value.attributes` structure that Divi 5 renders as HTML data attributes on the module wrapper. (Not `module.advanced.attributes` — that path renders nothing.)
 
 ---
 
 ## Safety guarantees (handled by DiviTheatre engine)
 
 - **Reduced motion:** all presets jump to final visible state when `prefers-reduced-motion: reduce` matches. No element is left hidden.
-- **Mobile:** all presets skip on viewports <768px (elements jump to final state). Override per-element with `data-theatre-mobile="true"`.
-- **Performance:** `parallax-scroll` uses `requestAnimationFrame` + `IntersectionObserver`. Zero scroll event listeners.
+- **Mobile:** entrance presets skip on viewports <768px (elements jump to final state). Override per-element with `data-theatre-mobile="true"`. `effect` presets run on all viewports unless they internally opt out.
+- **Performance:** WebGL and scroll-driven effects use IntersectionObserver-gated rAF — idle while off-screen, torn down on `pagehide`.
 - **Divi conflict:** the engine strips Divi's `et_pb_animation` classes before Theatre.js writes styles.
-
----
-
-## Out of scope (future presets)
-
-- Horizontal scroll hijack
-- Three.js / 3D objects
-- Marquee / infinite text bands
-- Magnetic pointer physics
-- In-Visual-Builder dropdown UI (Phase 4 of DiviTheatre roadmap)
-
-If the MOTION dial is high but these are needed, lower the dial and ship clean static layout with strong composition. Half-built motion is worse than none.
