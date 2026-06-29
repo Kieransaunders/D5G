@@ -97,6 +97,28 @@ When a supported SEO plugin is active, the importer SHALL persist every supplied
 - **WHEN** detection returns `null` and the payload contains title, description, and focusKeyword
 - **THEN** the importer SHALL write `_dti_seo_title`, `_dti_seo_description`, and `_dti_seo_focuskw` for the page
 
+### Requirement: Robots directives are three-state (set, clear, preserve)
+
+The `robots.noindex` and `robots.nofollow` fields SHALL follow three-state semantics to avoid a one-way ratchet where a directive can be set via import but never cleared:
+
+- **Absent from payload** → the adapter SHALL NOT touch the corresponding plugin meta key, preserving any existing value (whether set by a previous import or manually by the user in the SEO plugin UI).
+- **Present and `true`** → the adapter SHALL write the plugin's "noindex"/"nofollow" value.
+- **Present and `false`** → the adapter SHALL clear the directive: delete the meta key (Yoast, TSF) or set it to the plugin's "index"/"follow" value (Rank Math, AIOSEO, SEOPress), restoring the page to indexable/followable state.
+
+The `robots.advanced` field remains write-only-when-non-empty (sending an empty string does NOT clear it — documented minor limitation).
+
+#### Scenario: Clear a previously-set noindex
+- **WHEN** a page was imported with `robots.noindex: true` (page is noindexed), then the same slug is re-imported with `robots.noindex: false`
+- **THEN** the importer SHALL clear the noindex directive so the page returns to indexable, and `fields_written` SHALL include `robots.noindex`
+
+#### Scenario: Absent robots field preserves existing directive
+- **WHEN** a page was imported with `robots.noindex: true`, then the same slug is re-imported with a payload that omits the `robots` object entirely
+- **THEN** the importer SHALL NOT modify the existing noindex directive — the page remains noindexed
+
+#### Scenario: Clear only one directive
+- **WHEN** a page has both noindex and nofollow set, and is re-imported with `robots: {noindex: false}` (nofollow absent)
+- **THEN** the importer SHALL clear noindex only and SHALL preserve the existing nofollow directive
+
 ### Requirement: Import response reports SEO write outcome
 
 The `POST /import` response SHALL include a `seo_plugin` field of shape `{ plugin: string|null, fields_written: string[] }`. `fields_written` SHALL list the logical field names that were persisted (e.g. `["title","description","focusKeyword","og.title"]`), not the underlying meta keys. When no fields were written (empty SEO payload), `fields_written` SHALL be an empty array.

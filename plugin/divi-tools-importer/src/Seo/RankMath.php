@@ -86,12 +86,23 @@ class DTI_Seo_RankMath extends DTI_Seo_AdapterBase {
 		}
 
 		// Robots — stored as a JSON object. Read-merge-write so a user-set
-		// 'advanced' directive is preserved when only noindex is supplied.
+		// 'advanced' directive is preserved. Three-state per field: absent =
+		// preserve, true = set directive, false = clear (set to index/follow).
 		if ( ! empty( $seo['robots'] ) && is_array( $seo['robots'] ) ) {
 			$existing = get_post_meta( $page_id, 'rank_math_robots', true );
-			$robots   = is_array( $existing ) ? $existing : array();
-			$robots['index']    = ! empty( $seo['robots']['noindex'] ) ? 'noindex' : 'index';
-			$robots['follow']   = ! empty( $seo['robots']['nofollow'] ) ? 'nofollow' : 'follow';
+			// Stored value is a JSON string — decode before merging.
+			if ( is_string( $existing ) && $existing !== '' ) {
+				$decoded = json_decode( $existing, true );
+				$robots  = is_array( $decoded ) ? $decoded : array();
+			} else {
+				$robots = is_array( $existing ) ? $existing : array();
+			}
+			if ( isset( $seo['robots']['noindex'] ) ) {
+				$robots['index'] = $seo['robots']['noindex'] ? 'noindex' : 'index';
+			}
+			if ( isset( $seo['robots']['nofollow'] ) ) {
+				$robots['follow'] = $seo['robots']['nofollow'] ? 'nofollow' : 'follow';
+			}
 			if ( ! empty( $seo['robots']['advanced'] ) ) {
 				$robots['advanced'] = $seo['robots']['advanced'];
 			}

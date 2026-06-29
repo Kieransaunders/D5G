@@ -95,8 +95,14 @@ class DTI_Seo_AIOSEO extends DTI_Seo_AdapterBase {
 			if ( ! isset( $envelope['robots']['default'] ) || ! is_array( $envelope['robots']['default'] ) ) {
 				$envelope['robots']['default'] = array();
 			}
-			$envelope['robots']['default']['noindex']  = ! empty( $seo['robots']['noindex'] );
-			$envelope['robots']['default']['nofollow'] = ! empty( $seo['robots']['nofollow'] );
+			// Three-state: absent preserves existing envelope value; present
+			// (true or false) overwrites — false clears back to indexable.
+			if ( isset( $seo['robots']['noindex'] ) ) {
+				$envelope['robots']['default']['noindex'] = ! empty( $seo['robots']['noindex'] );
+			}
+			if ( isset( $seo['robots']['nofollow'] ) ) {
+				$envelope['robots']['default']['nofollow'] = ! empty( $seo['robots']['nofollow'] );
+			}
 			if ( ! empty( $seo['robots']['advanced'] ) ) {
 				$envelope['robots']['advanced'] = $seo['robots']['advanced'];
 			}

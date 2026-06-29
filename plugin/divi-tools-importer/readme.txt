@@ -4,7 +4,7 @@ Tags: divi, divi 5, landing page, seo, import
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,10 @@ Pass `"publish": true` in the request body. Default is always draft so you can r
 Settings → Divi Tools Importer → Regenerate Key. Your old key stops working immediately.
 
 == Changelog ==
+
+= 1.6.1 =
+* Fix: robots directives (noindex, nofollow) are now three-state — absent preserves the existing value, `true` sets it, `false` clears it. Previously a noindex set via import could not be cleared by re-importing (one-way ratchet).
+* Fix: Rank Math robots JSON envelope was not decoded on re-import, so the read-merge-write started from empty each time (user-set advanced directives were lost on re-import).
 
 = 1.6.0 =
 * Full SEO meta persistence: focus keyword, secondary keywords, OpenGraph, Twitter, canonical, and robots directives now written to the active SEO plugin's native meta keys (previously only title + description were written).

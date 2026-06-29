@@ -70,10 +70,35 @@ class Normaliser_Test extends TestCase {
 		$this->assertArrayNotHasKey( 'canonical', $out );
 	}
 
-	public function test_robots_defaults_emit_nothing(): void {
+	public function test_robots_explicit_false_preserved_so_adapters_can_clear(): void {
+		// Explicit false MUST be emitted (not dropped) so adapters can clear a
+		// previously-written directive. Dropping it created a one-way ratchet
+		// where noindex could be set but never cleared via re-import.
 		$out = DTI_Seo_Normaliser::normalise( array(
-			'robots' => array( 'noindex' => false, 'nofollow' => false, 'advanced' => '' ),
+			'robots' => array( 'noindex' => false, 'nofollow' => false ),
 		) );
+		$this->assertArrayHasKey( 'robots', $out );
+		$this->assertFalse( $out['robots']['noindex'] );
+		$this->assertFalse( $out['robots']['nofollow'] );
+	}
+
+	public function test_robots_absent_fields_omitted_so_existing_meta_preserved(): void {
+		// If noindex is absent from input, it must be absent from output so the
+		// adapter skips it (preserves any existing plugin-set value).
+		$out = DTI_Seo_Normaliser::normalise( array(
+			'robots' => array( 'noindex' => true ),
+		) );
+		$this->assertArrayHasKey( 'noindex', $out['robots'] );
+		$this->assertArrayNotHasKey( 'nofollow', $out['robots'] );
+	}
+
+	public function test_robots_empty_object_emits_nothing(): void {
+		$out = DTI_Seo_Normaliser::normalise( array( 'robots' => array() ) );
+		$this->assertArrayNotHasKey( 'robots', $out );
+	}
+
+	public function test_robots_section_absent_emits_nothing(): void {
+		$out = DTI_Seo_Normaliser::normalise( array( 'title' => 'T' ) );
 		$this->assertArrayNotHasKey( 'robots', $out );
 	}
 
@@ -82,8 +107,8 @@ class Normaliser_Test extends TestCase {
 			'robots' => array( 'noindex' => true ),
 		) );
 		$this->assertTrue( $out['robots']['noindex'] );
-		$this->assertFalse( $out['robots']['nofollow'] );
-		$this->assertSame( '', $out['robots']['advanced'] );
+		// nofollow was absent from input → must NOT be emitted (preserve semantics).
+		$this->assertArrayNotHasKey( 'nofollow', $out['robots'] );
 	}
 
 	public function test_robots_string_truthy_coerced(): void {

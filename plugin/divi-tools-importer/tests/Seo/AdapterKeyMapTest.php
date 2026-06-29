@@ -196,4 +196,70 @@ class AdapterKeyMap_Test extends TestCase {
 			$this->assertSame( array(), MetaStore::all_for( self::POST_ID ), $adapter->id() . ': no meta keys touched' );
 		}
 	}
+
+	// --- Robots clear regression (the noindex ratchet bug) -------------------
+	// Setting robots.noindex:true then re-importing with noindex:false MUST
+	// clear the directive, not silently leave it set.
+
+	public function test_yoast_noindex_false_clears_previous_noindex(): void {
+		$yoast = new DTI_Seo_Yoast();
+
+		// First import: set noindex.
+		$yoast->write( self::POST_ID, array( 'robots' => array( 'noindex' => true ) ) );
+		$this->assertSame( '1', MetaStore::get( self::POST_ID, '_yoast_wpseo_meta-robots-noindex' ) );
+
+		// Re-import with noindex:false → must clear (meta key deleted).
+		$result = $yoast->write( self::POST_ID, array( 'robots' => array( 'noindex' => false ) ) );
+		$this->assertFalse( MetaStore::has( self::POST_ID, '_yoast_wpseo_meta-robots-noindex' ), 'noindex meta must be deleted after clear' );
+		$this->assertContains( 'robots.noindex', $result['fields_written'], 'clear action must be reported in fields_written' );
+	}
+
+	public function test_yoast_robots_absent_preserves_existing_noindex(): void {
+		$yoast = new DTI_Seo_Yoast();
+
+		// Set noindex via first import.
+		$yoast->write( self::POST_ID, array( 'robots' => array( 'noindex' => true ) ) );
+		$this->assertSame( '1', MetaStore::get( self::POST_ID, '_yoast_wpseo_meta-robots-noindex' ) );
+
+		// Re-import with NO robots key at all → existing noindex must survive.
+		$yoast->write( self::POST_ID, array( 'title' => 'New title, no robots opinion' ) );
+		$this->assertSame( '1', MetaStore::get( self::POST_ID, '_yoast_wpseo_meta-robots-noindex' ), 'absent robots must preserve existing directive' );
+	}
+
+	public function test_rankmath_noindex_false_clears_in_envelope(): void {
+		$rm = new DTI_Seo_RankMath();
+
+		$rm->write( self::POST_ID, array( 'robots' => array( 'noindex' => true, 'nofollow' => true ) ) );
+		$robots = json_decode( MetaStore::get( self::POST_ID, 'rank_math_robots' ), true );
+		$this->assertSame( 'noindex', $robots['index'] );
+		$this->assertSame( 'nofollow', $robots['follow'] );
+
+		// Re-import with noindex:false → index cleared, nofollow absent → preserved.
+		$rm->write( self::POST_ID, array( 'robots' => array( 'noindex' => false ) ) );
+		$robots = json_decode( MetaStore::get( self::POST_ID, 'rank_math_robots' ), true );
+		$this->assertSame( 'index', $robots['index'], 'noindex:false must clear to index' );
+		$this->assertSame( 'nofollow', $robots['follow'], 'absent nofollow must be preserved' );
+	}
+
+	public function test_aioseo_noindex_false_clears_in_envelope(): void {
+		$aio = new DTI_Seo_AIOSEO();
+
+		$aio->write( self::POST_ID, array( 'robots' => array( 'noindex' => true ) ) );
+		$env = json_decode( MetaStore::get( self::POST_ID, '_aioseo_posts_data' ), true );
+		$this->assertTrue( $env['robots']['default']['noindex'] );
+
+		$aio->write( self::POST_ID, array( 'robots' => array( 'noindex' => false ) ) );
+		$env = json_decode( MetaStore::get( self::POST_ID, '_aioseo_posts_data' ), true );
+		$this->assertFalse( $env['robots']['default']['noindex'], 'noindex:false must clear to false in envelope' );
+	}
+
+	public function test_tsf_noindex_false_clears_via_delete(): void {
+		$tsf = new DTI_Seo_TSF();
+
+		$tsf->write( self::POST_ID, array( 'robots' => array( 'noindex' => true ) ) );
+		$this->assertSame( '1', MetaStore::get( self::POST_ID, '_genesis_noindex' ) );
+
+		$tsf->write( self::POST_ID, array( 'robots' => array( 'noindex' => false ) ) );
+		$this->assertFalse( MetaStore::has( self::POST_ID, '_genesis_noindex' ), 'noindex meta must be deleted after clear' );
+	}
 }

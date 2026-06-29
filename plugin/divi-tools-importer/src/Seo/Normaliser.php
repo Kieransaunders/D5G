@@ -132,25 +132,38 @@ class DTI_Seo_Normaliser {
 	}
 
 	/**
-	 * Normalise the robots sub-object. noindex/nofollow default to false; only
-	 * emitted when at least one directive is non-default.
+	 * Normalise the robots sub-object.
+	 *
+	 * Three-state semantics (critical for the noindex/nofollow ratchet fix):
+	 *   - key ABSENT in input  → field omitted → adapter preserves existing meta
+	 *   - key present, TRUE     → field emitted as true  → adapter sets the directive
+	 *   - key present, FALSE    → field emitted as false → adapter CLEARS the directive
+	 *
+	 * This distinguishes "I have no opinion" (absent) from "I explicitly want
+	 * this indexable" (false), so a re-import with noindex:false can clear a
+	 * previously-written noindex instead of silently leaving it set.
+	 *
+	 * `advanced` remains write-only-when-non-empty (clearing it via empty
+	 * string is not supported — documented minor limitation).
 	 */
 	private static function normalise_robots( $in ): array {
 		if ( ! is_array( $in ) ) {
 			return array();
 		}
-		$noindex  = self::to_bool( $in['noindex'] ?? false );
-		$nofollow = self::to_bool( $in['nofollow'] ?? false );
-		$advanced = self::to_string( $in['advanced'] ?? '' );
-
-		if ( ! $noindex && ! $nofollow && $advanced === '' ) {
-			return array();
+		$out = array();
+		if ( array_key_exists( 'noindex', $in ) ) {
+			$out['noindex'] = self::to_bool( $in['noindex'] );
 		}
-		return array(
-			'noindex'  => $noindex,
-			'nofollow' => $nofollow,
-			'advanced' => $advanced,
-		);
+		if ( array_key_exists( 'nofollow', $in ) ) {
+			$out['nofollow'] = self::to_bool( $in['nofollow'] );
+		}
+		if ( array_key_exists( 'advanced', $in ) ) {
+			$adv = self::to_string( $in['advanced'] );
+			if ( $adv !== '' ) {
+				$out['advanced'] = $adv;
+			}
+		}
+		return $out;
 	}
 
 	/**

@@ -46,6 +46,12 @@ final class MetaStore {
 		return array_key_exists( $key, self::$store[ $post_id ] ?? array() );
 	}
 
+	public static function delete( int $post_id, string $key ): void {
+		if ( isset( self::$store[ $post_id ] ) ) {
+			unset( self::$store[ $post_id ][ $key ] );
+		}
+	}
+
 	/** @return array<string, mixed> */
 	public static function all_for( int $post_id ): array {
 		return self::$store[ $post_id ] ?? array();
@@ -74,6 +80,13 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 		}
 		$val = MetaStore::get( $post_id, $key );
 		return $single ? $val : array( $val );
+	}
+}
+
+if ( ! function_exists( 'delete_post_meta' ) ) {
+	function delete_post_meta( $post_id, $meta_key, $meta_value = '' ) {
+		MetaStore::delete( (int) $post_id, (string) $meta_key );
+		return true;
 	}
 }
 

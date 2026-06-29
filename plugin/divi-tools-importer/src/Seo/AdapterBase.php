@@ -30,6 +30,24 @@ abstract class DTI_Seo_AdapterBase implements DTI_Seo_Adapter {
 	}
 
 	/**
+	 * Delete a post-meta key entirely, restoring the plugin's default for that
+	 * field. Used to CLEAR a directive the consumer explicitly set to false
+	 * (e.g. robots.noindex:false on a re-import). Records the logical field
+	 * name just like store() so fields_written reflects the action.
+	 *
+	 * @param int    $page_id Target post.
+	 * @param string $key     Native meta key for the active plugin.
+	 * @param string $logical Logical field name (e.g. 'robots.noindex').
+	 * @param array  $written Running list of written field names (by ref).
+	 */
+	protected function clear( int $page_id, string $key, string $logical, array &$written ): void {
+		delete_post_meta( $page_id, $key );
+		if ( ! in_array( $logical, $written, true ) ) {
+			$written[] = $logical;
+		}
+	}
+
+	/**
 	 * Build the standard return shape.
 	 *
 	 * @param string|null $plugin  Adapter id (null for the Fallback).

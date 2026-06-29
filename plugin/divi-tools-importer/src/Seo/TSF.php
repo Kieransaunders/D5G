@@ -73,13 +73,21 @@ class DTI_Seo_TSF extends DTI_Seo_AdapterBase {
 			$this->store( $page_id, '_canonical', $seo['canonical'], 'canonical', $written );
 		}
 
-		// Robots.
+		// Robots — three-state: absent preserves, true sets, false clears.
 		if ( ! empty( $seo['robots'] ) && is_array( $seo['robots'] ) ) {
-			if ( ! empty( $seo['robots']['noindex'] ) ) {
-				$this->store( $page_id, '_genesis_noindex', '1', 'robots.noindex', $written );
+			if ( isset( $seo['robots']['noindex'] ) ) {
+				if ( $seo['robots']['noindex'] ) {
+					$this->store( $page_id, '_genesis_noindex', '1', 'robots.noindex', $written );
+				} else {
+					$this->clear( $page_id, '_genesis_noindex', 'robots.noindex', $written );
+				}
 			}
-			if ( ! empty( $seo['robots']['nofollow'] ) ) {
-				$this->store( $page_id, '_genesis_nofollow', '1', 'robots.nofollow', $written );
+			if ( isset( $seo['robots']['nofollow'] ) ) {
+				if ( $seo['robots']['nofollow'] ) {
+					$this->store( $page_id, '_genesis_nofollow', '1', 'robots.nofollow', $written );
+				} else {
+					$this->clear( $page_id, '_genesis_nofollow', 'robots.nofollow', $written );
+				}
 			}
 		}
 
