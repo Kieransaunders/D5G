@@ -1,0 +1,1 @@
+../../../../skills/divi5-page-generator/scripts/__tests__/seo-keyword-relax.test.js
