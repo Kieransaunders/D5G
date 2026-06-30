@@ -188,11 +188,18 @@ Then run each page through the brief → landing-page → design-review pipeline
 
 ## Worked example — Airloop (Airtable → WordPress)
 
+> **Airloop architecture (important for accurate copy):** Airloop syncs Airtable records
+> into WordPress as `airloop_record` CPTs with full SEO meta, schema, and sideloaded images.
+> The frontend reads from WordPress — Airtable is never queried on page load.
+> Changes in Airtable propagate via webhooks in near-real-time (Pro), with daily cron
+> reconciliation as fallback. Do NOT describe Airloop as a "live query" or "no-sync" plugin.
+> The SEO angle is: *records become real WordPress pages* — crawlable, indexable, schema-marked.
+
 ```
-Hub:   /airtable-to-wordpress/      kw: "Airtable to WordPress"          intent: informational/commercial
-Spoke: /airtable-divi-loop-builder/ kw: "Airtable Divi loop builder"     intent: informational
-Spoke: /airtable-wordpress-filtering/ kw: "filter Airtable on WordPress" intent: informational  (live AJAX user_filters)
-Spoke: /airloop-pricing/            kw: "Airtable WordPress plugin pricing" intent: transactional (Free vs Pro)
+Hub:   /airtable-to-wordpress/        kw: "Airtable to WordPress"            intent: informational/commercial
+Spoke: /airtable-divi-loop-builder/   kw: "Airtable Divi loop builder"       intent: informational
+Spoke: /airtable-wordpress-filtering/ kw: "filter Airtable on WordPress"     intent: informational  (live AJAX user_filters)
+Spoke: /airloop-pricing/              kw: "Airtable WordPress plugin pricing" intent: transactional (Free vs Pro)
 
 Linking: hub → all 3 spokes; each spoke → hub; filtering ↔ loop-builder (related).
 Build order: hub (big bet) → loop-builder + filtering (quick wins) → pricing.
