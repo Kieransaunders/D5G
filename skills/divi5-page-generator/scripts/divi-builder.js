@@ -26,8 +26,64 @@ const CRLF = '\r\n';
 // default ban list cannot drift between "what the generator avoids emitting"
 // and "what the validator flags" (spec §4 RS-GLYPH, Phase 0 plan T5).
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const { DEFAULT_GLYPH_SOURCE: SHARED_GLYPH_SOURCE } = require('./glyphs');
 const TYPE_SCALE = require(path.join(__dirname, '../references/type-scale'));
+
+// ─── creative gate (the forcing function against slop) ──────────────────────
+// assemble() refuses to emit JSON unless both page-scoped stamps exist on disk:
+//   <slug>.concept.json       (Stage 1 — concept + delight manifest, via gate.js)
+//   <slug>.mockup.gate.json   (Stage 2 — HTML mockup passed the taste rules)
+// This is mechanical, not prose: skipping the concept step or the HTML mockup
+// produces NO deliverable, so the lazy shortcut is dead. Clone/mutate bypass
+// assemble() entirely (they read/patch existing JSON), so they're unaffected.
+// The bundled examples set DIVI5_SKIP_TASTE_GATE='1' because they have no brief;
+// real generators MUST NOT (see SKILL.md "The creative gate").
+function _resolveOut() {
+  return process.env.DIVI5_OUT || path.join(os.homedir(), 'Desktop', 'Divi5 Pages');
+}
+function _slugify(s) {
+  const slug = String(s || 'page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return slug || 'page';
+}
+function _enforceCreativeGate(slug, title) {
+  if (process.env.DIVI5_SKIP_TASTE_GATE === '1') return;
+  const prefix = _slugify(slug || title);
+  const out = _resolveOut();
+  const conceptFile = path.join(out, prefix + '.concept.json');
+  const mockupFile = path.join(out, prefix + '.mockup.gate.json');
+  if (!fs.existsSync(conceptFile)) {
+    throw new Error(
+      'CREATIVE GATE (blocked): no concept stamp for slug "' + prefix + '".\n' +
+      '  missing: ' + conceptFile + '\n' +
+      '  Before building any section, commit to a concept + 2-4 delight moments:\n' +
+      '    node ${CLAUDE_SKILL_DIR}/scripts/gate.js concept --slug ' + prefix + ' \\\n' +
+      '      --concept "<one big-idea sentence>" --voice "<adj>,<adj>,<adj>" \\\n' +
+      '      --delight \'[{"section":"hero","idea":"..."}]\' --aesthetic "<preset>" \\\n' +
+      '      --dials "<variance>,<motion>,<density>"\n' +
+      '  (This gate is the cure for "boring AI slop". Do not set DIVI5_SKIP_TASTE_GATE.)'
+    );
+  }
+  if (!fs.existsSync(mockupFile)) {
+    throw new Error(
+      'CREATIVE GATE (blocked): no mockup taste stamp for slug "' + prefix + '".\n' +
+      '  missing: ' + mockupFile + '\n' +
+      '  Build the HTML mockup first, then pass it through the taste gate:\n' +
+      '    node ${CLAUDE_SKILL_DIR}/scripts/gate.js mockup --slug ' + prefix + ' preview-' + prefix + '.html\n' +
+      '  Fix every FAIL it reports before generating JSON. The mockup IS the design spec.'
+    );
+  }
+  try {
+    const stamp = JSON.parse(fs.readFileSync(mockupFile, 'utf8'));
+    if (stamp.tastePass !== true) {
+      throw new Error('CREATIVE GATE: ' + mockupFile + ' has tastePass=false. Re-run the mockup gate after fixing the HTML.');
+    }
+  } catch (e) {
+    if (String(e.message).startsWith('CREATIVE GATE')) throw e;
+    throw new Error('CREATIVE GATE: ' + mockupFile + ' is corrupt — re-run: node gate.js mockup --slug ' + prefix + ' preview-' + prefix + '.html');
+  }
+}
 
 // ─── core helpers ───────────────────────────────────────────────────────────
 
@@ -985,6 +1041,37 @@ function createBuilder(opts) {
     },
 
     /**
+     * Register a single heading MODULE preset with the font in the slot Divi 5
+     * actually reads. Headings render font from title.decoration.font.font.<bp>.value
+     * — NOT module.decoration.font (which renders nothing for headings). Confirmed
+     * by audit: all 8 ET reference heading presets use title.decoration.font.font.
+     * Use this instead of hand-writing b.preset('divi/heading', ...) to avoid the
+     * wrong-slot bug that ships headings at Divi's default 30px.
+     *
+     * opts: { level:'h1'|'h2'|..., family, size, weight, lineHeight, letterSpacing,
+     *         textAlign, color, phoneSize }
+     * colour may be a ref (b.colorVar/b.color) or hex. Returns { id, attrs }.
+     */
+    headingPreset(name, opts) {
+      const o = opts || {};
+      const fontVal = prune({
+        headingLevel: o.level,
+        family: o.family,
+        size: o.size,
+        weight: o.weight,
+        lineHeight: o.lineHeight,
+        letterSpacing: o.letterSpacing,
+        textAlign: o.textAlign,
+        color: o.color,
+      });
+      const fontFont = o.phoneSize
+        ? dv(fontVal, { phone: { size: o.phoneSize } })
+        : dv(fontVal);
+      const attrs = { title: { decoration: { font: { font: fontFont } } } };
+      return this.preset('divi/heading', name, attrs);
+    },
+
+    /**
      * Register h1/h2/h3 heading group presets using type-scale variable refs.
      * ts: optional refs from b.typeScale() — auto-calls typeScale() if omitted.
      * Returns { h1, h2, h3 } — each is { groupName, groupId, id }.
@@ -1006,6 +1093,7 @@ function createBuilder(opts) {
      */
     assemble(opts) {
       const { context, content, title, slug } = opts;
+      _enforceCreativeGate(slug, title);
       const presetsOut = { module: presets };
       if (Object.keys(groupPresetsStore).length) presetsOut.group = groupPresetsStore;
       const base = { presets: presetsOut, global_colors: globalColors, global_variables: globalVariables, images: {}, thumbnails: [] };

@@ -449,6 +449,65 @@ if (definedColors.size) pass(`${definedColors.size} global colours defined, refe
   if (!buttonFails) pass('all button presets and inline buttons have enable:"on"');
 })();
 
+// ─── heading preset font-slot check ─────────────────────────────────────────
+// Divi 5 renders heading font ONLY from title.decoration.font.font.<bp>.value.
+// Font attrs at module.decoration.font render nothing — the heading silently
+// falls back to Divi's default size (the "h1 renders at 30px not 72px" bug).
+// Audit of the 8 ET reference heading presets: 8/8 use title.decoration.font.font,
+// 0/8 use module.decoration.font. This gate FAILs the wrong slot so a generator
+// can never ship a mis-slotted heading preset again. Use b.headingPreset().
+;(() => {
+  const FONT_PROPS = ['size', 'family', 'weight', 'color', 'lineHeight', 'letterSpacing', 'textAlign'];
+  const BPS = ['desktop', 'tablet', 'phone', 'phoneWide'];
+  const hasFontProps = (node) => {
+    if (!node || typeof node !== 'object') return false;
+    for (const bp of BPS) {
+      const v = node[bp] && node[bp].value;
+      if (v && FONT_PROPS.some(p => v[p] != null && v[p] !== '')) return true;
+    }
+    return false;
+  };
+  let fails = 0;
+
+  // 1) divi/heading module presets — the slot the bug actually lived in.
+  const items = doc.presets?.module?.['divi/heading']?.items || {};
+  for (const [id, item] of Object.entries(items)) {
+    const a = item.attrs || {};
+    const titleFont = a.title && a.title.decoration && a.title.decoration.font;
+    if (titleFont && titleFont.font) continue; // correct slot present
+    const label = item.name || id;
+    if (hasFontProps(a.module && a.module.decoration && a.module.decoration.font)) {
+      err(`HEADING-PRESET: "${label}" puts font at module.decoration.font — Divi ignores it for headings (renders default 30px). Move font to title.decoration.font.font.<bp>.value (use b.headingPreset(), or match ET: title.decoration.font.font.desktop.value = {size,weight,family,...}).`);
+      fails++;
+    } else if (titleFont && hasFontProps(titleFont)) {
+      err(`HEADING-PRESET: "${label}" puts font at title.decoration.font (missing the inner .font). Must be title.decoration.font.font.<bp>.value.`);
+      fails++;
+    }
+  }
+
+  // 2) inline heading blocks — same bug via the attrs: escape hatch, or inherited
+  //    from a mis-slotted preset after applyPreset() merges it onto the block.
+  for (const blockList of Object.values(tokensByKey)) {
+    for (const t of blockList) {
+      if (t.name !== 'heading' || !t.attrs) continue;
+      const a = t.attrs;
+      const titleFont = a.title && a.title.decoration && a.title.decoration.font;
+      if (titleFont && titleFont.font) continue;
+      if (hasFontProps(a.module && a.module.decoration && a.module.decoration.font)) {
+        err(`HEADING: inline heading block carries font at module.decoration.font — won't render. Use title.decoration.font.font, or a preset built with b.headingPreset().`);
+        fails++;
+      }
+    }
+  }
+
+  if (!fails) {
+    const n = Object.keys(items).length;
+    pass(n
+      ? `HEADING-PRESET: ${n} heading preset(s) use the correct title.decoration.font.font slot`
+      : 'HEADING-PRESET: no heading module presets to check');
+  }
+})();
+
 // ─── ET design system token check ───────────────────────────────────────────
 // FAIL when a raw hex colour in the JSON matches a known Elegant Themes token.
 // Generators must use builder.colorRef('Label') instead of hard-coded hex.

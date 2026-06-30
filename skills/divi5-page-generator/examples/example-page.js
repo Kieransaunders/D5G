@@ -12,6 +12,10 @@
 const fs = require('fs');
 const path = require('path');
 const D = require('../scripts/divi-builder');
+// Bundled demo only — has no brief, so it skips the creative gate. Real generators
+// MUST NOT set this: produce <slug>.concept.json + <slug>.mockup.gate.json via
+// scripts/gate.js instead (see SKILL.md "The creative gate").
+process.env.DIVI5_SKIP_TASTE_GATE = '1';
 const TOKENS = require('../references/Divi design system JSON/divi-design-system.tokens.js');
 
 const T = {

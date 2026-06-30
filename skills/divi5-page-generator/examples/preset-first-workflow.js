@@ -26,6 +26,10 @@ if (!KEY) { console.error('DTI_KEY env var required'); process.exit(1); }
 
 const SKILL_DIR = path.join(__dirname, '..');
 const D = require(path.join(SKILL_DIR, 'scripts/divi-builder.js'));
+// Bundled demo only — has no brief, so it skips the creative gate. Real generators
+// MUST NOT set this: produce <slug>.concept.json + <slug>.mockup.gate.json via
+// scripts/gate.js instead (see SKILL.md "The creative gate").
+process.env.DIVI5_SKIP_TASTE_GATE = '1';
 const TOKENS = require(path.join(SKILL_DIR, 'references/Divi design system JSON/divi-design-system.tokens.js'));
 
 // ── Helper: REST call ─────────────────────────────────────────────────────────
