@@ -92,7 +92,7 @@ Run the checklist in [references/polish.md](references/polish.md) before deliver
 
 1. Never hand-write Divi JSON — always generate via `scripts/divi-builder.js`.
 2. Always validate and run the fidelity gate before delivering; fix every FAIL.
-3. Exactly one h1 (hero headline); section headings are h2, card titles h3.
+3. Exactly one h1 — build it with `heroHeading()`; section headings are h2, card titles h3. `heading()` requires an explicit `level` (throws without it).
 4. Every reused style is a `builder.preset()`, referenced via `preset:`.
 5. Every image has descriptive alt text.
 6. Real content only — no lorem ipsum unless requested.
