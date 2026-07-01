@@ -1,6 +1,6 @@
 {
   "name": "divi5generate",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Divi 5 toolkit: SEO-optimised page JSON generator, design/SEO reviewer, brand extract + deploy (agency starter-kit workflow), brand-guide-to-Global-Variables converter, one-command publish-and-screenshot import into any WordPress site, plus Divi 5 plugin/custom-module development and a Theatre.js motion engine.",
   "author": {
     "name": "Kieran, iConnectIT"
