@@ -2,6 +2,8 @@
 
 For attribute overrides the builder helpers don't expose directly — pass via the `attrs:` option, which deep-merges into the generated attributes.
 
+**Before hand-writing any `attrs:` override, check [module-attribute-cheatsheet.md](module-attribute-cheatsheet.md) first.** It's generated from real Divi 5 exports (3248 blocks, `scripts/extract-attr-paths.py`), not guessed. A wrong path is silently ignored by Divi and falls back to the module default — this is exactly how the number-counter percent-sign bug shipped (`percent.advanced.sign` was wrong; `number.advanced.enablePercentSign` is correct). If a module isn't in the cheat sheet, there's no verified export to confirm its paths — export a real example first (Divi Library → Import & Export, or the Divi Tools Importer `/export` endpoint) rather than guessing from the external docs at https://16wells.github.io/divi-docs/, which self-flags many paths as "need verification."
+
 ## Heading level (SEO-critical)
 
 Lives inside the font value (confirmed against the official Divi 5 Design System exports):

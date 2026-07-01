@@ -700,8 +700,11 @@ function numberCounter(opts) {
   const o = opts || {};
   let attrs = {
     title: { innerContent: dv(htmlContent(o.title)) },
-    number: { innerContent: dv(String(o.number)), decoration: o.numberColor ? { font: { font: dv({ color: o.numberColor, size: o.numberSize || '48px', weight: '700' }) } } : undefined },
-    percent: { advanced: { sign: dv(o.percent ? 'on' : 'off') } },
+    number: {
+      innerContent: dv(String(o.number)),
+      decoration: o.numberColor ? { font: { font: dv({ color: o.numberColor, size: o.numberSize || '48px', weight: '700' }) } } : undefined,
+      advanced: { enablePercentSign: dv(o.percent ? 'on' : 'off') },
+    },
   };
   attrs = prune(merge(attrs, withTheatre(o)));
   attrs = applyPreset(attrs, o.preset);
