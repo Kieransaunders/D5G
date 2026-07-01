@@ -43,7 +43,7 @@ function run(texts) {
   const r = spawnSync('node', [TASTE, f], { encoding: 'utf8' });
   return { status: r.status, out: r.stdout || '' };
 }
-const FLAG = /SECTION-NUMBER|section.number/i;
+const FLAG = /FAIL\s+TASTE-SECTION-NUMBER/i;
 
 (function t1() { const r = run(['01 / Overview']); ok('T1: "01 / Overview" flagged', r.status === 1 && FLAG.test(r.out), `exit=${r.status}`); })();
 (function t2() { const r = run(['Our services']);   ok('T2: plain label not flagged', !FLAG.test(r.out), r.out.slice(-120)); })();

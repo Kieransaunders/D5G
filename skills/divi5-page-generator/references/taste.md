@@ -270,8 +270,10 @@ and only apply the marketing-surface parts.
 ## 13. Positive layout patterns (what good looks like)
 
 Anti-slop rules alone do not produce Floria-tier pages. Before building, read
-**[layout-patterns.md](layout-patterns.md)** and study the bundled reference screenshots
-**[floria-top.png](floria-top.png)** / **[floria-bottom.png](floria-bottom.png)** (Taste Skill examples).
+**[positive-patterns.md](positive-patterns.md)** (the positive counterpart to this file's
+bans) and **[layout-patterns.md](layout-patterns.md)**, and study the bundled reference
+screenshots **[floria-top.png](floria-top.png)** / **[floria-bottom.png](floria-bottom.png)**
+(Taste Skill examples).
 
 Minimum composition bar for a standard landing page:
 
