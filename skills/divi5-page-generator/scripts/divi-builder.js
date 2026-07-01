@@ -1011,7 +1011,11 @@ function createBuilder(opts) {
     /**
      * Register Primary + Secondary button group presets with enable:'on' and hover state.
      * opts: { primaryGcid, hoverGcid, secondaryGcid } — gcid slugs (with or without 'gcid-' prefix).
-     * Defaults: primary = 'gcid-primary-color', secondary = 'gcid-secondary-color', hover = 'gcid-dmtl913igj'.
+     * Defaults: primary = 'gcid-primary-color', secondary = 'gcid-secondary-color'.
+     * hover defaults to primaryGcid itself (no colour shift on hover) unless hoverGcid is
+     * passed or the caller has separately registered a darker shade — passing an opaque
+     * default slug here (e.g. a hardcoded 'gcid-dmtl913igj') breaks silently for any brand
+     * that hasn't also registered that exact colour.
      * Returns { primary, secondary } — each is { groupName, groupId, id }.
      */
     buttonPresets(opts) {
@@ -1022,7 +1026,7 @@ function createBuilder(opts) {
       };
       const primary   = g(o.primaryGcid,   'primary-color');
       const secondary = g(o.secondaryGcid, 'secondary-color');
-      const hover     = g(o.hoverGcid,     'dmtl913igj'); // Primary 700 (lightness -20)
+      const hover     = o.hoverGcid ? g(o.hoverGcid) : primary;
 
       const cvar = (id) => `$variable({"type":"color","value":{"name":"${id}","settings":{}}})$`;
       const btnAttrs = (bgGcid) => ({

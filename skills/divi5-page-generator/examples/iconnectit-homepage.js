@@ -50,7 +50,7 @@ const ts       = b.typeScale();        // { h1, h2, h3, body } fluid font-size v
 const ss       = b.spaceScale();        // { l, m, s } fluid spacing vars
 const spacing  = b.spacingPresets(ss);  // margin/padding group presets
 const headings = b.headingPresets(ts);  // { h1, h2, h3 } font group presets (type scale)
-const buttons  = b.buttonPresets();     // { primary, secondary } button group presets (enable:'on')
+const buttons  = b.buttonPresets({ hoverGcid: 'dmtl913igj' }); // { primary, secondary } button group presets (enable:'on')
 
 // ─── module presets (sections, body, eyebrow) ────────────────────────────────
 const pad = (top, bottom) => D.dv({ padding: { top, bottom: bottom || top, syncVertical: bottom && bottom !== top ? 'off' : 'on', syncHorizontal: 'off' } });
