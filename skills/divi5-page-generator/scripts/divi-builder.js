@@ -548,15 +548,16 @@ function column(opts, modules) {
 // ─── content modules ────────────────────────────────────────────────────────
 
 /**
- * heading({ text, level:'h2', font:{family,size,phoneSize,weight,color,lineHeight,textAlign,letterSpacing}, preset, attrs })
- * ALWAYS sets headingLevel explicitly — exactly one h1 per page (the hero).
- * Decorative numerals etc. should use text(), not heading().
+ * heading({ text, level, font:{family,size,phoneSize,weight,color,lineHeight,textAlign,letterSpacing}, preset, attrs })
+ * `level` (h1-h6) is REQUIRED — throws if omitted (no silent h2 default).
+ * For the page hero use heroHeading(); for decorative numerals/eyebrows use text().
  */
 function heading(opts) {
   const o = opts || {};
+  if (!o.level) throw new Error('heading() requires an explicit level (h1-h6) — use heroHeading() for the hero, text() for decorative numerals');
   const f = o.font || {};
   const desktopFont = prune({
-    headingLevel: o.level || 'h2',
+    headingLevel: o.level,
     family: f.family,
     size: f.size,
     weight: f.weight,
@@ -575,6 +576,16 @@ function heading(opts) {
   attrs = applyPreset(attrs, o.preset);
   attrs = applyGroupPreset(attrs, o.gp);
   return block('heading', attrs, null);
+}
+
+/**
+ * heroHeading({ text, font:{...}, preset, attrs })
+ * The page hero h1. Always emits headingLevel: 'h1' — ignores any `level` passed,
+ * so the single hero heading cannot be mis-marked. Exactly one per page.
+ */
+function heroHeading(opts) {
+  const o = opts || {};
+  return heading(Object.assign({}, o, { level: 'h1' }));
 }
 
 /**
@@ -1100,7 +1111,7 @@ function createBuilder(opts) {
       const typeRefs = ts || this.typeScale();
       const gp = (name, size, headingLevel) => this.groupPreset(
         'divi/font', 'designTitleText', 'divi/heading', name,
-        { title: { decoration: { font: { font: dv(prune({ weight: '600', size, lineHeight: '1.1em', headingLevel: headingLevel !== 'h2' ? headingLevel : undefined })) } } } }
+        { title: { decoration: { font: { font: dv(prune({ weight: '600', size, lineHeight: '1.1em', headingLevel })) } } } }
       );
       return { h1: gp('h1', typeRefs.h1, 'h1'), h2: gp('h2', typeRefs.h2, 'h2'), h3: gp('h3', typeRefs.h3, 'h3') };
     },
@@ -1148,7 +1159,7 @@ module.exports = {
   dv, block, placeholder, merge, prune, htmlContent,
   applyGroupPreset,
   section, overlaySection, row, column,
-  heading, text, eyebrow, button, blurb, image, icon, accordion, numberCounter, divider, codeBlock,
+  heading, heroHeading, text, eyebrow, button, blurb, image, icon, accordion, numberCounter, divider, codeBlock,
   theatreAttrs, theatrePartAttrs, withTheatre, normaliseCustomAttrs,
   isPinPreset, assertKnownPreset,
   createBuilder, randomId,
