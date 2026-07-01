@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "divi5generate",
-      "version": "1.6.3",
+      "version": "1.6.4",
       "description": "Divi 5 toolkit: SEO-optimised page JSON generator, design/SEO reviewer for any Divi 5 export, brand-guide-to-Global-Variables converter, one-command import into any WordPress site (local or hosted) with draft preview and publish-on-accept, plus Divi 5 plugin/custom-module development and a Theatre.js motion engine.",
       "source": "./",
       "category": "productivity"
