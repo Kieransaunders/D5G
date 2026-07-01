@@ -23,6 +23,8 @@
 
 'use strict';
 
+process.env.DIVI5_SKIP_TASTE_GATE = '1';
+
 const fs   = require('fs');
 const os   = require('os');
 const path = require('path');

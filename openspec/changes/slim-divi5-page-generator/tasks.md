@@ -39,5 +39,5 @@ Turns green: seo-keyword-relax.test.js T1, T2
 
 ## 5. Verification
 - [x] 5.1 All 13 RED tests now pass (green suite)
-- [ ] 5.2 Existing test suites still pass: `phase0.test.js`, `phase2.test.js`, `smoke.test.js`
+- [x] 5.2 Existing test suites still pass: `phase0.test.js`, `phase2.test.js`, `smoke.test.js` (fixed 3 pre-existing bugs unrelated to this change: missing `DIVI5_SKIP_TASTE_GATE` opt-out in `phase0.test.js`/`phase4b.test.js`/`smoke.test.js`, a `process` shadowing bug in `examples/example-divitheatre-page.js`, and a stale embedded baseline in `phase0.test.js` T6 missing the `HEADING-PRESET` line added by `026e0d4`)
 - [x] 5.3 SKILL.md line count ≤ 150 confirmed by `wc -l`
