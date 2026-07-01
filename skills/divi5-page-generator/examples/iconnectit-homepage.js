@@ -147,7 +147,7 @@ const services = D.section({ adminLabel: 'Services', preset: P.sectionGray }, [
 ]);
 
 // ─── SECTION 5 — Process (white) ─────────────────────────────────────────────
-const process = D.section({ adminLabel: 'Process', preset: P.sectionWhite }, [
+const processSection = D.section({ adminLabel: 'Process', preset: P.sectionWhite }, [
   D.row({ structure: 'equal-columns_2', alignItems: 'center', maxWidth: '1100px', columnGap: '56px' }, [
     D.column({ flexType: '10_24' }, [
       H('A simple, purposeful process.', { level: 'h2', gp: headings.h2 }),
@@ -176,16 +176,16 @@ const work = D.section({ adminLabel: 'Work', preset: P.sectionDark }, [
   ]),
   D.row({ structure: 'equal-columns_2', columnGap: '24px', rowGap: '24px', maxWidth: '1100px' }, [
     D.column({ flexType: '12_24' }, [
-      D.blurb({ title: 'Partner engagement portal', body: '<p>A portal for an education trust managing employer engagement across six schools, all on a single Airtable base, with role-based access for every partner organisation and a live view of activity per school.</p>' }),
+      D.blurb({ title: 'Partner engagement portal', titleColor: WHITE, bodyColor: BODY_DARK, body: '<p>A portal for an education trust managing employer engagement across six schools, all on a single Airtable base, with role-based access for every partner organisation and a live view of activity per school.</p>' }),
     ]),
     D.column({ flexType: '12_24' }, [
-      D.blurb({ title: 'Lead routing engine', body: '<p>Scores and assigns inbound enquiries automatically, cutting first-response time by two thirds.</p>' }),
+      D.blurb({ title: 'Lead routing engine', titleColor: WHITE, bodyColor: BODY_DARK, body: '<p>Scores and assigns inbound enquiries automatically, cutting first-response time by two thirds.</p>' }),
     ]),
     D.column({ flexType: '12_24' }, [
-      D.blurb({ title: 'Single source of truth', body: '<p>Connected HubSpot, Xero, and Airtable into one reconciled view, removing around 15 hours of manual reporting every month.</p>' }),
+      D.blurb({ title: 'Single source of truth', titleColor: WHITE, bodyColor: BODY_DARK, body: '<p>Connected HubSpot, Xero, and Airtable into one reconciled view, removing around 15 hours of manual reporting every month.</p>' }),
     ]),
     D.column({ flexType: '12_24' }, [
-      D.blurb({ title: 'Self-serve onboarding app', body: '<p>Replaced a brittle 12-step spreadsheet process with a self-serve portal that guides each new client through setup, chases its own missing information, and takes onboarding from two weeks down to two days.</p>' }),
+      D.blurb({ title: 'Self-serve onboarding app', titleColor: WHITE, bodyColor: BODY_DARK, body: '<p>Replaced a brittle 12-step spreadsheet process with a self-serve portal that guides each new client through setup, chases its own missing information, and takes onboarding from two weeks down to two days.</p>' }),
     ]),
   ]),
 ]);
@@ -229,7 +229,7 @@ const footer = D.section({ adminLabel: 'Footer', preset: P.sectionDark }, [
 ]);
 
 // ─── assemble ────────────────────────────────────────────────────────────────
-const content = D.placeholder([hero, toolsStrip, about, services, process, work, cta, footer]);
+const content = D.placeholder([hero, toolsStrip, about, services, processSection, work, cta, footer]);
 const json = b.assemble({ context: 'et_builder', content, title: 'iConnectIT Homepage' });
 
 const outFile = path.join(__dirname, 'iConnectITHomepage.json');

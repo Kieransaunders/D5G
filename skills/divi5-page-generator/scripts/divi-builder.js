@@ -136,12 +136,14 @@ function applyPreset(moduleAttrs, preset) {
 
 /**
  * Attach a group preset reference to block attrs.
- * gp: { groupName, groupId, id } as returned by b.groupPreset() / b.headingPresets() etc.
- * Does NOT inline attrs — group presets are VB-only design tokens; the block just references them.
+ * gp: { groupName, groupId, id, attrs } as returned by b.groupPreset() / b.headingPresets() etc.
+ * Also inlines gp.attrs (like applyPreset does for module presets) — a bare groupPreset
+ * pointer with no inline fallback silently renders as unstyled on REST-imported pages;
+ * Divi only resolves the pointer inside the Visual Builder, not on the front end.
  */
 function applyGroupPreset(blockAttrs, gp) {
   if (!gp) return blockAttrs;
-  const result = { ...blockAttrs };
+  let result = gp.attrs ? merge(gp.attrs, blockAttrs) : { ...blockAttrs };
   if (!result.groupPreset) result.groupPreset = {};
   result.groupPreset[gp.groupId] = { presetId: [gp.id], groupName: gp.groupName };
   return result;
@@ -641,7 +643,9 @@ function button(opts) {
   return block('button', attrs, null);
 }
 
-/** blurb({ icon:'&#xf0e7;', iconColor, title, titleLevel:'h3', body, preset, attrs }) */
+/** blurb({ icon:'&#xf0e7;', iconColor, title, titleLevel:'h3', titleColor, body, bodyColor, preset, attrs })
+ *  titleColor/bodyColor are required on dark-background sections — the module's
+ *  default text colour is dark and renders invisible without an explicit override. */
 function blurb(opts) {
   const o = opts || {};
   let attrs = {
@@ -650,9 +654,12 @@ function blurb(opts) {
       : undefined,
     title: {
       innerContent: dv({ text: htmlContent(o.title) }),
-      decoration: { font: { font: dv({ headingLevel: o.titleLevel || 'h3' }) } },
+      decoration: { font: { font: dv(prune({ headingLevel: o.titleLevel || 'h3', color: o.titleColor })) } },
     },
-    content: { innerContent: dv(htmlContent(o.body)) },
+    content: {
+      innerContent: dv(htmlContent(o.body)),
+      decoration: o.bodyColor ? { bodyFont: { body: { font: dv({ color: o.bodyColor }) } } } : undefined,
+    },
   };
   attrs = prune(merge(attrs, withTheatre(o)));
   attrs = applyPreset(attrs, o.preset);
@@ -909,7 +916,9 @@ function createBuilder(opts) {
       const gvid = id.startsWith('gvid-') ? id : `gvid-${id}`;
       // Idempotent — skip if already registered with the same ID
       if (!globalVariables.some(v => v.id === gvid)) {
-        globalVariables.push({ id: gvid, label, value, status: 'active', type: 'numbers' });
+        // Both variableType and type are required — Divi silently fails to resolve
+        // the reference (falls back to no value) if variableType is missing.
+        globalVariables.push({ id: gvid, label, value, order: '', status: 'active', variableType: 'numbers', type: 'numbers' });
       }
       return `$variable({"type":"content","value":{"name":"${gvid}","settings":{}}})$`;
     },
@@ -921,35 +930,38 @@ function createBuilder(opts) {
     },
 
     /**
-     * Register the 4 fluid font-size global variables and return their ref strings.
-     * { h1, h2, h3, body } — pass directly as the `size` field in font attrs.
+     * Return the 4 fluid font-size clamp() strings directly. { h1, h2, h3, body }
+     * — pass directly as the `size` field in font attrs.
+     *
+     * Deliberately NOT registered as Divi global variables: Divi 5 (tested against
+     * v5.0.0-public-beta.9.1) silently fails to persist numeric/content-type global
+     * variables under a caller-supplied id via GlobalData::import_global_variables
+     * (the REST call reports success, but the id is absent on re-export and the
+     * $variable() reference never resolves — content.decoration.*.font.size
+     * renders as unset). Global COLOURS are unaffected — colour variables persist
+     * correctly under their submitted gcid. Raw clamp() strings sidestep the bug
+     * entirely and are what's proven to render correctly.
      *
      * Example:
      *   const ts = b.typeScale();
      *   b.preset('divi/heading', 'H1', { title: { decoration: { font: { font: dv({ size: ts.h1, weight: '700' }) } } } })
      */
     typeScale() {
-      const G = TYPE_SCALE.GVID;
       const T = TYPE_SCALE.TYPE;
-      return {
-        h1:   this.globalVariable(G.text3xl, 'text 3xl', T['3xl']),
-        h2:   this.globalVariable(G.text2xl, 'text 2xl', T['2xl']),
-        h3:   this.globalVariable(G.textXl,  'text xl',  T.xl),
-        body: this.globalVariable(G.textM,   'text m',   T.m),
-      };
+      return { h1: T['3xl'], h2: T['2xl'], h3: T.xl, body: T.m };
     },
 
     /**
-     * Register the 3 fluid spacing global variables and return their ref strings.
-     * { l, m, s } — pass as margin/padding values.
+     * Return the 3 fluid spacing clamp() strings directly. { l, m, s } — pass as
+     * margin/padding values. See typeScale() for why these are raw values, not
+     * registered global variables.
      */
     spaceScale() {
-      const G = TYPE_SCALE.GVID;
       const S = TYPE_SCALE.SPACE;
       return {
-        l: this.globalVariable(G.spaceL, 'space l', S.l),
-        m: this.globalVariable(G.spaceM, 'space m', S.m),
-        s: this.globalVariable(G.spaceS, 'space s', S.s),
+        l: S.l,
+        m: S.m,
+        s: S.s,
       };
     },
 
@@ -973,7 +985,7 @@ function createBuilder(opts) {
         attrs: prunedAttrs,
         styleAttrs: prunedAttrs,
       };
-      return { groupName, groupId, id };
+      return { groupName, groupId, id, attrs: prunedAttrs };
     },
 
     /**
@@ -1018,7 +1030,7 @@ function createBuilder(opts) {
           button:     dv({ enable: 'on', icon: { enable: 'off' } }),
           background: Object.assign({}, dv({ color: cvar(bgGcid) }), { hover: { color: cvar(hover) } }),
           border:     Object.assign({}, dv({ styles: { all: { color: cvar(bgGcid) } } }), { hover: { styles: { all: { color: cvar(hover) } } } }),
-          font:       { font: dv({ color: '#ffffff', size: '1rem' }) },
+          font:       { font: dv({ color: this.colorRef('White'), size: '1rem' }) },
         }},
       });
 
