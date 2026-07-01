@@ -51,6 +51,18 @@ node scripts/et-pages.js clone "<keyword>" [brand]-base-page.json
 
 If a match is found, **the mutated clone is the deliverable** — apply brand/copy mutations to it in Stage 3 rather than generating a new page from scratch; do not build a parallel scratch page. If `match` returns no hit, or `--scratch` was passed, skip straight to Stage 3.
 
+### Stage 0.5 — Resolve preset library (preset-first, default)
+
+Styles come from a shared library, not minted per page. Before Stage 3, load a registry and build via `presetRef()`:
+
+```js
+const b = D.createBuilder({ tokens });
+b.loadPresetRegistry(require('references/et-preset-registry.json')); // run setup-et-presets.js once per site
+const P = { hero: b.presetRef('divi/section', 'Section Preset 1'), /* … */ };
+```
+
+A brand pack (from the `divi5-variables-from-styleguide` skill) replaces the ET registry when available. See [examples/preset-first-workflow.js](examples/preset-first-workflow.js) for the registry → `presetRef()` → import sequence.
+
 ### Stage 1 — Brief
 
 Ask (or extract from prompt): brand + offer, primary SEO keyword (+ secondaries/location), aesthetic direction (single reference: [references/aesthetics.md](references/aesthetics.md)), sections, CTA. State the Design Read in one line and pick an aesthetic preset. **Headless/brief mode** (a full brief or `brief.json` is supplied): run fully autonomously to file delivery — skip Stage-1 questions and the Stage-2 approval gate, never end the turn on a question.
@@ -93,7 +105,7 @@ Run the checklist in [references/polish.md](references/polish.md) before deliver
 1. Never hand-write Divi JSON — always generate via `scripts/divi-builder.js`.
 2. Always validate and run the fidelity gate before delivering; fix every FAIL.
 3. Exactly one h1 — build it with `heroHeading()`; section headings are h2, card titles h3. `heading()` requires an explicit `level` (throws without it).
-4. Every reused style is a `builder.preset()`, referenced via `preset:`.
+4. Every reused style is a `presetRef()` against the loaded preset library (Stage 0.5), referenced via `preset:`. Use `builder.preset()` only for one-off overrides not in the library.
 5. Every image has descriptive alt text.
 6. Real content only — no lorem ipsum unless requested.
 7. Zero em-dashes/en-dashes in visible copy — use a hyphen.
