@@ -92,9 +92,9 @@ node scripts/fidelity-check.js [brand]-landing-page.json preview-[brand].html
 
 This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you proceed to import via the `import-to-local` skill.
 
-### Stage 4 — Live screenshot comparison
+### Stage 4 — Visual fidelity gate (automated, blocks delivery)
 
-After import, use Playwright to screenshot the live page and compare against the Stage 2/3.5 mockup. Common render-only failures: buttons need `button: { enable: 'on' }` in preset AND block; preset backgrounds need raw hex, not `colorVar()`; stale `et-cache/{post_id}/*.css` after re-import (clear it).
+After import, Playwright-screenshot the live page and the Stage 2 mockup, then run `node scripts/visual-diff.js live.png mockup.png --max-mismatch 0.05` — on FAIL (mismatch over threshold), fix and re-run, do not deliver. This catches render-only failures the structural gates miss (wrong font slot shipping a 30px hero, layout drift). Common causes: buttons need `button: { enable: 'on' }` in preset AND block; preset backgrounds need raw hex, not `colorVar()`; stale `et-cache/{post_id}/*.css` after re-import (clear it).
 
 ### Stage 5 — Polish
 
