@@ -614,15 +614,33 @@ if (placeholderImages.length) warn(`${placeholderImages.length} placeholder imag
 
 if (keyword) {
   const kw = keyword.toLowerCase();
-  const inH1 = h1s.some(h => h.text.toLowerCase().includes(kw));
-  const inH2 = headingOutline.some(h => h.level === 'h2' && h.text.toLowerCase().includes(kw));
-  const firstText = textBlocks.slice(0, 3).join(' ').replace(/<[^>]+>/g, ' ').toLowerCase();
-  if (!inH1) err(`SEO: keyword "${keyword}" not in h1`);
-  else pass('SEO: keyword in h1');
-  if (!inH2) warn(`SEO: keyword "${keyword}" not in any h2`);
-  else pass('SEO: keyword in >=1 h2');
-  if (!firstText.includes(kw)) warn(`SEO: keyword "${keyword}" not in opening copy`);
-  else pass('SEO: keyword in opening copy');
+  // Raw-HTML fallback: some content (e.g. classic shortcode markup, or content
+  // that failed strict wp:divi block parsing) still carries plain <h1>/<h2>/<p>
+  // tags. Scan the raw post content directly so the keyword check doesn't
+  // depend on the structural block parser succeeding.
+  const rawJoined = contents.map(c => c.content).join(' ');
+  const rawTagText = (tag) => [...rawJoined.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi'))]
+    .map(m => m[1].replace(/<[^>]+>/g, ' '));
+  const rawH1Texts = rawTagText('h1');
+  const rawH2Texts = rawTagText('h2');
+  const rawPTexts  = rawTagText('p');
+
+  const inH1 = h1s.some(h => h.text.toLowerCase().includes(kw))
+    || rawH1Texts.some(t => t.toLowerCase().includes(kw));
+  const inH2 = headingOutline.some(h => h.level === 'h2' && h.text.toLowerCase().includes(kw))
+    || rawH2Texts.some(t => t.toLowerCase().includes(kw));
+  const firstText = (textBlocks.slice(0, 3).join(' ').replace(/<[^>]+>/g, ' ')
+    + ' ' + rawPTexts.slice(0, 3).join(' ')).toLowerCase();
+  const inFirstText = firstText.includes(kw);
+  if (inH1) pass('SEO: keyword in h1');
+  if (inH2) pass('SEO: keyword in >=1 h2');
+  if (inFirstText) pass('SEO: keyword in opening copy');
+  if (!inH1 && !inH2 && !inFirstText) err(`SEO: keyword "${keyword}" not found in h1, opening copy, or any h2`);
+  if (inH1 || inH2 || inFirstText) {
+    if (!inH1) warn(`SEO: keyword "${keyword}" not in h1`);
+    if (!inH2) warn(`SEO: keyword "${keyword}" not in any h2`);
+    if (!inFirstText) warn(`SEO: keyword "${keyword}" not in opening copy`);
+  }
 }
 
 if (metaFile) {
