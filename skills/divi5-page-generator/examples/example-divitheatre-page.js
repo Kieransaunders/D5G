@@ -206,7 +206,7 @@ const step = (n, title, body) =>
     D.text({ html: `<p>${body}</p>`, preset: P.bodyLightL }),
   ]);
 
-const process = D.section({ adminLabel: 'Process', preset: P.secWhite }, [
+const processSection = D.section({ adminLabel: 'Process', preset: P.secWhite }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '760px' }, [
     D.column({ theatre: 'fade-up' }, [
       D.eyebrow('HOW IT WORKS', T.plasma),
@@ -296,7 +296,7 @@ const footer = D.section({ adminLabel: 'Footer', preset: P.secFooter }, [
 ]);
 
 // ─── 5. Assemble + write ──────────────────────────────────────────────────────
-const content = D.placeholder([hero, intro, presets, process, showcase, stats, cta, faq, footer]);
+const content = D.placeholder([hero, intro, presets, processSection, showcase, stats, cta, faq, footer]);
 const json = b.assemble({ context: 'et_builder', content, title: 'DiviTheatre - Divi 5 Animation Plugin' });
 
 const OUT = __dirname;

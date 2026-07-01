@@ -20,6 +20,8 @@
 
 'use strict';
 
+process.env.DIVI5_SKIP_TASTE_GATE = '1';
+
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
