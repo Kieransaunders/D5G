@@ -167,6 +167,19 @@ if (eyebrowModules.length > eyebrowMax) {
   pass(`TASTE-EYEBROW: ${eyebrowModules.length} eyebrow(s) within limit (max ${eyebrowMax})`);
 }
 
+// ─── TASTE-SECTION-NUMBER: "00 / INDEX"-style section-number eyebrows ────────
+
+const SECTION_NUMBER_RE = /^0*\d{1,3}\s*(\/|·|\||\.)\s*\S/i;
+const snHits = [];
+for (const sect of sections) {
+  for (const m of sect.modules) {
+    const t = (m.text || '').trim();
+    if (t.length > 0 && t.length <= 40 && SECTION_NUMBER_RE.test(t)) snHits.push(t);
+  }
+}
+if (snHits.length) err(`TASTE-SECTION-NUMBER: section-number eyebrow(s) banned by taste.md §10 — "${snHits.slice(0, 3).join('" | "')}". Drop the number prefix; the content is the label.`);
+else pass('TASTE-SECTION-NUMBER: no section-number eyebrows');
+
 // ─── report ──────────────────────────────────────────────────────────────────
 
 console.log('\n── taste-check results ──');
