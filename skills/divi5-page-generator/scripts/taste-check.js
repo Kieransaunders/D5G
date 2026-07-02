@@ -180,6 +180,20 @@ for (const sect of sections) {
 if (snHits.length) err(`TASTE-SECTION-NUMBER: section-number eyebrow(s) banned by taste.md §10 — "${snHits.slice(0, 3).join('" | "')}". Drop the number prefix; the content is the label.`);
 else pass('TASTE-SECTION-NUMBER: no section-number eyebrows');
 
+// ─── TASTE-3COL: 3-equal-column rows (structural) ───────────────────────────
+
+let threeColRows = 0;
+for (const val of Object.values(doc.data || {})) {
+  const content = typeof val === 'string' ? val : (val && val.post_content) || '';
+  for (const t of parseBlocks(content)) {
+    if (t.name === 'row' && t.attrs && t.attrs.module && t.attrs.module.advanced
+      && t.attrs.module.advanced.flexColumnStructure && t.attrs.module.advanced.flexColumnStructure.desktop
+      && t.attrs.module.advanced.flexColumnStructure.desktop.value === 'equal-columns_3') threeColRows++;
+  }
+}
+if (threeColRows) warn(`TASTE-3COL: ${threeColRows} row(s) use a 3-equal-column structure (equal-columns_3) — the generic "three feature cards" AI tell (taste.md §5). Use a 2-col zig-zag, asymmetric grid, or grouped tiles.`);
+else pass('TASTE-3COL: no 3-equal-column rows');
+
 // ─── report ──────────────────────────────────────────────────────────────────
 
 console.log('\n── taste-check results ──');

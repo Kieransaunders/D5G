@@ -43,7 +43,7 @@ function run(structure) {
   const r = spawnSync('node', [TASTE, f], { encoding: 'utf8' });
   return { status: r.status, out: r.stdout || '' };
 }
-const FLAG = /TASTE-3COL/i;
+const FLAG = /WARN\s+TASTE-3COL/i;
 
 (function t1() { const r = run('equal-columns_3'); ok('T1: equal-columns_3 -> TASTE-3COL warn', FLAG.test(r.out), r.out.slice(-120)); })();
 (function t2() { const r = run('equal-columns_1'); ok('T2: equal-columns_1 -> not flagged', !FLAG.test(r.out), r.out.slice(-120)); })();
