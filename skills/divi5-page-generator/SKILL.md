@@ -89,6 +89,18 @@ node scripts/taste-check.js [brand]-landing-page.json
 
 Fix every FAIL. WARNs should be resolved unless there's a stated reason.
 
+### Process notes from recent runs
+
+- Read the local repo skill instructions before doing anything else; use the repo's own `divi5-page-generator` skill and gates, not a generic or unrelated landing-page skill.
+- Decide the concept, `MOTION` dial, and any DiviTheatre presets in the creative gate, before the page exists.
+- Use the `theatre:` shortcut on module helpers when adding motion; do not hand-write `module.advanced.attributes` for `data-theatre`.
+- Keep generated artefacts and `generate-*.js` in the output folder so reruns and refinements stay trivial.
+- Run `node --check` on the generator script before executing it.
+- Treat `validate.js`'s `ANIMATION: no entrance animations found` warning as expected on pages that rely only on DiviTheatre `data-theatre` attributes.
+- If the fidelity checker cannot parse headings from Divi block comments, mirror the heading outline in a literal `json.content` structure for the checker to read.
+- If you need custom helper variables, avoid shadowing Node globals such as `process`.
+- For Divi attributes, write to `module.decoration.attributes`, not `module.advanced.attributes`.
+
 ### Stage 3.5 — Fidelity gate (mandatory, blocks delivery)
 
 Run `fidelity-check.js` against the Stage 2 HTML before anything is handed off:
@@ -109,6 +121,7 @@ Run the checklist in [references/polish.md](references/polish.md) before deliver
 
 ## Non-negotiable rules
 
+0. Always use the repo's local generator workflow and gates; do not skip the creative gate or the fidelity gate.
 1. Never hand-write Divi JSON — always generate via `scripts/divi-builder.js`.
 2. Always validate and run the fidelity gate before delivering; fix every FAIL.
 3. Exactly one h1 — build it with `heroHeading()`; section headings are h2, card titles h3. `heading()` requires an explicit `level` (throws without it).
