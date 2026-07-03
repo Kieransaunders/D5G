@@ -161,14 +161,14 @@ Stage 2 HTML is the design spec. Before approval, confirm the preview matches at
 | Taste Skill (React) | Divi 5 native | With DiviTheatre (optional, user-consented) |
 |---------------------|-------------------|---|
 | Scroll-reveal stagger | Divi animation presets (basic) | `data-theatre="stagger"` |
-| Parallax scroll | Divi scroll effects (4-position) | `data-theatre="parallax-scroll"` |
-| Magnetic hover | Not available | `data-theatre="hover-grow"` |
+| Parallax scroll | Divi scroll effects (4-position) | `data-theatre="depth-stack"` (layered depth) |
+| Magnetic hover | Not available | `data-theatre="magnetize"` (particle snap) |
 | Hero choreography | Not available | `data-theatre="hero-reveal"` |
-| Fade-up entrance | Divi animation fade | `data-theatre="fade-up"` (higher fidelity) |
-| Scale-in entrance | Divi animation zoom | `data-theatre="scale-in"` (higher fidelity) |
+| Blur-in entrance | Divi animation fade | `data-theatre="blur-in"` (higher fidelity) |
+| Cursor spotlight | Not available | `data-theatre="spotlight"` |
 | GSAP sticky stack | Skip | Not yet (future DiviTheatre preset) |
 | Horizontal scroll hijack | Skip | Not yet (future DiviTheatre preset) |
-| Marquee | Skip or single text row | Not yet (future DiviTheatre preset) |
+| Marquee | Skip or single text row | `data-theatre="marquee"` (seamless strip) |
 | `backdrop-filter` glass | Solid fills + border, or overlays | Still limited (Divi module constraint) |
 
 If MOTION dial is high but neither Divi native nor DiviTheatre can deliver, **lower the dial**

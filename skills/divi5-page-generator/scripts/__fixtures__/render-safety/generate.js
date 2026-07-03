@@ -46,7 +46,7 @@ function writeFixture(name, contentString, rule, caseName, note) {
 // pass: canonical theatreAttrs output via the normal builder path.
 writeFixture(
   'attr-path.pass',
-  wrap(D.section({ theatre: 'fade-up' }, [
+  wrap(D.section({ theatre: 'blur-in' }, [
     D.row({}, [ D.column({}, []) ]),
   ])),
   'RS-ATTR-PATH', 'pass',

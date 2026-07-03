@@ -1,0 +1,5 @@
+/* E — Minimal Editorial (Clean Authority): white space, ink on paper, serif display. */
+:root { --bg: #ffffff; --ink: #1c1c1c; --ink-soft: #52525b; --accent: #1c1c1c;
+  --font-display: Georgia, 'Times New Roman', serif; --font-body: 'Helvetica Neue', Arial, sans-serif; }
+.btn { border-radius: 2px; }
+.sec-inner { max-width: 1080px; }

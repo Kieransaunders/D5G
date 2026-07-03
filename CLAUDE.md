@@ -99,7 +99,7 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | `claude-design-to-divi` | Turn a Claude Design hand-off bundle into an importable Divi 5 page |
 | `divi5-plugin-dev` | Custom Divi 5 module/plugin development |
 | `divitheatre-engine` | Theatre.js motion engine reference |
-| `divitheatre-section` | Generate a single Divi 5 section showcasing one DiviTheatre animation preset (pin:product-reveal, stagger, parallax-scroll, etc.) |
+| `divitheatre-section` | Generate a single Divi 5 section showcasing one DiviTheatre animation preset from the manifest-backed real catalog (15 presets; pin:product-reveal, stagger, marquee, aurora, etc.) |
 
 ## SEO plugin support (Divi Tools Importer ≥ 1.6.0)
 

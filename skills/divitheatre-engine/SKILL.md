@@ -121,7 +121,7 @@ and its `factory(element, config, project)` returns one of:
 - `{ play, reset }` — engine-driven presets. `play()` runs the sequence; `reset()` sets
   `sheet.sequence.position = 0`. The engine calls these on the resolved trigger. Re-fire =
   `reset()` then `play()`.
-- `{ selfManaged: true }` — the factory binds its own listeners (parallax-scroll, hover-grow, and
+- `{ selfManaged: true }` — the factory binds its own listeners (scroll-scrub, hover and pointer effects, and
   all `pin` scenes). The engine builds it and steps back; it never calls `.play()`.
 
 `category` is `'element'` (default), `'scene'`, or `'pin'`. `honoursDuration: false` tells the

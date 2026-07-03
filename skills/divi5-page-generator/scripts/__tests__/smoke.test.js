@@ -61,7 +61,7 @@ try {
   b.globalColor('test', '#000000', 'Test');
   const pid = b.preset('divi/heading', 'Test', {});
   const content = D.placeholder([
-    D.section({ preset: pid, theatre: 'fade-up' }, [
+    D.section({ preset: pid, theatre: 'blur-in' }, [
       D.row({ structure: 'equal-columns_1' }, [
         D.column({}, [
           D.heading({ text: 'Smoke H1', level: 'h1' }),
@@ -82,7 +82,7 @@ try {
   ok('builder: every public module constructor assembles without error',
     json.context === 'et_builder' && typeof json.data['1'] === 'string' && json.data['1'].length > 0);
   ok('builder: theatre attrs survived (T3 canonical path)',
-    /"name":"data-theatre","value":"fade-up","targetElement":"main"/.test(json.data['1']));
+    /"name":"data-theatre","value":"blur-in","targetElement":"main"/.test(json.data['1']));
 } catch (e) {
   ok('builder: every public module constructor assembles without error', false, e.message);
 }

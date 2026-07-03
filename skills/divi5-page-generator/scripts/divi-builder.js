@@ -244,7 +244,7 @@ function placeholder(children) {
  * never rendered to the DOM.
  *
  * Usage in a module:  section({ theatre: 'hero-reveal', theatreOpts: { trigger: 'onLoad' } }, [...])
- * Or standalone:      attrs: D.theatreAttrs('fade-up', { trigger: 'onScroll', delay: 200 })
+ * Or standalone:      attrs: D.theatreAttrs('blur-in', { trigger: 'onScroll', delay: 200 })
  *
  * Pin scenes (Phase 05): pass a category-prefixed preset and (optionally) a runway
  * length via `distance`. The pin runtime is scroll-scrubbed, never clock-played, so
@@ -253,40 +253,42 @@ function placeholder(children) {
  * The child parts that the scene animates are marked with `theatrePart` (not here):
  *   image({ ..., theatrePart: 'media' })   text({ ..., theatrePart: 'panel' })
  *
- * @param {string} preset - DiviTheatre preset name (fade-up, stagger, pin:product-reveal, etc.)
+ * @param {string} preset - DiviTheatre preset name (blur-in, stagger, aurora, pin:product-reveal, etc. — see preset-manifest.json)
  * @param {Object} opts   - { trigger:'onScroll'|'onLoad'|'onClick', delay:ms, duration:ms, mobile:bool, distance:'150vh' }
  */
 // Canonical preset allowlist — keeps a typo (e.g. 'fadeup', 'pin:reveal') from
-// silently shipping a dead data-theatre attribute. Mirrors the DiviTheatre engine
-// registry (src/presets/*). Element/scene presets are bare names; pin-category
-// presets carry the `pin:` prefix that the engine's category dispatch reads.
-const ELEMENT_SCENE_PRESETS = new Set([
-  'fade-up', 'fade-left', 'fade-right', 'scale-in',
-  'stagger', 'parallax-scroll', 'hover-grow', 'hero-reveal',
-]);
-const PIN_PRESETS = new Set(['product-reveal']); // value form: 'pin:product-reveal'
+// silently shipping a dead data-theatre attribute. Loaded from
+// preset-manifest.json, which is GENERATED from the DiviTheatre engine registry
+// (DiviTheatre repo: `npm run build:manifest` → assets/preset-manifest.json,
+// synced here). Never hand-edit the manifest — regenerate and re-sync it, or
+// the builder will accept presets the engine doesn't ship (dead attributes) or
+// reject ones it does.
+//
+// Per-entry metadata drives which options are emitted:
+//   category 'element'|'scene' → trigger/delay (dispatchTrigger path)
+//   category 'pin'             → distance only (scroll-scrubbed)
+//   category 'effect'          → no options (self-managed CSS/WebGL)
+//   honoursDuration false      → data-theatre-duration suppressed
+const PRESET_MANIFEST = require('./preset-manifest.json');
+const PRESETS = new Map(PRESET_MANIFEST.presets.map(p => [p.value, p]));
 const THEATRE_PARTS = new Set(['media', 'panel']); // ADR-001 §5 part-role allowlist
 const DISTANCE_RE = /^\d+vh$/;                      // T-05-04: vh-only runway length
 
 function isPinPreset(preset) {
   return typeof preset === 'string' && preset.startsWith('pin:');
 }
-function assertKnownPreset(preset) {
-  if (isPinPreset(preset)) {
-    const name = preset.slice(4);
-    if (!PIN_PRESETS.has(name)) {
-      throw new Error(
-        `unknown pin preset "${preset}" — known: ${[...PIN_PRESETS].map(p => 'pin:' + p).join(', ')}`
-      );
-    }
-    return;
-  }
-  if (!ELEMENT_SCENE_PRESETS.has(preset)) {
+function resolvePreset(preset) {
+  const rec = PRESETS.get(preset);
+  if (!rec) {
     throw new Error(
-      `unknown DiviTheatre preset "${preset}" — known: ${[...ELEMENT_SCENE_PRESETS].join(', ')}, ` +
-      `${[...PIN_PRESETS].map(p => 'pin:' + p).join(', ')}`
+      `unknown DiviTheatre preset "${preset}" — known: ${[...PRESETS.keys()].join(', ')}`
     );
   }
+  return rec;
+}
+/** All presets, by category — lets callers (skills, docs) enumerate what's available. */
+function theatrePresets(category) {
+  return PRESET_MANIFEST.presets.filter(p => !category || p.category === category);
 }
 
 function theatreAttrs(preset, opts) {
@@ -295,12 +297,12 @@ function theatreAttrs(preset, opts) {
   // targetElement 'main' = the module's own wrapper (Divi's canonical value; an
   // empty string renders identically but Divi rewrites it to 'main' on first save).
   const add = (name, value) => list.push({ name: name, value: String(value), targetElement: 'main' });
+  let rec = null;
   if (preset) {
-    assertKnownPreset(preset);
+    rec = resolvePreset(preset);
     add('data-theatre', preset);
   }
-  const pin = isPinPreset(preset);
-  if (pin) {
+  if (rec && rec.category === 'pin') {
     // Pin scenes are scroll-scrubbed — trigger/delay/duration do nothing. Only the
     // runway length applies. Validate vh-only; the engine falls back to 150vh on
     // anything malformed, but we refuse to emit a junk attribute at generate time.
@@ -311,17 +313,33 @@ function theatreAttrs(preset, opts) {
       add('data-theatre-distance', String(o.distance));
     }
     if (o.mobile) add('data-theatre-mobile', 'true');
-  } else {
+  } else if (rec && rec.category === 'effect') {
+    // Effects are self-managed CSS/WebGL — no trigger/delay/duration/distance.
+    // Refuse loudly rather than ship attributes the engine will never read.
+    for (const k of ['trigger', 'delay', 'duration', 'distance']) {
+      if (o[k] != null) {
+        throw new Error(
+          `"${preset}" is an effect preset (self-managed) — theatreOpts.${k} does not apply`
+        );
+      }
+    }
+    if (o.mobile) add('data-theatre-mobile', 'true');
+  } else if (rec) {
+    // element + scene: engine-driven via dispatchTrigger.
     if (o.distance != null) {
       throw new Error(`data-theatre-distance is only valid on pin: presets, not "${preset}"`);
     }
     if (o.trigger) add('data-theatre-trigger', o.trigger);
     if (o.delay != null) add('data-theatre-delay', String(o.delay));
-    // duration is ignored by parallax-scroll and hero-reveal (fixed timelines) —
-    // don't emit a misleading attribute for them.
-    const DURATION_IGNORED = preset === 'parallax-scroll' || preset === 'hero-reveal';
-    if (o.duration != null && !DURATION_IGNORED) add('data-theatre-duration', String(o.duration));
+    // Presets with fixed timelines (honoursDuration: false, e.g. hero-reveal)
+    // ignore data-theatre-duration — don't emit a misleading attribute.
+    if (o.duration != null && rec.honoursDuration) add('data-theatre-duration', String(o.duration));
     if (o.mobile) add('data-theatre-mobile', 'true');
+  }
+  if (rec && rec.webgl) {
+    // Not an attribute — a generate-time reminder surfaced by callers/skills:
+    // WebGL presets need the Three.js bundle on the target site.
+    theatreAttrs._webglUsed = true;
   }
   return list.length
     ? { module: { decoration: { attributes: { desktop: { value: { attributes: list } } } } } }
@@ -1161,6 +1179,6 @@ module.exports = {
   section, overlaySection, row, column,
   heading, heroHeading, text, eyebrow, button, blurb, image, icon, accordion, numberCounter, divider, codeBlock,
   theatreAttrs, theatrePartAttrs, withTheatre, normaliseCustomAttrs,
-  isPinPreset, assertKnownPreset,
+  isPinPreset, resolvePreset, theatrePresets, PRESET_MANIFEST,
   createBuilder, randomId,
 };

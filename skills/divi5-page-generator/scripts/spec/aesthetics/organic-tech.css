@@ -1,0 +1,5 @@
+/* A — Organic Tech (Clinical Boutique): airy neutrals, sage accent, soft radius. */
+:root { --bg: #fafaf7; --ink: #22301f; --ink-soft: #5c6b57; --accent: #4a7c59;
+  --font-display: 'Avenir Next', 'Helvetica Neue', sans-serif; --font-body: 'Avenir Next', 'Helvetica Neue', sans-serif; }
+.btn { border-radius: 999px; }
+.sec:nth-child(even) { background: #eef1ea; }

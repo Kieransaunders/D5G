@@ -3,9 +3,11 @@
  * example-divitheatre-page.js — worked example of the OPTIONAL DiviTheatre motion layer.
  *
  * A self-demonstrating landing page for the DiviTheatre plugin: it both describes
- * and runs DiviTheatre, showcasing all 8 presets (hero-reveal, fade-up, fade-left,
- * fade-right, scale-in, stagger, parallax-scroll, hover-grow), each card labelled
- * with the exact data-theatre attribute that powers it. See references/divi-theatre.md.
+ * and runs DiviTheatre, showcasing the full preset library (entrance animations,
+ * the hero-reveal scene, the pin:product-reveal pinned scene, and the CSS/WebGL
+ * effects), each card labelled with the exact data-theatre attribute that powers
+ * it. Preset names come from scripts/preset-manifest.json (generated from the
+ * DiviTheatre engine registry). See references/divi-theatre.md.
  *
  * Demonstrates:
  *   - the theatre:/theatreOpts: shortcut on section/row/column/heading/text/button
@@ -138,7 +140,7 @@ const spacer = (h) => D.divider({ show: false, height: h });
 
 // ─── 4. SECTIONS ─────────────────────────────────────────────────────────────
 
-// 1 ── HERO - hero-reveal (onLoad), CTAs hover-grow
+// 1 ── HERO - hero-reveal (onLoad), CTA magnetize
 const hero = D.section({ adminLabel: 'Hero', preset: P.secVoid, theatre: 'hero-reveal', theatreOpts: { trigger: 'onLoad' } }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '920px' }, [
     D.column({}, [
@@ -146,22 +148,22 @@ const hero = D.section({ adminLabel: 'Hero', preset: P.secVoid, theatre: 'hero-r
       D.heading({ text: `The Divi 5 Animation Plugin for <em>Cinematic</em>, Code-Free Motion`, level: 'h1', preset: P.heroH1 }),
       D.text({ html: `<p>DiviTheatre is the <strong>Divi 5 animation plugin</strong> that brings Theatre.js-powered, multi-step motion to any module, row or section - added with a single <code>data-theatre</code> attribute. No JavaScript. No timeline editor. Just drop it on and scroll.</p>`, preset: P.bodyDarkC, maxWidth: '660px', centered: true }),
       spacer('28px'),
-      D.button({ text: 'Get DiviTheatre', url: '#pricing', preset: P.btnPrimary, theatre: 'hover-grow' }),
+      D.button({ text: 'Get DiviTheatre', url: '#pricing', preset: P.btnPrimary, theatre: 'magnetize' }),
     ]),
   ]),
 ]);
 
-// 2 ── INTRO - two-column, fade-right (text) / fade-left (visual)
+// 2 ── INTRO - two-column, fade-right (text) / blur-in (visual)
 const intro = D.section({ adminLabel: 'Intro', preset: P.secGhost }, [
   D.row({ structure: 'equal-columns_2', columnGap: '56px', rowGap: '40px', alignItems: 'center', maxWidth: '1100px' }, [
     D.column({ theatre: 'fade-right' }, [
       D.eyebrow('THE 30-SECOND WORKFLOW', T.plasma, { textAlign: 'left' }),
       D.heading({ text: 'Premium motion in Divi 5 - without touching a line of code', level: 'h2', preset: P.h2LightLeft }),
-      D.text({ html: `<p>Open any element's <strong>Advanced → Attributes</strong> panel, add the attribute <code>data-theatre</code> with a value like <code>fade-up</code>, and you're done. DiviTheatre's engine handles the keyframes, the scroll triggers, the reduced-motion fallbacks and the mobile safeguards for you.</p>`, preset: P.bodyLightL }),
+      D.text({ html: `<p>Open any element's <strong>Advanced → Attributes</strong> panel, add the attribute <code>data-theatre</code> with a value like <code>blur-in</code>, and you're done. DiviTheatre's engine handles the keyframes, the scroll triggers, the reduced-motion fallbacks and the mobile safeguards for you.</p>`, preset: P.bodyLightL }),
       spacer('18px'),
-      D.button({ text: 'See all 8 presets', url: '#presets', preset: P.btnPrimary, theatre: 'hover-grow' }),
+      D.button({ text: 'See all 15 presets', url: '#presets', preset: P.btnPrimary, theatre: 'magnetize' }),
     ]),
-    D.column({ background: T.void, padding: '2.4em', radius: '16px', theatre: 'fade-left' }, [
+    D.column({ background: T.void, padding: '2.4em', radius: '16px', theatre: 'blur-in' }, [
       D.text({ html: `<p>// Divi &rarr; Advanced &rarr; Attributes<br>name&nbsp;&nbsp;data-theatre<br>value&nbsp;hero-reveal<br><br>// optional fine-tuning<br>name&nbsp;&nbsp;data-theatre-trigger<br>value&nbsp;onScroll<br>name&nbsp;&nbsp;data-theatre-delay<br>value&nbsp;200</p>`, font: { family: 'monospace', size: '14px', lineHeight: '2em', color: T.bodyDark } }),
     ]),
   ]),
@@ -176,25 +178,39 @@ const presetCard = (icon, name, label, desc) =>
 
 const presets = D.section({ adminLabel: 'Presets', preset: P.secGraphite }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '760px' }, [
-    D.column({ theatre: 'fade-up' }, [
+    D.column({ theatre: 'blur-in' }, [
       D.eyebrow('THE PRESET LIBRARY', T.plasma2),
-      D.heading({ text: 'Eight cinematic presets, ready to drop on', level: 'h2', preset: P.h2Dark }),
-      D.text({ html: `<p>Every animation on this page is DiviTheatre running live. Scroll and watch - each card below is tagged with the exact attribute that powers it.</p>`, preset: P.bodyDarkC, maxWidth: '600px', centered: true }),
+      D.heading({ text: 'Fifteen cinematic presets, ready to drop on', level: 'h2', preset: P.h2Dark }),
+      D.text({ html: `<p>Every animation on this page is DiviTheatre running live. Scroll and watch - each card below is tagged with the exact attribute that powers it. Entrance animations, choreographed scenes, a pinned scroll set-piece, and CSS/WebGL effects.</p>`, preset: P.bodyDarkC, maxWidth: '600px', centered: true }),
     ]),
   ]),
+  // Entrance + scene + pin
   D.row({ structure: 'equal-columns_3', columnGap: '26px', rowGap: '26px', maxWidth: '1160px', theatre: 'stagger' }, [
-    presetCard('&#xf062;', 'fade-up', 'Fade Up', 'Fades in while rising 50px. The everyday workhorse for headings and copy.'),
+    presetCard('&#xf062;', 'blur-in', 'Blur In', 'Fades in as an 8px blur resolves. The everyday workhorse for headings and copy.'),
     presetCard('&#xf061;', 'fade-right', 'Fade Right', 'Slides in from the left as it fades. Ideal for text columns.'),
-    presetCard('&#xf060;', 'fade-left', 'Fade Left', 'Slides in from the right. Pairs with fade-right for two-column reveals.'),
+    presetCard('&#xf0cb;', 'stagger', 'Stagger', 'Each child reveals 100ms after the last - exactly what this grid is doing.'),
   ]),
   D.row({ structure: 'equal-columns_3', columnGap: '26px', rowGap: '26px', maxWidth: '1160px', theatre: 'stagger' }, [
-    presetCard('&#xf065;', 'scale-in', 'Scale In', 'Scales 0.9 → 1 with a fade. Gives cards and images a confident pop.'),
-    presetCard('&#xf0cb;', 'stagger', 'Stagger', 'Each child reveals 100ms after the last - exactly what this grid is doing.'),
-    presetCard('&#xf07e;', 'parallax-scroll', 'Parallax Scroll', 'Drifts on the Y-axis as you scroll. rAF-driven, zero scroll listeners.'),
+    presetCard('&#xf008;', 'hero-reveal', 'Hero Reveal', 'A choreographed sequence - background, headline, body, CTA - the exact reveal that opened this page.'),
+    presetCard('&#xf103;', 'pin:product-reveal', 'Product Reveal', 'The section pins while media scales and panels reveal, scrubbed by scroll. Apple-style set-piece.'),
+    presetCard('&#xf031;', 'text-line-stagger', 'Text Line Stagger', 'Headings, paragraphs and list items rise line by line, 60ms apart.'),
   ]),
-  D.row({ structure: 'equal-columns_2', columnGap: '26px', rowGap: '26px', maxWidth: '780px', theatre: 'stagger' }, [
-    presetCard('&#xf25a;', 'hover-grow', 'Hover Grow', 'Scales to 1.08 on hover and eases back. Try it on the buttons.'),
-    presetCard('&#xf008;', 'hero-reveal', 'Hero Reveal', 'A choreographed 1.8s sequence - the exact reveal that opened this page.'),
+  // Effects — CSS
+  D.row({ structure: 'equal-columns_3', columnGap: '26px', rowGap: '26px', maxWidth: '1160px', theatre: 'stagger' }, [
+    presetCard('&#xf185;', 'aurora', 'Aurora', 'A multi-gradient background drifts slowly behind content. Instant premium dark hero.'),
+    presetCard('&#xf0eb;', 'lamp', 'Lamp', 'A conic beam of light fans down from the top and reveals on scroll.'),
+    presetCard('&#xf140;', 'spotlight', 'Spotlight', 'A radial glow tracks the cursor across the element. Made for cards and CTAs.'),
+  ]),
+  D.row({ structure: 'equal-columns_3', columnGap: '26px', rowGap: '26px', maxWidth: '1160px', theatre: 'stagger' }, [
+    presetCard('&#xf07e;', 'marquee', 'Marquee', 'An infinite, seamless scroll strip for logos, galleries and client grids.'),
+    presetCard('&#xf076;', 'magnetize', 'Magnetize', 'Particles scatter around the element and snap to centre on hover. Try the buttons.'),
+    presetCard('&#xf24d;', 'mask-reveal', 'Mask Reveal', 'SVG tiles or blinds progressively uncover the element on scroll.'),
+  ]),
+  // Effects — depth + WebGL
+  D.row({ structure: 'equal-columns_3', columnGap: '26px', rowGap: '26px', maxWidth: '1160px', theatre: 'stagger' }, [
+    presetCard('&#xf1b3;', 'depth-stack', 'Depth Stack', 'Children scroll at different rates, creating a layered parallax depth illusion.'),
+    presetCard('&#xf0d0;', 'particle-field', 'Particle Field', 'A WebGL particle field floats behind content and scatters from the pointer.'),
+    presetCard('&#xf043;', 'liquid-effect', 'Liquid', 'WebGL water ripples over imagery - the pointer leaves a shimmering wake.'),
   ]),
 ]);
 
@@ -208,7 +224,7 @@ const step = (n, title, body) =>
 
 const processSection = D.section({ adminLabel: 'Process', preset: P.secWhite }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '760px' }, [
-    D.column({ theatre: 'fade-up' }, [
+    D.column({ theatre: 'blur-in' }, [
       D.eyebrow('HOW IT WORKS', T.plasma),
       D.heading({ text: 'Live in three steps', level: 'h2', preset: P.h2Light }),
     ]),
@@ -220,50 +236,50 @@ const processSection = D.section({ adminLabel: 'Process', preset: P.secWhite }, 
   ]),
 ]);
 
-// 5 ── SHOWCASE - parallax-scroll on a decorative mark + scale-in cards
+// 5 ── SHOWCASE - spotlight cards (cursor-tracking glow), blur-in intro
 const showcase = D.section({ adminLabel: 'Showcase', preset: P.secVoid }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '760px' }, [
-    D.column({ theatre: 'fade-up' }, [
-      D.text({ html: `<p>&#10022;</p>`, font: { size: '64px', lineHeight: '1em', color: T.plasma2, textAlign: 'center' }, theatre: 'parallax-scroll' }),
+    D.column({ theatre: 'blur-in' }, [
+      D.text({ html: `<p>&#10022;</p>`, font: { size: '64px', lineHeight: '1em', color: T.plasma2, textAlign: 'center' } }),
       D.eyebrow('BUILT FOR REAL SITES', T.plasma2),
       D.heading({ text: 'Fast, accessible, and conflict-free by design', level: 'h2', preset: P.h2Dark }),
     ]),
   ]),
   D.row({ structure: 'equal-columns_3', columnGap: '26px', rowGap: '26px', maxWidth: '1080px' }, [
-    D.column({ flexType: '8_24', background: T.card, padding: '2.2em', radius: '14px', theatre: 'scale-in', theatreOpts: { delay: 0 } }, [
+    D.column({ flexType: '8_24', background: T.card, padding: '2.2em', radius: '14px', theatre: 'spotlight' }, [
       D.blurb({ icon: '&#xf3fd;', iconColor: T.plasma2, title: 'Reduced-motion safe', titleLevel: 'h3', body: 'Honours prefers-reduced-motion - every element jumps to its final visible state. Nothing is ever left hidden.', preset: P.cardBlurb }),
     ]),
-    D.column({ flexType: '8_24', background: T.card, padding: '2.2em', radius: '14px', theatre: 'scale-in', theatreOpts: { delay: 120 } }, [
+    D.column({ flexType: '8_24', background: T.card, padding: '2.2em', radius: '14px', theatre: 'spotlight' }, [
       D.blurb({ icon: '&#xf3cd;', iconColor: T.plasma2, title: 'Mobile-aware', titleLevel: 'h3', body: 'Animations skip below 768px so phones stay snappy - override per element when you really want motion.', preset: P.cardBlurb }),
     ]),
-    D.column({ flexType: '8_24', background: T.card, padding: '2.2em', radius: '14px', theatre: 'scale-in', theatreOpts: { delay: 240 } }, [
-      D.blurb({ icon: '&#xf0e7;', iconColor: T.plasma2, title: 'No layout jank', titleLevel: 'h3', body: 'Parallax runs on requestAnimationFrame with IntersectionObserver - zero scroll listeners, no CLS.', preset: P.cardBlurb }),
+    D.column({ flexType: '8_24', background: T.card, padding: '2.2em', radius: '14px', theatre: 'spotlight' }, [
+      D.blurb({ icon: '&#xf0e7;', iconColor: T.plasma2, title: 'No layout jank', titleLevel: 'h3', body: 'Scroll effects run on requestAnimationFrame with IntersectionObserver - zero scroll listeners, no CLS.', preset: P.cardBlurb }),
     ]),
   ]),
 ]);
 
-// 6 ── STATS - fade-up counters on light
+// 6 ── STATS - blur-in counters on light
 const stat = (num, percent, label) =>
   D.column({ flexType: '8_24', padding: '0.5em' }, [
     D.numberCounter({ title: label, number: num, percent, numberColor: T.plasma, numberSize: '56px' }),
   ]);
 
 const stats = D.section({ adminLabel: 'Stats', preset: P.secGhost }, [
-  D.row({ structure: 'equal-columns_3', columnGap: '40px', rowGap: '32px', maxWidth: '960px', theatre: 'fade-up' }, [
-    stat(8, false, 'Cinematic presets'),
+  D.row({ structure: 'equal-columns_3', columnGap: '40px', rowGap: '32px', maxWidth: '960px', theatre: 'blur-in' }, [
+    stat(15, false, 'Cinematic presets'),
     stat(30, false, 'Seconds to add motion'),
     stat(0, false, 'Lines of code required'),
   ]),
 ]);
 
-// 7 ── CTA - plasma band, hover-grow button
-const cta = D.section({ adminLabel: 'CTA', preset: P.secPlasma, theatre: 'fade-up' }, [
+// 7 ── CTA - plasma band, magnetize button
+const cta = D.section({ adminLabel: 'CTA', preset: P.secPlasma, theatre: 'blur-in' }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '760px' }, [
     D.column({}, [
       D.heading({ text: 'Give your Divi 5 site a sense of motion', level: 'h2', preset: P.h2Dark }),
       D.text({ html: `<p>Install DiviTheatre, tag an element, and ship cinematic motion this afternoon.</p>`, font: { family: T.bodyFont, size: '18px', lineHeight: '1.8em', color: '#F3F0FF', textAlign: 'center' }, maxWidth: '540px', centered: true }),
       spacer('22px'),
-      D.button({ text: 'Get DiviTheatre', url: '#', preset: P.btnOnPlasma, theatre: 'hover-grow' }),
+      D.button({ text: 'Get DiviTheatre', url: '#', preset: P.btnOnPlasma, theatre: 'magnetize' }),
     ]),
   ]),
 ]);
@@ -271,11 +287,11 @@ const cta = D.section({ adminLabel: 'CTA', preset: P.secPlasma, theatre: 'fade-u
 // 8 ── FAQ - long-tail queries
 const faq = D.section({ adminLabel: 'FAQ', preset: P.secWhite }, [
   D.row({ structure: 'equal-columns_1', maxWidth: '820px' }, [
-    D.column({ theatre: 'fade-up' }, [
+    D.column({ theatre: 'blur-in' }, [
       D.eyebrow('QUESTIONS', T.plasma),
       D.heading({ text: 'Divi 5 animation plugin - FAQs', level: 'h2', preset: P.h2Light }),
       D.accordion([
-        { question: 'How do I add animations to Divi 5 without code?', answer: 'Install DiviTheatre, then open any module’s Advanced → Attributes panel and add an attribute named <code>data-theatre</code> with a preset value such as <code>fade-up</code> or <code>stagger</code>. The engine does the rest - no custom JavaScript or CSS required.' },
+        { question: 'How do I add animations to Divi 5 without code?', answer: 'Install DiviTheatre, then open any module’s Advanced → Attributes panel and add an attribute named <code>data-theatre</code> with a preset value such as <code>blur-in</code> or <code>stagger</code>. The engine does the rest - no custom JavaScript or CSS required.' },
         { question: 'What is the best animation plugin for Divi 5?', answer: 'DiviTheatre is purpose-built for Divi 5’s block system. It uses the Theatre.js motion engine for multi-step, choreographed animations that go well beyond Divi’s built-in entrance effects, while staying lightweight and accessible.' },
         { question: 'Does DiviTheatre slow down my Divi 5 site?', answer: 'No. The engine ships as a single IIFE bundle, exits as a no-op when no tagged elements are present, and drives scroll effects with requestAnimationFrame and IntersectionObserver - so there are zero scroll event listeners and no layout shift.' },
         { question: 'Will DiviTheatre animations work on mobile and with reduced motion?', answer: 'Yes - safely. Every preset skips on viewports under 768px and jumps to its final visible state when a visitor has prefers-reduced-motion enabled, so content is never hidden. You can override the mobile skip per element when needed.' },
@@ -311,7 +327,7 @@ fs.writeFileSync(path.join(OUT, 'divitheatre-seo-meta.json'), JSON.stringify({
 
 // FAQPage + SoftwareApplication schema
 const faqItems = [
-  ['How do I add animations to Divi 5 without code?', 'Install DiviTheatre, then open any module’s Advanced → Attributes panel and add an attribute named data-theatre with a preset value such as fade-up or stagger. No custom JavaScript or CSS required.'],
+  ['How do I add animations to Divi 5 without code?', 'Install DiviTheatre, then open any module’s Advanced → Attributes panel and add an attribute named data-theatre with a preset value such as blur-in or stagger. No custom JavaScript or CSS required.'],
   ['What is the best animation plugin for Divi 5?', 'DiviTheatre is purpose-built for Divi 5’s block system, using the Theatre.js motion engine for multi-step, choreographed animations that go beyond Divi’s built-in entrance effects.'],
   ['Does DiviTheatre slow down my Divi 5 site?', 'No. The engine is a single IIFE bundle, exits as a no-op when no tagged elements exist, and uses requestAnimationFrame with IntersectionObserver - zero scroll listeners and no layout shift.'],
   ['Will DiviTheatre animations work on mobile and with reduced motion?', 'Yes. Every preset skips below 768px and jumps to its final visible state under prefers-reduced-motion, so content is never hidden.'],

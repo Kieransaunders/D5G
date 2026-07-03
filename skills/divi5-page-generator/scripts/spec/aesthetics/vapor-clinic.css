@@ -1,0 +1,5 @@
+/* D — Vapor Clinic (Neon Biotech): cool dark ground, cyan accent, mono details. */
+:root { --bg: #0b1220; --ink: #e8f4f8; --ink-soft: #93aebc; --accent: #2dd4bf;
+  --font-display: 'Helvetica Neue', Arial, sans-serif; --font-body: 'Helvetica Neue', Arial, sans-serif; }
+.eyebrow { font-family: 'SF Mono', Menlo, monospace; }
+.btn { background: var(--accent); color: #0b1220; border-radius: 6px; }
