@@ -1,0 +1,50 @@
+/* preview-base.css — shared base layer for spec-first previews.
+   Resets, type scale, spacing tokens. Aesthetic-agnostic; per-aesthetic
+   overrides live in aesthetics/<slug>.css. NO animation — motion intent is
+   annotated (.theatre-note), never simulated (design decision 3). */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --space-s: clamp(0.75rem, 1.5vw, 1.25rem);
+  --space-m: clamp(1.5rem, 3vw, 2.5rem);
+  --space-l: clamp(3rem, 6vw, 5.5rem);
+  --measure: 65ch;
+  --bg: #ffffff;
+  --ink: #1c1c1c;
+  --ink-soft: #52525b;
+  --accent: #1c1c1c;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; }
+
+h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.05; font-weight: 600; }
+h2 { font-family: var(--font-display); font-size: clamp(1.75rem, 3.5vw, 2.75rem); line-height: 1.15; font-weight: 600; }
+h3 { font-family: var(--font-display); font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.25; font-weight: 600; }
+
+p { max-width: var(--measure); color: var(--ink-soft); }
+
+.sec { padding: var(--space-l) var(--space-m); }
+.sec-inner { max-width: 1200px; margin: 0 auto; }
+.cols { display: grid; gap: var(--space-m); align-items: center; }
+.col > * + * { margin-top: var(--space-s); }
+
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); }
+
+.btn {
+  display: inline-block; padding: 16px 32px; font-weight: 600; font-size: 16px;
+  text-decoration: none; background: var(--accent); color: var(--bg); border-radius: 4px;
+}
+
+.theatre-note {
+  display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  padding: 2px 8px; border: 1px dashed currentColor; border-radius: 3px;
+  opacity: 0.55; margin-bottom: var(--space-s);
+}
+
+img { max-width: 100%; height: auto; display: block; }
+hr { border: 0; border-top: 1px solid currentColor; opacity: 0.15; margin: var(--space-m) 0; }
+
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr !important; } }

@@ -1,0 +1,6 @@
+/* C — Brutalist Signal (Raw Precision): stark white, hard black, signal red, no curves. */
+:root { --bg: #ffffff; --ink: #000000; --ink-soft: #333333; --accent: #e63312;
+  --font-display: 'Helvetica Neue', Arial, sans-serif; --font-body: 'Helvetica Neue', Arial, sans-serif; }
+h1, h2 { text-transform: uppercase; letter-spacing: -0.02em; font-weight: 700; }
+.btn { border-radius: 0; }
+.sec { border-bottom: 2px solid var(--ink); }

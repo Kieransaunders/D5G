@@ -1,0 +1,5 @@
+/* B — Midnight Luxe (Dark Editorial): near-black ground, champagne accent, serif display. */
+:root { --bg: #101014; --ink: #f4f1ea; --ink-soft: #b9b4a8; --accent: #c9a86a;
+  --font-display: Georgia, 'Times New Roman', serif; --font-body: 'Helvetica Neue', Arial, sans-serif; }
+.btn { background: var(--accent); color: #101014; border-radius: 2px; }
+h1 { font-style: italic; }
