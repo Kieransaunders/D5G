@@ -15,7 +15,7 @@
 | Dial | Overdrive value | Divi lever |
 |------|----------------|------------|
 | VARIANCE | 9 | 25/75 splits, bento with wild cell sizes, full-bleed images |
-| MOTION | 7 (8 with DiviTheatre) | hero-reveal + stagger + hover-grow minimum three presets |
+| MOTION | 7 (8 with DiviTheatre) | hero-reveal + stagger + magnetize minimum three presets |
 | DENSITY | 3 | airy padding (8–9em hero, 7em sections), constrained text maxWidth |
 
 ---
@@ -46,7 +46,7 @@ This is the canonical arc. Swap individual families but preserve the rhythm of
 3. BENTO GRID    — asymmetric features, one cell spans 2 columns, imagery-led tiles
 4. BREATHING RM  — single pull quote, white/light BG, 9em padding, stripped back
 5. SPLIT 30/70   — deep narrative, photo-heavy side, body copy constrained to 480px
-6. GALLERY       — hover-grow image grid, section header left-aligned, real product/lifestyle shots
+6. GALLERY       — marquee or spotlight image grid, section header left-aligned, real product/lifestyle shots
 7. CTA BAND      — full-bleed photo + dark overlay, pill button, h2 ≤ 8 words
 8. FOOTER        — dark anchor, large wordmark, 3 link columns
 ```

@@ -87,11 +87,11 @@ Applies to `element` category presets only. `scene`, `pin`, and `effect` presets
 
 ## Pinned scene (`product-reveal`)
 
-Tag a **whole section** with `data-theatre="product-reveal"`. The section pins while a composed timeline scrubs forward on scroll; scrolling back reverses it. Mark children by role:
+Tag a **whole section** with `data-theatre="pin:product-reveal"` (the `pin:` prefix is the canonical builder/validator form; the engine also resolves the bare name). The section pins while a composed timeline scrubs forward on scroll; scrolling back reverses it. Mark children by role:
 
 | Attribute | On | Purpose |
 |---|---|---|
-| `data-theatre="product-reveal"` | the section | declares the pinned scene |
+| `data-theatre="pin:product-reveal"` | the section | declares the pinned scene |
 | `data-theatre-distance` | the same section | runway length (default `150vh`; vh only, e.g. `200vh`) |
 | `data-theatre-part="media"` | one child | the element that holds + scales |
 | `data-theatre-part="panel"` | 2–3 children | content blocks that reveal in sequence |
@@ -99,7 +99,7 @@ Tag a **whole section** with `data-theatre="product-reveal"`. The section pins w
 Panels are capped at 3. Mobile (≤768px) and `prefers-reduced-motion` skip the pin — the section jumps to its end state. **Never nest inside an `overflow:hidden` ancestor** — sticky positioning requires a clean ancestor chain.
 
 ```javascript
-D.section({ adminLabel: 'Product reveal', theatre: 'product-reveal', theatreOpts: { distance: '200vh' } }, [
+D.section({ adminLabel: 'Product reveal', theatre: 'pin:product-reveal', theatreOpts: { distance: '200vh' } }, [
   D.row({ structure: 'equal-columns_1' }, [
     D.column({}, [
       D.image({ src: '...', alt: 'Product', theatrePart: 'media' }),

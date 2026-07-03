@@ -31,7 +31,7 @@ and for pin/scene presets `_activeObservers` / `_activePinDrivers` teardown regi
 
 ## Skeleton — a standard entrance preset
 
-This mirrors `src/presets/fade-up.js`. Copy it, rename, change the two prop tracks and the
+This mirrors `src/presets/blur-in.js`. Copy it, rename, change the two prop tracks and the
 `onValuesChange` writes.
 
 ```js
@@ -137,7 +137,7 @@ When timing comes from scroll rather than a clock:
    so `pagehide` tears them down.
 5. Return `{ selfManaged: true }`.
 
-See `src/presets/parallax-scroll.js` (scrub) and `src/presets/product-reveal.js` + `src/pin-scene.js`
+See `src/presets/depth-stack.js` (scroll-driven) and `src/presets/product-reveal.js` + `src/pin-scene.js`
 (pin) for the worked implementations.
 
 ## Pre-ship checklist

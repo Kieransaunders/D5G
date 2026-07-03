@@ -32,6 +32,14 @@
 
 const fs = require('fs');
 
+// DiviTheatre preset allowlist — generated from the engine registry (DiviTheatre
+// repo: npm run build:manifest → assets/preset-manifest.json, synced here).
+// Missing manifest → the preset-name check is skipped, structural checks still run.
+let KNOWN_THEATRE_PRESETS = new Set();
+try {
+  KNOWN_THEATRE_PRESETS = new Set(require('./preset-manifest.json').presets.map(p => p.value));
+} catch (_) { /* manifest not synced — skip name checks */ }
+
 const STRUCTURAL = new Set(['placeholder', 'section', 'row', 'column', 'group']);
 const ALLOWED_CHILDREN = {
   placeholder: new Set(['section']),
@@ -203,6 +211,14 @@ for (const { key, content } of contents) {
         };
         const theatre = get('data-theatre');
         const isPin = theatre && theatre.startsWith('pin:');
+
+        // Preset-name check against the generated manifest. Unknown name = dead
+        // attribute: the page imports fine but the animation never plays. WARN
+        // not FAIL — the target site may run a newer DiviTheatre than the
+        // synced manifest.
+        if (theatre != null && KNOWN_THEATRE_PRESETS.size && !KNOWN_THEATRE_PRESETS.has(theatre)) {
+          warn(`data-theatre="${theatre}" on ${t.name} is not in preset-manifest.json — the DiviTheatre engine will ignore it (dead attribute).`);
+        }
 
         // Collision guard (Pitfall 2b): a pin attribute and Divi's native sticky on
         // the SAME block are two pinning systems fighting. Native sticky lives at
@@ -594,7 +610,13 @@ if (dashHits.length) {
 console.log('\n── SEO report card ──');
 
 const h1s = headingOutline.filter(h => h.level === 'h1');
-if (h1s.length === 0) err('SEO: no h1 on the page — the hero heading must be level h1');
+if (h1s.length === 0) {
+  // et_builder_layouts = a Library section/layout, not a full page — sections
+  // use h2 for their heading (the page they land on owns the h1), so absence
+  // of an h1 is correct there. Full pages (et_builder) must have exactly one.
+  if (doc.context === 'et_builder_layouts') pass('SEO: no h1 (correct for a Library section — the host page owns the h1)');
+  else err('SEO: no h1 on the page — the hero heading must be level h1');
+}
 else if (h1s.length > 1) err(`SEO: ${h1s.length} h1s found — must be exactly one (${h1s.map(h => h.text.slice(0, 30)).join(' | ')})`);
 else pass(`SEO: exactly one h1 ("${h1s[0].text.slice(0, 60)}")`);
 

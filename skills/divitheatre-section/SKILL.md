@@ -1,6 +1,6 @@
 ---
 name: divitheatre-section
-description: "Generates a single, importable Divi 5 section for one DiviTheatre animation preset - one section per effect. Use when you want a standalone section that showcases a specific DiviTheatre animation: pin:product-reveal, hero-reveal, stagger, parallax-scroll, fade-up, fade-left, fade-right, scale-in, hover-grow. Produces a validated et_builder_layouts JSON ready for Divi Library import. Triggers: divitheatre section, theatre section, pin product reveal section, animated section divi, divi theatre effect, divi animation section, pin section divi, product reveal section, showcase animation divi."
+description: "Generates a single, importable Divi 5 section for one DiviTheatre animation preset - one section per effect. Use when you want a standalone section that showcases a specific DiviTheatre animation: pin:product-reveal, hero-reveal, stagger, blur-in, fade-right, aurora, lamp, marquee, spotlight, magnetize, mask-reveal, depth-stack, text-line-stagger, particle-field, liquid-effect. Produces a validated et_builder_layouts JSON ready for Divi Library import. Triggers: divitheatre section, theatre section, pin product reveal section, animated section divi, divi theatre effect, divi animation section, pin section divi, product reveal section, showcase animation divi, aurora section, marquee section, spotlight section."
 argument-hint: "<preset-name> [brand] [brief]"
 allowed-tools: Bash(node *)
 ---
@@ -29,17 +29,32 @@ Tell the user the full path when done.
 
 ## Supported presets
 
+The canonical list lives in `${CLAUDE_SKILL_DIR}/../divi5-page-generator/scripts/preset-manifest.json` (generated from the DiviTheatre engine registry — trust it over this table if they ever disagree).
+
+**Entrance / scene / pin** (Theatre.js-driven):
+
+| Preset | Category | Effect | Section role |
+|---|---|---|---|
+| `pin:product-reveal` | pin | Section pins while media scales; content panels reveal in scroll sequence | Full-section hero or feature set-piece |
+| `hero-reveal` | scene | Choreographed bg fade, headline, body, CTA | Hero section |
+| `stagger` | element | Row children cascade up with 100ms offset | Feature or testimonial row |
+| `blur-in` | element | Fades in as an 8px blur resolves | Any content section |
+| `fade-right` | element | Element slides in from the left as it fades | Split image/text |
+
+**Effects** (self-managed CSS/WebGL — no trigger/delay/duration opts):
+
 | Preset | Effect | Section role |
 |---|---|---|
-| `pin:product-reveal` | Section pins while media scales; content panels reveal in scroll sequence | Full-section hero or feature set-piece |
-| `hero-reveal` | Choreographed bg fade, headline, body, CTA | Hero section |
-| `stagger` | Row children cascade up with 100ms offset | Feature or testimonial row |
-| `parallax-scroll` | Background image drifts on scroll | Image-led CTA or divider |
-| `fade-up` | Element fades in + translates up | Any content section |
-| `fade-left` | Element slides in from left | Split image/text |
-| `fade-right` | Element slides in from right | Split image/text |
-| `scale-in` | Element scales from 0.9 to 1 + fades | Card grid |
-| `hover-grow` | Scales to 1.08 on hover | CTA / button emphasis |
+| `aurora` | Multi-gradient background drifts behind content | Dark hero / CTA band |
+| `lamp` | Conic light beam fans down, reveals on scroll | Dark hero |
+| `marquee` | Infinite seamless horizontal strip with edge fade | Logo strip, gallery, client grid |
+| `spotlight` | Radial glow tracks the cursor | Card grid, CTA |
+| `magnetize` | Particles scatter and snap to centre on hover | Primary CTA / button |
+| `mask-reveal` | SVG tiles/blinds progressively uncover on scroll | Image or feature block |
+| `depth-stack` | Children scroll at different Y rates (layered depth) | Row with overlapping content |
+| `text-line-stagger` | Text blocks rise line by line, 60ms apart | Text-heavy section |
+| `particle-field` | WebGL particle field behind content, pointer-reactive | Dark hero (**requires Three.js bundle**) |
+| `liquid-effect` | WebGL water ripple on a background image | Image-led hero (**requires Three.js bundle**) |
 
 If no preset is specified in the arguments, **default to `pin:product-reveal`** - it is the most visually striking and the primary use-case for this skill.
 
@@ -91,38 +106,76 @@ section
 ```
 Each column child staggers in automatically.
 
-**`parallax-scroll`**
-```
-section  [data-theatre="parallax-scroll"]   (background image)
-  row: h2 + body + button
-```
-Self-managed; no trigger needed.
-
-**`fade-up` / `fade-left` / `fade-right`**
+**`blur-in` / `fade-right`**
 ```
 section
   row (split)
-    column: image   [data-theatre="fade-left"]
+    column: image   [data-theatre="blur-in"]
     column: h2 + body + button   [data-theatre="fade-right"]
 ```
 
-**`scale-in`**
+**`aurora` / `lamp`** (dark hero effects)
+```
+section  [data-theatre="aurora"]   (dark background: obsidian/navy)
+  row: eyebrow | h2 | body | CTA button
+```
+Self-managed; no trigger opts. `lamp` needs generous top padding for the beam to read.
+
+**`marquee`**
 ```
 section
-  row x N: blurb cards  [data-theatre="scale-in"] per card
+  row
+    column  [data-theatre="marquee"]   <- tag the COLUMN holding the images
+      image x 5-8 (logos or gallery shots)
+```
+The engine animates the tagged element's direct children - tag the column that holds the Image modules, NOT the row (a row's direct children are columns).
+
+**`spotlight`**
+```
+section
+  row x N: card columns  [data-theatre="spotlight"] per card
 ```
 
-**`hover-grow`**
+**`magnetize`**
 ```
 section (CTA band)
-  row: heading + body + button  [data-theatre="hover-grow"] on button
+  row: heading + body + button  [data-theatre="magnetize"] on button
 ```
+
+**`mask-reveal`**
+```
+section
+  row (split)
+    column: image  [data-theatre="mask-reveal"]
+    column: h2 + body
+```
+
+**`depth-stack`**
+```
+section
+  row  [data-theatre="depth-stack"]   <- children scroll at different rates
+    column: image | column: floating stat card
+```
+
+**`text-line-stagger`**
+```
+section
+  row
+    column: text module  [data-theatre="text-line-stagger"]  (h2 + paragraphs)
+```
+
+**`particle-field` / `liquid-effect`** (WebGL - confirm the Three.js bundle is on the target site)
+```
+section  [data-theatre="particle-field"]   (dark background)
+  row: h2 + body + CTA
+```
+`liquid-effect` needs a background image on the tagged element for the ripple to distort.
 
 ### Step 3 - Write the generator script
 
 **Preset slug rule.** Transform the preset name to a filename-safe slug before using it in script names, JSON slugs, and output filenames:
 - Lowercase, replace `:` with `-`, replace remaining non-alphanumeric characters (except `-`) with `-`, collapse consecutive `-` to one.
-- Examples: `pin:product-reveal` -> `pin-product-reveal`, `fade-up` -> `fade-up`.
+- Examples: `pin:product-reveal` -> `pin-product-reveal`, `blur-in` -> `blur-in`.
 
 Use `presetSlug` and `brandSlug` consistently in the filename, the JSON `slug` field, and the output file path.
 

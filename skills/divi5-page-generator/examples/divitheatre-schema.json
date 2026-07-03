@@ -9,7 +9,7 @@
           "name": "How do I add animations to Divi 5 without code?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Install DiviTheatre, then open any module’s Advanced → Attributes panel and add an attribute named data-theatre with a preset value such as fade-up or stagger. No custom JavaScript or CSS required."
+            "text": "Install DiviTheatre, then open any module’s Advanced → Attributes panel and add an attribute named data-theatre with a preset value such as blur-in or stagger. No custom JavaScript or CSS required."
           }
         },
         {

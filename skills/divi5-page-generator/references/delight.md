@@ -40,34 +40,34 @@ data-theatre="stagger"
 
 Apply to the row containing the feature columns. Each column fades up with a 120ms stagger.
 
-### Gallery hover growth
-Image cells in a gallery or portfolio section scale slightly on hover, with a subtle shadow increase.
-Creates the feeling of a responsive, alive page.
+### Magnetic hover
+Particles scatter around the element and snap to its centre on hover — the 21st.dev magnetic
+button feel. Creates the feeling of a responsive, alive page.
 
 ```
-data-theatre="hover-grow"
+data-theatre="magnetize"
 ```
 
-Apply to each image column or the image module inside a bento grid cell. Scale: 1.03. Do not apply
-to text-heavy cards — only image cells where the growth reads as "lift".
+Apply to primary CTAs, buttons, or a single hero card. One or two per page maximum — it is an
+accent, not a texture.
 
-### Scroll parallax
-Hero background image moves at 40% of scroll speed, creating depth without JavaScript tricks.
-Requires a background image set on the section.
+### Scroll depth
+Direct children scroll at different Y rates, creating a layered parallax depth illusion.
+Works best on rows with overlapping or offset content.
 
 ```
-data-theatre="parallax-scroll"
+data-theatre="depth-stack"
 ```
 
-Apply to the hero section. Use a strong, high-contrast image — parallax on a flat-colour section
-is invisible.
+Apply to a row with layered content (image + floating card, stacked tiles). Depth on a
+single flat block is invisible.
 
-### Fade-up entrance
-A step up from Divi's built-in fade — higher fidelity easing and exact Y-offset control.
+### Blur-in entrance
+A step up from Divi's built-in fade — the element fades in while an 8px blur resolves.
 Apply to key call-to-action sections, testimonial cards, or a pull quote block.
 
 ```
-data-theatre="fade-up"
+data-theatre="blur-in"
 ```
 
 ---

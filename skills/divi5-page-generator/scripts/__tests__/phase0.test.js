@@ -135,7 +135,7 @@ function runValidate(args, opts) {
   const B = D.createBuilder();
 
   // (a) Canonical theatre path: theatreAttrs output passes through untouched.
-  const sectionNormal = D.section({ theatre: 'fade-up' }, []);
+  const sectionNormal = D.section({ theatre: 'blur-in' }, []);
   ok('T3: canonical theatreAttrs output survives (section builds)',
     /wp:divi\/section /.test(sectionNormal));
   // Section may be self-closing or open/close; the attrs JSON ends at the first
@@ -151,19 +151,19 @@ function runValidate(args, opts) {
     normalAttrs.module.decoration.attributes.desktop.value.attributes;
   ok('T3: canonical output is Array<{name,value,targetElement:"main"}>',
     Array.isArray(list) && list.length === 1 &&
-    list[0].name === 'data-theatre' && list[0].value === 'fade-up' &&
+    list[0].name === 'data-theatre' && list[0].value === 'blur-in' &&
     list[0].targetElement === 'main',
     'got: ' + JSON.stringify(list));
 
   // (b) module.advanced.attributes (old location) → throws.
   const advMsg = throws('T3: module.advanced.attributes', () =>
-    D.section({ attrs: { module: { advanced: { attributes: { 'data-theatre': 'fade-up' } } } } }, []));
+    D.section({ attrs: { module: { advanced: { attributes: { 'data-theatre': 'blur-in' } } } } }, []));
   ok('T3: throw message names module.advanced.attributes',
     /module\.advanced\.attributes/.test(advMsg), 'got: ' + advMsg);
 
   // (c) top-level advanced.attributes → throws.
   const topMsg = throws('T3: advanced.attributes (top-level)', () =>
-    D.section({ attrs: { advanced: { attributes: { 'data-theatre': 'fade-up' } } } }, []));
+    D.section({ attrs: { advanced: { attributes: { 'data-theatre': 'blur-in' } } } }, []));
   ok('T3: throw message names advanced.attributes',
     /advanced\.attributes/.test(topMsg), 'got: ' + topMsg);
 
@@ -174,7 +174,7 @@ function runValidate(args, opts) {
       module: {
         decoration: {
           attributes: {
-            desktop: { value: { attributes: { 'data-theatre': 'fade-up' } } },
+            desktop: { value: { attributes: { 'data-theatre': 'blur-in' } } },
           },
         },
       },
@@ -191,7 +191,7 @@ function runValidate(args, opts) {
     migratedAttrs.module.decoration.attributes.desktop.value.attributes;
   ok('T3: key->value map migrated to canonical array',
     Array.isArray(migratedList) && migratedList.length === 1 &&
-    migratedList[0].name === 'data-theatre' && migratedList[0].value === 'fade-up' &&
+    migratedList[0].name === 'data-theatre' && migratedList[0].value === 'blur-in' &&
     migratedList[0].targetElement === 'main',
     'got: ' + JSON.stringify(migratedList));
 
@@ -335,15 +335,15 @@ function runValidate(args, opts) {
       '── results ──',
       '  PASS  JSON parses',
       '  PASS  context: et_builder',
-      '  PASS  114 blocks parsed, hierarchy + balance checked',
-      '  PASS  36 preset references checked',
+      '  PASS  137 blocks parsed, hierarchy + balance checked',
+      '  PASS  43 preset references checked',
       '  PASS  4 global colours defined, references checked',
       '  PASS  all button presets and inline buttons have enable:"on"',
       '  PASS  HEADING-PRESET: 4 heading preset(s) use the correct title.decoration.font.font slot',
       '  PASS  no raw hex values matched ET design system tokens',
       '  PASS  TASTE: no em-dash/en-dash in copy',
       '  PASS  SEO: exactly one h1 ("The Divi 5 Animation Plugin for <em>Cinematic</em>, Code-Fre")',
-      '  PASS  SEO: outline checked (21 headings)',
+      '  PASS  SEO: outline checked (28 headings)',
       '  PASS  SEO: all images have alt text',
       '  PASS  SEO: keyword in h1',
       '  PASS  SEO: keyword in >=1 h2',
