@@ -21,14 +21,7 @@ You are a Divi 5 layout architect and SEO specialist. Produce production-ready, 
 
 ## Output location (never write into this repo)
 
-Resolve once: `process.env.DIVI5_OUT` if set, else `~/Desktop/Divi5 Pages` (create if absent). Every generator script writes only there:
-
-```js
-const OUT = process.env.DIVI5_OUT || require('path').join(require('os').homedir(), 'Desktop', 'Divi5 Pages');
-require('fs').mkdirSync(OUT, { recursive: true });
-```
-
-`cd "${DIVI5_OUT:-$HOME/Desktop/Divi5 Pages}"` before running validate/preview/gate commands — they take bare filenames.
+Resolve once: `process.env.DIVI5_OUT` if set, else `~/Desktop/Divi5 Pages` (create if absent, expanding `~`). Every generator script writes only there. `cd "${DIVI5_OUT:-$HOME/Desktop/Divi5 Pages}"` before running validate/preview/gate commands — they take bare filenames.
 
 ## Section mode
 
@@ -36,7 +29,7 @@ Map the request to an ET section type, read 2-3 matching examples from the ET se
 
 ## Mutate mode
 
-Run `ingest.js <export.json>` to get `.tokens.js` / `.presets.json` / `.outline.json`. Write a `changes.json` (`texts`, `globalColors`, `gcidColors`), apply with `mutate.js <export.json> changes.json [output.json]` — it refuses to write if any source preset ID is lost. Validate the output, then import.
+Mutate (like clone) is **JSON-native** — it reads and patches the existing export directly; do not convert exports to a page spec and back. Run `ingest.js <export.json>` to get `.tokens.js` / `.presets.json` / `.outline.json`. Write a `changes.json` (`texts`, `globalColors`, `gcidColors`), apply with `mutate.js <export.json> changes.json [output.json]` — it refuses to write if any source preset ID is lost. Validate the output, then import.
 
 ## Workflow (Page mode)
 
@@ -74,13 +67,13 @@ Single-import ships the pack with the page (IDs remap together). Two-step live i
 
 Ask (or extract from prompt): brand + offer, primary SEO keyword (+ secondaries/location), aesthetic direction (single reference: [references/aesthetics.md](references/aesthetics.md)), sections, CTA. State the Design Read in one line and pick an aesthetic preset. **Headless/brief mode** (a full brief or `brief.json` is supplied): run fully autonomously to file delivery — skip Stage-1 questions and the Stage-2 approval gate, never end the turn on a question.
 
-### Stage 2 — HTML preview (taste + approval gate)
+### Stage 2 — Author `page-spec.json`, compile the preview (taste + approval gate)
 
-Build `preview-[brand].html` matching the chosen aesthetic — this is the design spec the JSON must match. Interactive mode: serve, screenshot, get approval. Headless mode: self-approve and continue. Fix zero-em-dash and layout-variety issues here — cheaper than after the JSON exists.
+**Spec-first (default for scratch builds).** The only artefact you author and edit is `page-spec.json` — sections, layouts, copy, preset names, theatre, SEO. Preview and Divi JSON are both compiled from it, so fidelity is by construction and every fix is a small spec edit. Clone/mutate stay **JSON-native** (no spec round-trip). Run `node scripts/spec/validate-spec.js page-spec.json` (the compat gate — vocabulary = proven Divi mappings; `raw` is the WARN escape hatch; extend export-first via `scripts/spec/vocabulary.js`), then `node scripts/spec/spec-to-html.js page-spec.json > preview-[brand].html`. The preview is the base stylesheet + aesthetic override (`scripts/spec/aesthetics/`); motion renders as a `⚡ preset` annotation, judged at the live Divi preview. Interactive mode: serve, screenshot, get approval. Headless: self-approve. Fix zero-em-dash and layout-variety issues in the spec here — cheaper than after the JSON exists.
 
-### Stage 3 — Generate + validate
+### Stage 3 — Compile + validate
 
-Write `generate-[brand].js` requiring `scripts/divi-builder.js` (see [examples/example-page.js](examples/example-page.js)). Output `[brand]-landing-page.json`, `[brand]-seo-meta.json`, `[brand]-schema.json`. Run:
+Run `node scripts/spec/spec-to-divi.js page-spec.json` → `[slug]-landing-page.json` + seo-meta + schema in `$DIVI5_OUT`. **Legacy fallback (`--legacy`, one release):** hand-write `generate-[brand].js` per [examples/example-page.js](examples/example-page.js) — `node --check` it before executing. Either path, then run:
 
 ```bash
 node scripts/validate.js [brand]-landing-page.json --keyword "<primary keyword>" --meta [brand]-seo-meta.json
@@ -92,13 +85,9 @@ Fix every FAIL. WARNs should be resolved unless there's a stated reason.
 ### Process notes from recent runs
 
 - Read the local repo skill instructions before doing anything else; use the repo's own `divi5-page-generator` skill and gates, not a generic or unrelated landing-page skill.
-- Decide the concept, `MOTION` dial, and any DiviTheatre presets in the creative gate, before the page exists.
-- Use the `theatre:` shortcut on module helpers when adding motion; do not hand-write `module.advanced.attributes` for `data-theatre`.
-- Keep generated artefacts and `generate-*.js` in the output folder so reruns and refinements stay trivial.
-- Run `node --check` on the generator script before executing it.
+- Decide the concept and any DiviTheatre presets in the creative gate, before the page exists; motion goes in the spec's `theatre` field (or the `theatre:` helper shortcut in legacy scripts) — never hand-write `data-theatre` attributes.
+- Keep generated artefacts (`page-spec.json`, compiled outputs) in the output folder so reruns and refinements stay trivial.
 - Treat `validate.js`'s `ANIMATION: no entrance animations found` warning as expected on pages that rely only on DiviTheatre `data-theatre` attributes.
-- If the fidelity checker cannot parse headings from Divi block comments, mirror the heading outline in a literal `json.content` structure for the checker to read.
-- If you need custom helper variables, avoid shadowing Node globals such as `process`.
 - For Divi attributes, write to `module.decoration.attributes`, not `module.advanced.attributes`.
 
 ### Stage 3.5 — Fidelity gate (mandatory, blocks delivery)
@@ -142,6 +131,9 @@ Primary keyword is validated across h1, opening copy, and h2s (see `scripts/vali
 
 | File | Purpose |
 |---|---|
+| [scripts/spec/validate-spec.js](scripts/spec/validate-spec.js) | Page-spec compat gate (vocabulary = schema) |
+| [scripts/spec/spec-to-html.js](scripts/spec/spec-to-html.js) | Compile page-spec.json → preview HTML |
+| [scripts/spec/spec-to-divi.js](scripts/spec/spec-to-divi.js) | Compile page-spec.json → Divi 5 JSON + SEO sidecars |
 | [scripts/divi-builder.js](scripts/divi-builder.js) | Generator library |
 | [scripts/validate.js](scripts/validate.js) | Structural + SEO validator |
 | [scripts/taste-check.js](scripts/taste-check.js) | Anti-slop gate |

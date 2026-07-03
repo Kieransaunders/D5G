@@ -101,9 +101,11 @@ function specToDivi(spec, opts) {
       case 'button': return D.button({ text: m.text, url: m.href, preset });
       case 'image': return D.image({ src: m.src, alt: m.alt, preset });
       case 'blurb': return D.blurb({ icon: m.icon, title: m.title, titleLevel: m.titleLevel || 'h3', body: m.body, preset });
-      case 'icon': return D.icon({ icon: m.icon, color: m.color, preset });
-      case 'accordion': return D.accordion({ items: m.items, preset });
-      case 'numberCounter': return D.numberCounter({ number: m.number, title: m.label, preset });
+      case 'icon': return D.icon({ unicode: m.icon, color: m.color, preset });
+      case 'accordion': return D.accordion(
+        (m.items || []).map(it => ({ question: it.title, answer: it.body, open: it.open })),
+        { preset });
+      case 'numberCounter': return D.numberCounter({ number: m.number, title: m.label, percent: m.percent, preset });
       case 'divider': return D.divider(m);
       case 'raw': {
         const fn = m.builder && D[m.builder];
