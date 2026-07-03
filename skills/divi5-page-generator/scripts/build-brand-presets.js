@@ -67,6 +67,29 @@ function buildBrandPresets(variables, roles) {
   };
 }
 
+/**
+ * brandPresetLibrary(pack) — turn a buildBrandPresets pack into a name-keyed registry
+ * so a builder can `loadPresetRegistry(lib, { withAttrs: true })` and resolve the brand
+ * presets by their stable NAMES via `presetRef()`. Shape matches the GET /presets
+ * response: { "divi/heading": { "Brand H1": { id, attrs } }, ... }.
+ *
+ * ponytail: valid for single-import mode (pack ships with the page, IDs remap together).
+ * The two-step live path fetches the SERVER registry after import instead — integration
+ * hinges on preset name stability, not these local IDs.
+ */
+function brandPresetLibrary(pack) {
+  const modules = (pack && pack.presets && pack.presets.module) || {};
+  const registry = {};
+  for (const [moduleName, mod] of Object.entries(modules)) {
+    const byName = {};
+    for (const item of Object.values((mod && mod.items) || {})) {
+      if (item && item.name) byName[item.name] = { id: item.id, attrs: item.attrs };
+    }
+    registry[moduleName] = byName;
+  }
+  return registry;
+}
+
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 function readJson(file) {
   const fs = require('fs');
@@ -102,4 +125,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { buildBrandPresets, varRef, colorHex };
+module.exports = { buildBrandPresets, brandPresetLibrary, varRef, colorHex };

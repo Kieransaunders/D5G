@@ -18,12 +18,25 @@ turns the variables skill's output into a ready-to-import brand preset pack.
 - Reuses the builder's `headingPreset()` / `buttonPreset()` / `preset()` helpers, so the
   Divi preset shape is correct by construction.
 - CLI: `node build-brand-presets.js <variables.json> <roles.json> [out.json]`.
+- Wire the pack into the generator: export `brandPresetLibrary(pack)` converting the pack
+  into a name-keyed registry a builder can `loadPresetRegistry(lib, {withAttrs:true})` and
+  `presetRef()` by stable name — so the brand pack IS the preset library, not the ET pack.
+- Update `divi5-page-generator/SKILL.md` **Stage 0.5** to source the preset library from the
+  brand pack (build → use as library) when brand variables exist, referencing the brand
+  presets by their stable names (`Brand H1`, `Brand Button Primary`, `Brand Section Light`),
+  and to distinguish single-import (local library) from two-step live (fetch server registry
+  by name after import).
 
 ## Capabilities
 - New: `brand-preset-generation`
 
 ## Impact
-- **New files:** `scripts/build-brand-presets.js` (function + CLI). No SKILL.md change in
-  this slice (wiring it into Stage 0.5 as the preferred brand-pack source is a follow-up).
-- **Not affected:** existing skills; the builder library (consumed, not modified).
+- **New files:** `scripts/build-brand-presets.js` (function + CLI + `brandPresetLibrary`).
+- **Modified:** `divi5-page-generator/SKILL.md` Stage 0.5 (preset library sourced from the
+  brand pack, referenced by stable preset name).
+- **Not affected:** the builder library (consumed, not modified).
 - **Source:** consumes the `divi5-variables-from-styleguide` output format directly.
+- **Cross-boundary note:** the two-step live path imports the pack and re-fetches the
+  server-assigned registry (IDs remap on import), so integration hinges on **preset name
+  stability**, not local IDs; the local `brandPresetLibrary` is only valid for single-import
+  mode where the same pack ships with the page.

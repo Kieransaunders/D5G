@@ -61,7 +61,14 @@ b.loadPresetRegistry(require('references/et-preset-registry.json')); // run setu
 const P = { hero: b.presetRef('divi/section', 'Section Preset 1'), /* … */ };
 ```
 
-A brand pack (from the `divi5-variables-from-styleguide` skill) replaces the ET registry when available. See [examples/preset-first-workflow.js](examples/preset-first-workflow.js) for the registry → `presetRef()` → import sequence.
+**Brand pack is the preferred library.** When brand variables exist, build the pack (`node scripts/build-brand-presets.js variables.json roles.json`) and use it as the registry **instead of the ET pack**, referencing presets by stable name — `Brand H1`, `Brand Button Primary`, `Brand Section Light`:
+
+```js
+const { buildBrandPresets, brandPresetLibrary } = require('scripts/build-brand-presets.js');
+b.loadPresetRegistry(brandPresetLibrary(buildBrandPresets(variables, roles)), { withAttrs: true });
+```
+
+Single-import ships the pack with the page (IDs remap together). Two-step live imports the pack, then fetches the SERVER registry (`GET /presets?with_attrs=1`) and matches on **name**, never local IDs. See [examples/preset-first-workflow.js](examples/preset-first-workflow.js).
 
 ### Stage 1 — Brief
 
