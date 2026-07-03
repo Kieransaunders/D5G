@@ -24,18 +24,19 @@ Turns green: T1-T4
 ## 3. Stage 0.5 wiring (RED)
 RED proof: 3 failures in `scripts/__tests__/brand-preset-wiring.test.js` (`brandPresetLibrary
 not exported`; Stage 0.5 not wired). Run from `skills/divi5-page-generator/`.
-- [ ] 3.1 Export `brandPresetLibrary(pack)` from `build-brand-presets.js` — convert
+- [x] 3.1 Export `brandPresetLibrary(pack)` from `build-brand-presets.js` — convert
       `pack.presets.module[*].items` into a name-keyed registry (`module → item.name →
       {id: item.id, attrs: item.attrs}`) so `loadPresetRegistry(lib, {withAttrs:true})` +
       `presetRef()` resolve by stable name [test: W1, W2]
-- [ ] 3.2 Update `SKILL.md` Stage 0.5: when brand variables exist, build the pack
+- [x] 3.2 Update `SKILL.md` Stage 0.5: when brand variables exist, build the pack
       (`build-brand-presets.js`) and use it as the preset library instead of the ET
       registry, referencing `Brand H1` / `Brand Button Primary` / `Brand Section Light` by
       name; note single-import (local `brandPresetLibrary`) vs two-step live (import pack →
       fetch server registry with attrs → `presetRef` by name, since IDs remap on import)
-      [test: W3]
+      [test: W3]. Kept SKILL.md ≤150 lines (slim-skill budget) — now 142.
 
 ## 4. Verification
 - [x] 4.1 `brand-presets.test.js` all green (4 assertions)
-- [ ] 4.2 `brand-preset-wiring.test.js` all green (3 assertions)
-- [ ] 4.3 Full skill suite stays green (no regression)
+- [x] 4.2 `brand-preset-wiring.test.js` all green (3 assertions)
+- [x] 4.3 Full skill suite green — only pre-existing `e2e-render` fails (HTTP 401: needs a
+      live WP server + DTI_KEY; untouched by this change)
