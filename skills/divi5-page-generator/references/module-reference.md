@@ -18,6 +18,34 @@ The builder's `heading({ level })` sets this. Default in Divi is h2 — which is
 
 `desktop` (required baseline), `tabletWide`, `tablet`, `phoneWide`, `phone`. Only include breakpoints that differ from desktop. The builder's `dv(value, { phone: {...} })` helper builds these.
 
+Default widths (customisable per site; only 3 active by default — see `skills/divi5-compatibility/SKILL.md`):
+
+| Key | Default width | Active by default | Query type |
+|---|---|---|---|
+| `phone` | 767px | yes | max-width |
+| `phoneWide` | 860px | no | max-width |
+| `tablet` | 980px | yes | max-width |
+| `tabletWide` | 1024px | no | max-width |
+| `desktop` | base | yes | — |
+| `widescreen` | 1280px | no | min-width |
+| `ultraWide` | 2560px | no | min-width |
+
+Don't emit overrides for inactive breakpoints unless the target site has enabled them.
+
+## Divi 5.5+ images: always set Aspect Ratio
+
+Since 5.5 every image element supports Aspect Ratio + Framing (object-fit/position) settings. Emitting an aspect ratio on image modules reserves layout space and eliminates CLS — generated pages should set it by default. Schema path needs verifying against a real 5.5+ export before use (see cheat-sheet rule above).
+
+## Newer modules (Timeline, Breadcrumbs, SVG, TOC, Instagram Feed, Canvas Portal, …)
+
+Attribute paths for **all 83 modules** — including everything the export-derived cheat sheet lacks — are in [module-schema-reference.md](module-schema-reference.md), extracted from the Divi theme's own `module.json` source (`scripts/extract-module-schema.py`, run against Divi 5.8.1). Existence of a path comes from there; for value *shapes* prefer the cheat sheet or a real export, falling back to the standard breakpoint envelope.
+
+Verified live: a `divi/timeline` + `divi/timeline-item` page built purely from the schema reference imported and rendered correctly on Divi 5.8.1 (04/07/2026). Parent→child nesting rules in `scripts/validate.js` are now sourced from the same data.
+
+`timeline(items, opts)` is a first-class builder helper (`__tests__/timeline.test.js`). The other newer modules have no helpers yet — emit them via `block(name, attrs, children)` using paths from the schema reference, and live-verify the render before promoting the pattern to a helper.
+
+Styling/CSS knowledge for the newer modules lives in `skills/divi5-css-patterns/`.
+
 ## Row layout
 
 - `flexColumnStructure`: `equal-columns_1/2/3/4`, `offset-columns_2` (first smaller), `offset-columns_6` (second smaller), `css-grid-grids_2`

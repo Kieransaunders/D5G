@@ -1,0 +1,3456 @@
+# Divi 5 Module Schema Reference (from theme source)
+
+Auto-generated from `module.json` definitions in the Divi theme (**Divi 5.8.1**, 83 modules). This is the authoritative attribute-path source — it lists every path that exists, whereas `module-attribute-cheatsheet.md` (export-derived) shows real-world value shapes for the paths pages actually use. Use both: existence from here, value shape from the cheat sheet or a real export.
+
+Regenerate: `python3 scripts/extract-module-schema.py "/path/to/themes/Divi"`
+
+Value shapes follow the standard breakpoint envelope: `{"desktop": {"value": ...}}` unless a real export shows otherwise. `→ sub` marks declared sub-keys of a path.
+
+## divi/accordion
+*class `` · d4 `et_pb_accordion` · children: `divi/accordion-item`*
+
+- `closedToggle.decoration.background` → color
+- `closedToggle.decoration.font`
+- `closedToggleIcon.decoration.icon`
+- `content.decoration.bodyFont`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `openToggle.decoration.background` → color
+- `openToggle.decoration.font`
+- `openToggle.decoration.font.font` → color
+- `title.decoration.font`
+- customCssFields: openToggle, toggle, toggleContent, toggleIcon, toggleTitle
+
+## divi/accordion-item
+*class `` · d4 `et_pb_accordion_item`*
+
+- `closedToggle.decoration.background` → color
+- `closedToggle.decoration.font`
+- `closedToggle.decoration.font.font` → color
+- `closedToggleIcon.decoration.icon`
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `openToggle.decoration.background` → color
+- `openToggle.decoration.font`
+- `openToggle.decoration.font.font` → color
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: openToggle, toggleContent, toggleIcon, toggleTitle
+
+## divi/audio
+*class `et_pb_audio` · d4 `et_pb_audio`*
+
+- `albumName.innerContent`
+- `artistName.innerContent`
+- `audio.innerContent`
+- `caption.decoration.font`
+- `image`
+- `image.decoration.image`
+- `image.innerContent` → src
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: audioButtons, audioContent, audioCoverArt, audioMeta, audioSliders, audioSlidersCurrent, audioTimer, audioTitle
+
+## divi/before-after-image
+*class `et_pb_before_after_image` · d4 `et_pb_before_after_image`*
+
+- `afterImage`
+- `afterImage.decoration.image`
+- `afterImage.innerContent` → src
+- `afterLabel.innerContent`
+- `beforeImage`
+- `beforeImage.decoration.image`
+- `beforeImage.innerContent` → src
+- `beforeLabel.innerContent`
+- `labels.decoration.background`
+- `labels.decoration.border`
+- `labels.decoration.font`
+- `labels.decoration.spacing`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `slider.advanced.arrowColor`
+- `slider.advanced.color`
+- `slider.advanced.orientation`
+- `slider.advanced.position`
+
+## divi/blog
+*class `` · d4 `et_pb_blog`*
+
+- `blogGrid.decoration.layout`
+- `content.decoration.bodyFont`
+- `fullwidth.decoration.border`
+- `image`
+- `image.advanced.enable`
+- `image.decoration.image`
+- `masonry.decoration.background` → color
+- `meta.advanced.showAuthor`
+- `meta.advanced.showCategories`
+- `meta.advanced.showComments`
+- `meta.advanced.showDate`
+- `meta.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.advanced.enable`
+- `overlay.decoration.background` → color
+- `overlayIcon.decoration.icon` → color
+- `pagination.advanced.enable`
+- `pagination.decoration.font`
+- `post.advanced.categories`
+- `post.advanced.dateFormat`
+- `post.advanced.excerptContent`
+- `post.advanced.excerptLength`
+- `post.advanced.excerptManual`
+- `post.advanced.number`
+- `post.advanced.offset`
+- `post.advanced.showExcerpt`
+- `post.advanced.type`
+- `post.advanced.useCurrentLoop`
+- `post.decoration.border`
+- `readMore.advanced.enable`
+- `readMore.decoration.font`
+- `title.decoration.font`
+- customCssFields: content, featuredImage, pagenavi, postMeta, readMore, title
+
+## divi/blurb
+*class `` · d4 `et_pb_blurb`*
+
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `contentContainer.decoration.sizing` → maxWidth
+- `imageIcon`
+- `imageIcon.advanced.color`
+- `imageIcon.advanced.placement`
+- `imageIcon.decoration.animation`
+- `imageIcon.decoration.background`
+- `imageIcon.decoration.sizing` → iconFontSize
+- `imageIcon.decoration.spacing`
+- `imageIcon.innerContent` → icon, src, useIcon
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: blurbContent, blurbImage, blurbTitle
+
+## divi/breadcrumbs
+*class `et_pb_breadcrumbs`*
+
+- `breadcrumb.decoration.background`
+- `breadcrumb.decoration.border`
+- `breadcrumb.decoration.boxShadow`
+- `breadcrumb.decoration.font`
+- `breadcrumb.decoration.sizing`
+- `breadcrumb.decoration.spacing`
+- `breadcrumbLink.decoration.background`
+- `breadcrumbLink.decoration.border`
+- `breadcrumbLink.decoration.boxShadow`
+- `breadcrumbLink.decoration.font`
+- `breadcrumbLink.decoration.sizing`
+- `breadcrumbLink.decoration.spacing`
+- `home.decoration.background`
+- `home.decoration.border`
+- `home.decoration.boxShadow`
+- `home.decoration.font`
+- `home.decoration.sizing`
+- `home.decoration.spacing`
+- `home.innerContent` → text, url
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `separator.decoration.background`
+- `separator.decoration.border`
+- `separator.decoration.boxShadow`
+- `separator.decoration.font`
+- `separator.decoration.sizing`
+- `separator.decoration.spacing`
+- `separator.innerContent` → text
+- `trail.advanced.htmlTag`
+- customCssFields: breadcrumb, breadcrumbLink, breadcrumbWrapper, homeLink, separator
+
+## divi/button
+*class `et_pb_button` · d4 `et_pb_button`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent`
+- `module.advanced.alignment`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/canvas-portal
+*class `` · d4 `et_pb_canvas_portal`*
+
+- `canvas.advanced.canvasId`
+- `css.advanced.cssClass`
+- `css.advanced.cssId`
+- `css.advanced.customCss`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/circle-counter
+*class `et_pb_circle_counter` · d4 `et_pb_circle_counter`*
+
+- `circle.advanced.background` → color, opacity
+- `circle.advanced.circle`
+- `circle.advanced.color`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `number.advanced.percentSign`
+- `number.decoration.font`
+- `number.innerContent`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: circleCounterTitle, percent, percentText
+
+## divi/code
+*class `et_pb_code` · d4 `et_pb_code`*
+
+- `content.innerContent`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/column
+*class `` · d4 `et_pb_column`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/column-inner
+*class `` · d4 `et_pb_column_inner`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/comments
+*class `et_pb_comments_module` · d4 `et_pb_comments`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `commentCount.advanced.showCount`
+- `commentCount.decoration.font`
+- `commentText.decoration.font`
+- `field`
+- `formTitle.decoration.font`
+- `image`
+- `image.advanced.showAvatar`
+- `image.decoration.image`
+- `meta.advanced.showMeta`
+- `meta.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.showReply`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: commentAvatar, commentBody, commentContent, commentMeta, emailField, mainHeader, messageField, nameField, newTitle, replyButton, submitButton, websiteField
+
+## divi/contact-field
+*class `et_pb_contact_field` · d4 `et_pb_contact_field`*
+
+- `checkbox`
+- `conditionalLogic.advanced.enable`
+- `conditionalLogic.advanced.relation`
+- `conditionalLogic.innerContent`
+- `field`
+- `fieldItem.advanced.allowedSymbols`
+- `fieldItem.advanced.checkboxOptions`
+- `fieldItem.advanced.id`
+- `fieldItem.advanced.maxLength`
+- `fieldItem.advanced.minLength`
+- `fieldItem.advanced.radioOptions`
+- `fieldItem.advanced.required`
+- `fieldItem.advanced.selectOptions`
+- `fieldItem.advanced.type`
+- `fieldItem.innerContent`
+- `fieldTitle.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `radio`
+
+## divi/contact-form
+*class `et_pb_contact_form_container` · d4 `et_pb_contact_form` · children: `divi/contact-field`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent` → text
+- `captcha.decoration.font`
+- `checkbox`
+- `email.advanced.receiver`
+- `email.innerContent`
+- `field`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.successMessage`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `radio`
+- `redirect.advanced.useRedirect`
+- `redirect.innerContent`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: captchaField, captchaLabel, contactButton, contactFields, contactTitle, textField
+
+## divi/contact-form-7
+*class `et_pb_contact_form_7` · d4 `et_pb_contact_form_7`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `checkbox`
+- `field`
+- `form.advanced.formId`
+- `messageAcceptance.decoration.background`
+- `messageAcceptance.decoration.bodyFont`
+- `messageAcceptance.decoration.border`
+- `messageFailure.decoration.background`
+- `messageFailure.decoration.bodyFont`
+- `messageFailure.decoration.border`
+- `messageInvalid.decoration.background`
+- `messageInvalid.decoration.bodyFont`
+- `messageInvalid.decoration.border`
+- `messageSpam.decoration.background`
+- `messageSpam.decoration.bodyFont`
+- `messageSpam.decoration.border`
+- `messageSuccess.decoration.background`
+- `messageSuccess.decoration.bodyFont`
+- `messageSuccess.decoration.border`
+- `messageValidation.decoration.background`
+- `messageValidation.decoration.bodyFont`
+- `messageValidation.decoration.border`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `radioButton`
+- customCssFields: button, checkbox, inputField, messageAcceptance, messageFailure, messageInvalid, messageSpam, messageSuccess, messageValidation, radioButton
+
+## divi/countdown-timer
+*class `et_pb_countdown_timer` · d4 `et_pb_countdown_timer`*
+
+- `content.advanced.dateTime`
+- `label.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `number.decoration.font`
+- `separator.decoration.font`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: container, timerSection, title
+
+## divi/counter
+*class `` · d4 `et_pb_counter`*
+
+- `barCounter.decoration.background`
+- `barCounter.decoration.border`
+- `barCounter.decoration.boxShadow`
+- `barCounter.decoration.sizing`
+- `barProgress.decoration.background`
+- `barProgress.decoration.font`
+- `barProgress.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.conditions`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: counterAmount, counterContainer, counterTitle
+
+## divi/counters
+*class `` · d4 `et_pb_counters` · children: `divi/counter`*
+
+- `barCounter.decoration.background`
+- `barCounter.decoration.border`
+- `barCounter.decoration.boxShadow`
+- `barProgress.advanced.usePercentages`
+- `barProgress.decoration.font`
+- `children.barProgress.decoration.background` → color
+- `children.decoration.background`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- customCssFields: counterAmount, counterContainer, counterTitle
+
+## divi/cta
+*class `et_pb_promo` · d4 `et_pb_cta`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent` → text
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: button, description, title
+
+## divi/divider
+*class `` · d4 `et_pb_divider`*
+
+- `divider.advanced.line` → color, position, show, style, weight
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/dropdown
+*class `et_pb_dropdown` · d4 `et_pb_dropdown`*
+
+- `module.advanced.dropdown` → alignment, direction, offset, position, showOn
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/filterable-portfolio
+*class `` · d4 `et_pb_filterable_portfolio`*
+
+- `filter.decoration.font`
+- `image`
+- `image.decoration.image`
+- `meta.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.decoration.background` → color
+- `overlay.decoration.icon` → color
+- `pagination.decoration.font`
+- `portfolio.advanced.includedCategories`
+- `portfolio.advanced.postsNumber`
+- `portfolio.advanced.showCategories`
+- `portfolio.advanced.showPagination`
+- `portfolio.advanced.showTitle`
+- `portfolioGrid.decoration.layout`
+- `portfolioItem.decoration.border`
+- `title.decoration.font`
+- customCssFields: activePortfolioFilter, overlay, overlayIcon, portfolioFilters, portfolioImage, portfolioPagination, portfolioPaginationActive, portfolioPostMeta, portfolioTitle
+
+## divi/fullwidth-code
+*class `et_pb_fullwidth_code` · d4 `et_pb_fullwidth_code`*
+
+- `content.innerContent`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/fullwidth-header
+*class `` · d4 `et_pb_fullwidth_header`*
+
+- `buttonOne.decoration.background`
+- `buttonOne.decoration.border`
+- `buttonOne.decoration.boxShadow`
+- `buttonOne.decoration.button`
+- `buttonOne.decoration.font`
+- `buttonOne.decoration.sizing`
+- `buttonOne.decoration.spacing`
+- `buttonOne.innerContent` → linkUrl, text
+- `buttonTwo.decoration.background`
+- `buttonTwo.decoration.border`
+- `buttonTwo.decoration.boxShadow`
+- `buttonTwo.decoration.button`
+- `buttonTwo.decoration.font`
+- `buttonTwo.decoration.sizing`
+- `buttonTwo.decoration.spacing`
+- `buttonTwo.innerContent` → linkUrl, text
+- `content.advanced.maxWidth`
+- `content.advanced.orientation`
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `image`
+- `image.advanced.orientation`
+- `image.innerContent` → src
+- `logo.innerContent` → src
+- `module.advanced.elements`
+- `module.advanced.headerFullscreen`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.advanced.text.text` → orientation
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.decoration.background` → color
+- `scrollDown.decoration.icon` → color, show, size
+- `subhead.decoration.font`
+- `subhead.innerContent`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: button1, button2, content, headerContainer, headerImage, logo, scrollButton, subtitle, title
+
+## divi/fullwidth-image
+*class `` · d4 `et_pb_fullwidth_image`*
+
+- `image.advanced.lightbox`
+- `image.advanced.overlay`
+- `image.advanced.overlayIcon`
+- `image.innerContent`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: image
+
+## divi/fullwidth-map
+*class `et_pb_map_container` · d4 `et_pb_fullwidth_map` · children: `divi/map-pin`*
+
+- ``
+- `map.advanced.googleAPIKey`
+- `map.advanced.mobileDragging`
+- `map.advanced.mouseWheel`
+- `map.decoration.filters`
+- `map.innerContent`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.innerContent`
+- `module.meta.adminLabel`
+
+## divi/fullwidth-menu
+*class `et_pb_fullwidth_menu` · d4 `et_pb_fullwidth_menu`*
+
+- `cartIcon.advanced.show`
+- `cartIcon.decoration.font`
+- `cartIcon.decoration.font.font` → color, size
+- `cartQuantity.advanced.show`
+- `cartQuantity.decoration.font`
+- `hamburgerMenuIcon.decoration.font`
+- `hamburgerMenuIcon.decoration.font.font` → color, size
+- `logo.decoration.border`
+- `logo.decoration.boxShadow`
+- `logo.decoration.filters`
+- `logo.decoration.sizing`
+- `logo.innerContent` → linkTarget, linkUrl, src
+- `menu.advanced.activeLinkColor`
+- `menu.advanced.fullwidth`
+- `menu.advanced.menuId`
+- `menu.advanced.style`
+- `menu.decoration.font`
+- `menuDropdown.advanced.activeLinkColor`
+- `menuDropdown.advanced.animation`
+- `menuDropdown.advanced.direction`
+- `menuDropdown.advanced.lineColor`
+- `menuDropdown.decoration.background` → color
+- `menuDropdown.decoration.font`
+- `menuDropdown.decoration.font.font` → color
+- `menuMobile.decoration.background` → color
+- `menuMobile.decoration.font`
+- `menuMobile.decoration.font.font` → color
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `searchIcon.advanced.show`
+- `searchIcon.decoration.font`
+- `searchIcon.decoration.font.font` → color, size
+- customCssFields: activeMenuLink, dropdownContainer, dropdownLinks, menuLink, menuLogo
+
+## divi/fullwidth-portfolio
+*class `` · d4 `et_pb_fullwidth_portfolio`*
+
+- `image`
+- `image.decoration.image`
+- `meta.decoration.font`
+- `module.advanced.autoRotate`
+- `module.advanced.autoRotateSpeed`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.decoration.background` → color
+- `overlay.decoration.icon` → color
+- `portfolio.advanced.layout`
+- `portfolio.advanced.showDate`
+- `portfolio.advanced.showTitle`
+- `portfolio.decoration.font`
+- `portfolio.innerContent` → includedCategories, postsNumber, type
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: portfolioArrows, portfolioItem, portfolioItemTitle, portfolioMeta, portfolioOverlay, portfolioTitle
+
+## divi/fullwidth-post-content
+*class `` · d4 `et_pb_fullwidth_post_content`*
+
+- `image.decoration.border`
+- `image.decoration.boxShadow`
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.bodyFont`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.headingFont`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/fullwidth-post-slider
+*class `et_pb_fullwidth_post_slider` · d4 `et_pb_fullwidth_post_slider`*
+
+- `arrows.advanced.color`
+- `arrows.advanced.enable`
+- `button.advanced.enable`
+- `button.advanced.showOnMobile`
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent` → text
+- `content.advanced.showOnMobile`
+- `content.decoration.bodyFont`
+- `content.decoration.sizing`
+- `contentOverlay.advanced.use`
+- `contentOverlay.decoration.background` → color
+- `contentOverlay.decoration.border`
+- `image.advanced.enable`
+- `image.advanced.placement`
+- `image.advanced.showOnMobile`
+- `image.decoration.border`
+- `image.decoration.boxShadow`
+- `image.decoration.filters`
+- `meta.advanced.enable`
+- `meta.decoration.font`
+- `module.advanced.auto`
+- `module.advanced.autoIgnoreHover`
+- `module.advanced.autoSpeed`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `pagination.advanced.enable`
+- `pagination.decoration.background` → color
+- `post.advanced.categories`
+- `post.advanced.contentSource`
+- `post.advanced.excerptLength`
+- `post.advanced.excerptManual`
+- `post.advanced.number`
+- `post.advanced.offset`
+- `post.advanced.orderby`
+- `slideOverlay.advanced.use`
+- `slideOverlay.decoration.background` → color
+- `title.decoration.font`
+- customCssFields: slideActiveController, slideArrows, slideButton, slideControllers, slideDescription, slideImage, slideMeta, slideTitle
+
+## divi/fullwidth-post-title
+*class `et_pb_post_title` · d4 `et_pb_fullwidth_post_title`*
+
+- `featuredImage.advanced.enabled`
+- `featuredImage.advanced.forceFullwidth`
+- `featuredImage.advanced.placement`
+- `featuredImage.decoration.sizing` → alignment, height, maxHeight, maxWidth, width
+- `meta.advanced.dateFormat`
+- `meta.advanced.showAuthor`
+- `meta.advanced.showCategories`
+- `meta.advanced.showCommentsCount`
+- `meta.advanced.showDate`
+- `meta.advanced.showMeta`
+- `meta.decoration.font`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `textWrapper.advanced.useBackground`
+- `textWrapper.decoration.background` → color
+- `title.advanced.showTitle`
+- `title.decoration.font`
+- customCssFields: postImage, postMeta, postTitle
+
+## divi/fullwidth-slider
+*class `et_pb_slider` · d4 `et_pb_fullwidth_slider` · children: `divi/slide`*
+
+- `arrows.advanced.color`
+- `arrows.advanced.show`
+- `button`
+- `button.decoration.button`
+- `children.advanced.button`
+- `children.advanced.content`
+- `children.advanced.contentOverlay`
+- `children.advanced.slideOverlay`
+- `children.button.advanced.showOnMobile`
+- `children.content.advanced.showOnMobile`
+- `children.contentOverlay.advanced.use`
+- `children.contentOverlay.decoration.background` → color
+- `children.contentOverlay.decoration.border` → radius
+- `children.decoration.background`
+- `children.decoration.border`
+- `children.module.decoration.background`
+- `children.slideOverlay.advanced.use`
+- `children.slideOverlay.decoration.background` → color
+- `content.decoration.bodyFont`
+- `content.decoration.sizing` → maxWidth, width
+- `dotNav.decoration.background` → color
+- `image.advanced.showOnMobile`
+- `image.decoration.border`
+- `image.decoration.boxShadow`
+- `module.advanced.auto`
+- `module.advanced.autoIgnoreHover`
+- `module.advanced.autoSpeed`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `pagination.advanced.show`
+- `title.decoration.font`
+- customCssFields: slideActiveController, slideArrows, slideButton, slideControllers, slideDescription, slideImage, slideTitle
+
+## divi/gallery
+*class `et_pb_gallery` · d4 `et_pb_gallery`*
+
+- `caption.decoration.font`
+- `galleryGrid.decoration.layout`
+- `image`
+- `image.advanced.galleryIds`
+- `image.advanced.galleryOrderby`
+- `image.advanced.orientation`
+- `image.decoration.image`
+- `item.decoration.border`
+- `module.advanced.auto`
+- `module.advanced.autoSpeed`
+- `module.advanced.elements`
+- `module.advanced.fullwidth`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.postsNumber`
+- `module.advanced.showTitleAndCaption`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.advanced.hoverOverlayColor`
+- `overlay.advanced.zoomIconColor`
+- `overlay.innerContent` → icon
+- `pagination.advanced.showPagination`
+- `pagination.decoration.font`
+- `title.decoration.font`
+- customCssFields: galleryItem, galleryItemCaption, galleryItemTitle, galleryPagination, galleryPaginationActive, overlay, overlayIcon
+
+## divi/global-layout
+*class ``*
+
+
+## divi/group
+*class ``*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/group-carousel
+*class `` · children: `divi/group`*
+
+- `activeGroups.decoration.background`
+- `activeGroups.decoration.border`
+- `activeGroups.decoration.boxShadow`
+- `activeGroups.decoration.filters`
+- `activeGroups.decoration.layout`
+- `activeGroups.decoration.spacing`
+- `activeGroups.decoration.transform`
+- `arrows.advanced.color`
+- `arrows.advanced.leftIcon`
+- `arrows.advanced.position`
+- `arrows.advanced.rightIcon`
+- `arrows.advanced.show`
+- `arrows.advanced.showArrows`
+- `arrows.advanced.size`
+- `arrows.decoration.background`
+- `arrows.decoration.border`
+- `arrows.decoration.boxShadow`
+- `arrows.decoration.spacing`
+- `children.decoration.background`
+- `children.decoration.border`
+- `children.decoration.boxShadow`
+- `children.decoration.filters`
+- `children.decoration.layout`
+- `children.decoration.spacing`
+- `children.decoration.transform`
+- `dotNav.advanced.alignment`
+- `dotNav.advanced.color`
+- `dotNav.advanced.position`
+- `dotNav.advanced.show`
+- `dotNav.advanced.showDots`
+- `dotNav.advanced.size`
+- `module.advanced.auto`
+- `module.advanced.autoSpeed`
+- `module.advanced.centerMode`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.pauseOnHover`
+- `module.advanced.slidesToScroll`
+- `module.advanced.slidesToShow`
+- `module.advanced.speed`
+- `module.advanced.transitionSpeed`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: carouselActiveSlide, carouselArrows, carouselContainer, carouselDots, carouselSlide, carouselTrack
+
+## divi/heading
+*class `et_pb_heading` · d4 `et_pb_heading`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: headingContainer, mainElement
+
+## divi/icon
+*class `` · d4 `et_pb_icon`*
+
+- `icon.advanced.align`
+- `icon.advanced.color`
+- `icon.advanced.size`
+- `icon.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: iconElement
+
+## divi/icon-list
+*class `et_pb_icon_list` · d4 `et_pb_icon_list` · children: `divi/icon-list-item`*
+
+- `icon.advanced.color`
+- `icon.advanced.size`
+- `icon.decoration.background`
+- `icon.decoration.border`
+- `icon.decoration.boxShadow`
+- `icon.decoration.spacing`
+- `listItem.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: icon, text
+
+## divi/icon-list-item
+*class `et_pb_icon_list_item` · d4 `et_pb_icon_list_item`*
+
+- `content.decoration.font`
+- `content.innerContent`
+- `icon.advanced.color`
+- `icon.advanced.size`
+- `icon.decoration.background`
+- `icon.decoration.border`
+- `icon.decoration.boxShadow`
+- `icon.decoration.spacing`
+- `icon.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: icon, text
+
+## divi/image
+*class `` · d4 `et_pb_image`*
+
+- `image.advanced.lightbox`
+- `image.advanced.overlay`
+- `image.advanced.overlayIcon`
+- `image.decoration.border`
+- `image.decoration.boxShadow`
+- `image.decoration.fit`
+- `image.innerContent`
+- `module.advanced.align`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.advanced.sizing` → forceFullwidth
+- `module.advanced.spacing`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: image
+
+## divi/instagram-feed
+*class `et_pb_instagram_feed` · d4 `et_pb_instagram_feed`*
+
+- `feed.advanced.config` → lightbox
+- `feed.advanced.link`
+- `feed.decoration.background`
+- `feed.decoration.border`
+- `feed.decoration.boxShadow`
+- `feed.decoration.layout`
+- `feed.decoration.sizing`
+- `feed.decoration.spacing`
+- `feed.innerContent` → accountId, postCount
+- `followButton.advanced.show`
+- `followButton.decoration.background`
+- `followButton.decoration.border`
+- `followButton.decoration.boxShadow`
+- `followButton.decoration.button`
+- `followButton.decoration.font`
+- `followButton.decoration.sizing`
+- `followButton.decoration.spacing`
+- `followButton.innerContent` → text
+- `item.decoration.background`
+- `item.decoration.border`
+- `item.decoration.boxShadow`
+- `item.decoration.sizing`
+- `item.decoration.spacing`
+- `media`
+- `media.decoration.image`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: module
+
+## divi/link
+*class `et_pb_link` · d4 `et_pb_link`*
+
+- `content.decoration.font`
+- `content.innerContent`
+- `icon.advanced.color`
+- `icon.advanced.size`
+- `icon.decoration.background`
+- `icon.decoration.border`
+- `icon.decoration.boxShadow`
+- `icon.decoration.spacing`
+- `icon.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: icon
+
+## divi/login
+*class `et_pb_login` · d4 `et_pb_login`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent` → text
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `field`
+- `module.advanced.currentPageRedirect`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: newsletterButton, newsletterDescription, newsletterFields, newsletterForm, newsletterTitle
+
+## divi/lottie
+*class `et_pb_lottie` · d4 `et_pb_lottie`*
+
+- `lottie.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: lottieAnimation
+
+## divi/map
+*class `et_pb_map_container` · d4 `et_pb_map` · children: `divi/map-pin`*
+
+- ``
+- `map.advanced.googleAPIKey`
+- `map.advanced.grayscaleFilter` → amount, enabled
+- `map.advanced.grayscaleFilterAmount`
+- `map.advanced.mobileDragging`
+- `map.advanced.mouseWheel`
+- `map.advanced.warning`
+- `map.decoration.filters`
+- `map.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/map-pin
+*class `` · d4 `et_pb_map_pin`*
+
+- `content.innerContent`
+- `pin.advanced.html`
+- `pin.advanced.loop`
+- `pin.innerContent`
+- `pin.meta.adminLabel`
+- `title.innerContent`
+
+## divi/menu
+*class `et_pb_menu` · d4 `et_pb_menu`*
+
+- `cartIcon.advanced.show`
+- `cartIcon.decoration.font`
+- `cartIcon.decoration.font.font` → color, size
+- `cartQuantity.advanced.show`
+- `cartQuantity.decoration.font`
+- `hamburgerMenuIcon.decoration.font`
+- `hamburgerMenuIcon.decoration.font.font` → color, size
+- `logo.decoration.border`
+- `logo.decoration.boxShadow`
+- `logo.decoration.filters`
+- `logo.decoration.sizing`
+- `logo.innerContent`
+- `menu.advanced.activeLinkColor`
+- `menu.advanced.menuId`
+- `menu.advanced.style`
+- `menu.decoration.font`
+- `menuDropdown.advanced.activeLinkColor`
+- `menuDropdown.advanced.animation`
+- `menuDropdown.advanced.direction`
+- `menuDropdown.advanced.lineColor`
+- `menuDropdown.decoration.background`
+- `menuDropdown.decoration.font`
+- `menuDropdown.decoration.font.font` → color
+- `menuMobile.decoration.background`
+- `menuMobile.decoration.font`
+- `menuMobile.decoration.font.font` → color
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `searchIcon.advanced.show`
+- `searchIcon.decoration.font`
+- `searchIcon.decoration.font.font` → color, size
+- customCssFields: activeMenuLink, dropdownContainer, dropdownLinks, menuLink, menuLogo
+
+## divi/number-counter
+*class `et_pb_number_counter` · d4 `et_pb_number_counter`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `number.advanced.enablePercentSign`
+- `number.decoration.font`
+- `number.innerContent`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: numberCounterTitle, percent
+
+## divi/portfolio
+*class `` · d4 `et_pb_portfolio`*
+
+- `image`
+- `image.decoration.image`
+- `meta.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.advanced.hoverIcon`
+- `overlay.advanced.iconColor`
+- `overlay.decoration.background` → color
+- `pagination.decoration.font`
+- `portfolio.advanced.showCategories`
+- `portfolio.advanced.showPagination`
+- `portfolio.advanced.showTitle`
+- `portfolio.innerContent` → includedCategories, postsNumber
+- `portfolioGrid.decoration.layout`
+- `title.decoration.font`
+- customCssFields: overlay, overlayIcon, pagination, portfolioImage, portfolioPostMeta, portfolioTitle
+
+## divi/post-content
+*class `` · d4 `et_pb_post_content`*
+
+- `image`
+- `image.decoration.image`
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.bodyFont`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.headingFont`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/post-nav
+*class `et_pb_posts_nav` · d4 `et_pb_post_nav`*
+
+- `links.advanced.nextText`
+- `links.advanced.prevText`
+- `links.advanced.showNext`
+- `links.advanced.showPrev`
+- `links.decoration.background`
+- `links.decoration.border`
+- `links.decoration.boxShadow`
+- `links.decoration.font`
+- `links.decoration.spacing`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.inSameTerm`
+- `module.advanced.targetLoop`
+- `module.advanced.taxonomyName`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: links, nextLink, nextLinkArrow, prevLink, prevLinkArrow
+
+## divi/post-slider
+*class `et_pb_post_slider` · d4 `et_pb_post_slider`*
+
+- `arrows.advanced.color`
+- `arrows.advanced.enable`
+- `button.advanced.enable`
+- `button.advanced.showOnMobile`
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent` → text
+- `content.advanced.showOnMobile`
+- `content.decoration.bodyFont`
+- `content.decoration.sizing`
+- `contentOverlay.advanced.use`
+- `contentOverlay.decoration.background` → color
+- `contentOverlay.decoration.border`
+- `image`
+- `image.advanced.enable`
+- `image.advanced.placement`
+- `image.advanced.showOnMobile`
+- `image.decoration.image`
+- `meta.advanced.enable`
+- `meta.decoration.font`
+- `module.advanced.auto`
+- `module.advanced.autoIgnoreHover`
+- `module.advanced.autoSpeed`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `pagination.advanced.enable`
+- `pagination.decoration.background` → color
+- `post.advanced.categories`
+- `post.advanced.contentSource`
+- `post.advanced.excerptLength`
+- `post.advanced.excerptManual`
+- `post.advanced.number`
+- `post.advanced.offset`
+- `post.advanced.orderby`
+- `slideOverlay.advanced.use`
+- `slideOverlay.decoration.background` → color
+- `title.decoration.font`
+- customCssFields: slideActiveController, slideArrows, slideButton, slideControllers, slideDescription, slideImage, slideMeta, slideTitle
+
+## divi/post-title
+*class `et_pb_post_title` · d4 `et_pb_post_title`*
+
+- `image`
+- `image.advanced.enabled`
+- `image.advanced.placement`
+- `image.decoration.image`
+- `meta.advanced.dateFormat`
+- `meta.advanced.showAuthor`
+- `meta.advanced.showCategories`
+- `meta.advanced.showCommentsCount`
+- `meta.advanced.showDate`
+- `meta.advanced.showMeta`
+- `meta.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `textWrapper.advanced.useBackground`
+- `textWrapper.decoration.background`
+- `title.advanced.showTitle`
+- `title.decoration.font`
+- customCssFields: postImage, postMeta, postTitle
+
+## divi/pricing-table
+*class `` · d4 `et_pb_pricing_table`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent`
+- `content.advanced.bulletColor`
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `currencyFrequency.decoration.font`
+- `currencyFrequency.innerContent`
+- `excluded.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.featured`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `price.decoration.background`
+- `price.decoration.border`
+- `price.decoration.font`
+- `price.innerContent`
+- `subtitle.decoration.font`
+- `subtitle.innerContent`
+- `title.decoration.background`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: currency, frequency, price, pricingButton, pricingContent, pricingHeading, pricingItem, pricingItemExcluded, pricingSubtitle, pricingTitle, pricingTop
+
+## divi/pricing-tables
+*class `` · d4 `et_pb_pricing_tables` · children: `divi/pricing-table`*
+
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent`
+- `content.advanced.bulletColor`
+- `content.advanced.showBullet`
+- `content.decoration.bodyFont`
+- `currencyFrequency.decoration.font`
+- `excluded.decoration.font`
+- `featuredContent.advanced.bulletColor`
+- `featuredContent.decoration.font`
+- `featuredContent.decoration.font.font` → color
+- `featuredCurrencyFrequency.decoration.font`
+- `featuredCurrencyFrequency.decoration.font.font` → color
+- `featuredExcluded.decoration.font`
+- `featuredExcluded.decoration.font.font` → color
+- `featuredPrice.decoration.background`
+- `featuredPrice.decoration.font`
+- `featuredPrice.decoration.font.font` → color
+- `featuredSubtitle.decoration.font`
+- `featuredSubtitle.decoration.font.font` → color
+- `featuredTable.advanced.showDropShadow`
+- `featuredTable.decoration.background`
+- `featuredTitle.decoration.background`
+- `featuredTitle.decoration.font`
+- `featuredTitle.decoration.font.font` → color
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `price.decoration.background`
+- `price.decoration.border`
+- `price.decoration.font`
+- `subtitle.decoration.font`
+- `title.decoration.background`
+- `title.decoration.font`
+- customCssFields: currency, featuredTable, frequency, price, pricingButton, pricingContent, pricingHeading, pricingItem, pricingItemExcluded, pricingSubtitle, pricingTitle, pricingTop
+
+## divi/row
+*class `` · d4 `et_pb_row`*
+
+- `module.advanced.elements`
+- `module.advanced.gutter`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/row-inner
+*class `` · d4 `et_pb_row_inner`*
+
+- `module.advanced.elements`
+- `module.advanced.gutter`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/search
+*class `` · d4 `et_pb_search`*
+
+- `button.decoration.background`
+- `button.decoration.font`
+- `field.advanced.focus`
+- `field.advanced.placeholder`
+- `field.decoration.background`
+- `field.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.excludedCategories`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `search.advanced.excludePages`
+- `search.advanced.excludePosts`
+- `search.advanced.showButton`
+- `searchPlaceholder.innerContent`
+- customCssFields: button, inputField
+
+## divi/section
+*class `` · d4 `et_pb_section` · children: `divi/row`*
+
+- `column1.decoration.background`
+- `column1.decoration.spacing`
+- `column2.decoration.background`
+- `column2.decoration.spacing`
+- `column3.decoration.background`
+- `column3.decoration.spacing`
+- `innerSizing.decoration.sizing`
+- `module.advanced.dividers`
+- `module.advanced.elements`
+- `module.advanced.gutter`
+- `module.advanced.html`
+- `module.advanced.innerShadow`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- customCssFields: column_1_after, column_1_before, column_1_main, column_2_after, column_2_before, column_2_main, column_3_after, column_3_before, column_3_main
+
+## divi/sidebar
+*class `et_pb_widget_area` · d4 `et_pb_sidebar`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `sidebar.advanced.layout`
+- `sidebar.decoration.font`
+- `sidebar.innerContent`
+- `sidebarWidgets.advanced.flexType`
+- `title.decoration.font`
+- customCssFields: title, widget
+
+## divi/signup
+*class `et_pb_signup` · d4 `et_pb_signup`*
+
+- ``
+- `button.decoration.background`
+- `button.decoration.border`
+- `button.decoration.boxShadow`
+- `button.decoration.button`
+- `button.decoration.font`
+- `button.decoration.sizing`
+- `button.decoration.spacing`
+- `button.innerContent` → text
+- `checkbox`
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `customFields.advanced.enable`
+- `customFields.advanced.fields`
+- `customFields.advanced.notice`
+- `field`
+- `field.advanced.emailFullwidth`
+- `field.advanced.firstNameField`
+- `field.advanced.firstNameFullwidth`
+- `field.advanced.ipAddress`
+- `field.advanced.lastNameField`
+- `field.advanced.lastNameFullwidth`
+- `field.advanced.nameField`
+- `field.advanced.nameFieldOnly`
+- `field.advanced.nameFullwidth`
+- `footerContent.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `radio`
+- `resultMessage.decoration.font`
+- `success.advanced.action`
+- `success.advanced.message`
+- `success.advanced.redirectQuery`
+- `success.advanced.redirectUrl`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: newsletterButton, newsletterDescription, newsletterFields, newsletterForm, newsletterTitle
+
+## divi/signup-custom-field
+*class `et_pb_signup_custom_field` · d4 `et_pb_signup_custom_field`*
+
+- `checkbox`
+- `conditionalLogic.advanced.enable`
+- `conditionalLogic.advanced.relation`
+- `conditionalLogic.innerContent`
+- `field`
+- `field.decoration.background`
+- `field.decoration.font`
+- `fieldItem.advanced.allowedSymbols`
+- `fieldItem.advanced.checkboxOptions`
+- `fieldItem.advanced.fullwidth`
+- `fieldItem.advanced.hidden`
+- `fieldItem.advanced.id`
+- `fieldItem.advanced.maxLength`
+- `fieldItem.advanced.minLength`
+- `fieldItem.advanced.predefinedField`
+- `fieldItem.advanced.radioOptions`
+- `fieldItem.advanced.required`
+- `fieldItem.advanced.selectOptions`
+- `fieldItem.advanced.type`
+- `fieldItem.innerContent`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `radio`
+
+## divi/slide
+*class `` · d4 `et_pb_slide`*
+
+- `arrows.advanced.color`
+- `button`
+- `button.decoration.button`
+- `button.innerContent` → text
+- `content.decoration.bodyFont`
+- `content.decoration.sizing`
+- `content.decoration.spacing`
+- `content.innerContent`
+- `contentOverlay.advanced.use`
+- `contentOverlay.advanced.useTextOverlay`
+- `contentOverlay.decoration.background` → color
+- `contentOverlay.decoration.border` → radius
+- `dotNav.advanced.color`
+- `dotNav.decoration.background` → color
+- `image`
+- `image.advanced.alignment`
+- `image.innerContent` → src
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `slideOverlay.advanced.use`
+- `slideOverlay.advanced.useBackgroundOverlay`
+- `slideOverlay.decoration.background` → color
+- `title.decoration.font`
+- `title.innerContent`
+- `video.innerContent`
+- customCssFields: slideButton, slideContainer, slideDescription, slideImage, slideTitle
+
+## divi/slider
+*class `` · d4 `et_pb_slider` · children: `divi/slide`*
+
+- `arrows.advanced.color`
+- `arrows.advanced.show`
+- `button`
+- `button.decoration.button`
+- `children.advanced.button`
+- `children.advanced.content`
+- `children.advanced.contentOverlay`
+- `children.advanced.slideOverlay`
+- `children.button.advanced.showOnMobile`
+- `children.content.advanced.showOnMobile`
+- `children.contentOverlay.advanced.use`
+- `children.contentOverlay.decoration.background` → color
+- `children.contentOverlay.decoration.border` → radius
+- `children.decoration.background`
+- `children.decoration.border`
+- `children.module.decoration.background`
+- `children.slideOverlay.advanced.use`
+- `children.slideOverlay.decoration.background` → color
+- `content.decoration.bodyFont`
+- `content.decoration.sizing` → maxWidth, width
+- `dotNav.decoration.background` → color
+- `image`
+- `image.advanced.showOnMobile`
+- `image.decoration.image`
+- `module.advanced.auto`
+- `module.advanced.autoIgnoreHover`
+- `module.advanced.autoSpeed`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `pagination.advanced.show`
+- `title.decoration.font`
+- customCssFields: slideActiveController, slideArrows, slideButton, slideControllers, slideDescription, slideImage, slideTitle
+
+## divi/social-media-follow
+*class `` · d4 `et_pb_social_media_follow` · children: `divi/social-media-follow-network`*
+
+- `button`
+- `button.decoration.button`
+- `button.innerContent`
+- `icon.advanced.color`
+- `icon.advanced.size` → size, useSize
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.advanced.text.text` → orientation
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.innerContent`
+- `module.meta.adminLabel`
+- `socialNetwork.advanced.followButton`
+- customCssFields: followButton, mainElement, socialFollow, socialIcon
+
+## divi/social-media-follow-network
+*class `` · d4 `et_pb_social_media_follow_network`*
+
+- `button`
+- `button.decoration.button`
+- `icon.advanced.color`
+- `icon.advanced.size` → size, useSize
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `socialNetwork.innerContent` → link, skypeAction, skypeUrl, title
+- customCssFields: followButton, socialIcon
+
+## divi/svg
+*class `et_pb_svg` · d4 `et_pb_svg`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `svg.advanced.fill`
+- `svg.advanced.stroke`
+- `svg.innerContent`
+- customCssFields: module, svg
+
+## divi/tab
+*class `` · d4 `et_pb_tab`*
+
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `title.decoration.font`
+- `title.innerContent`
+
+## divi/table-of-contents
+*class `et_pb_table_of_contents` · d4 `et_pb_table_of_contents`*
+
+- `emptyState.decoration.font`
+- `emptyState.innerContent`
+- `list.advanced.interaction` → scrollOffsetPx, smoothScroll
+- `list.decoration.font`
+- `list.innerContent` → includeOwnTitle, includedHeadings
+- `list1.decoration.font`
+- `list2.decoration.font`
+- `list3.decoration.font`
+- `list4.decoration.font`
+- `list5.decoration.font`
+- `list6.decoration.font`
+- `marker.decoration.font`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: emptyState, link, list, marker, title
+
+## divi/tabs
+*class `` · d4 `et_pb_tabs` · children: `divi/tab`*
+
+- `activeTab.decoration.background`
+- `activeTab.decoration.font`
+- `content.decoration.background`
+- `content.decoration.bodyFont`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `tab.decoration.background`
+- `tab.decoration.font`
+- customCssFields: activeTab, tab, tabsContent, tabsControls
+
+## divi/team-member
+*class `et_pb_team_member` · d4 `et_pb_team_member`*
+
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `image`
+- `image.decoration.image`
+- `image.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `name.decoration.font`
+- `name.innerContent`
+- `position.decoration.font`
+- `position.innerContent`
+- `social.decoration.icon`
+- `social.innerContent`
+- customCssFields: memberDescription, memberImage, memberPosition, memberSocialLinks, title
+
+## divi/testimonial
+*class `` · d4 `et_pb_testimonial`*
+
+- `author.decoration.font`
+- `author.innerContent`
+- `company.decoration.font`
+- `company.innerContent` → linkTarget, linkUrl, text
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `jobTitle.decoration.font`
+- `jobTitle.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `portrait`
+- `portrait.decoration.image`
+- `portrait.innerContent` → src
+- `quoteIcon.decoration.background` → color
+- `quoteIcon.decoration.icon` → show
+- customCssFields: testimonialAuthor, testimonialDescription, testimonialMeta, testimonialPortrait
+
+## divi/text
+*class `et_pb_text` · d4 `et_pb_text`*
+
+- `content.decoration.bodyFont`
+- `content.decoration.headingFont`
+- `content.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/timeline
+*class `et_pb_timeline` · d4 `et_pb_timeline` · children: `divi/timeline-item`*
+
+- `card.decoration.background`
+- `card.decoration.border`
+- `card.decoration.boxShadow`
+- `card.decoration.layout`
+- `card.decoration.sizing`
+- `card.decoration.spacing`
+- `cardEven.decoration.background`
+- `cardEven.decoration.border`
+- `cardEven.decoration.boxShadow`
+- `cardEven.decoration.layout`
+- `cardEven.decoration.sizing`
+- `cardEven.decoration.spacing`
+- `children.advanced.spacer`
+- `children.spacer.advanced.displayElementsOnSpacer`
+- `connector.decoration.background`
+- `connector.decoration.border`
+- `connector.decoration.boxShadow`
+- `connector.decoration.sizing`
+- `connector.decoration.spacing`
+- `content.decoration.bodyFont`
+- `contentEven.decoration.bodyFont`
+- `date.decoration.font`
+- `dateEven.decoration.font`
+- `item.decoration.background`
+- `item.decoration.border`
+- `item.decoration.boxShadow`
+- `item.decoration.sizing`
+- `item.decoration.spacing`
+- `itemEven.decoration.background`
+- `itemEven.decoration.border`
+- `itemEven.decoration.boxShadow`
+- `itemEven.decoration.sizing`
+- `itemEven.decoration.spacing`
+- `marker.advanced` → position
+- `marker.advanced.position`
+- `marker.decoration.background`
+- `marker.decoration.border`
+- `marker.decoration.boxShadow`
+- `marker.decoration.icon`
+- `marker.decoration.sizing`
+- `marker.decoration.spacing`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.timeline` → direction, position, startFrom
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `spacer.decoration.background`
+- `spacer.decoration.border`
+- `spacer.decoration.boxShadow`
+- `spacer.decoration.layout`
+- `spacer.decoration.sizing`
+- `spacer.decoration.spacing`
+- `spacerEven.decoration.background`
+- `spacerEven.decoration.border`
+- `spacerEven.decoration.boxShadow`
+- `spacerEven.decoration.layout`
+- `spacerEven.decoration.sizing`
+- `spacerEven.decoration.spacing`
+- `title.decoration.font`
+- `titleEven.decoration.font`
+- `track.decoration.background`
+- `track.decoration.border`
+- `track.decoration.boxShadow`
+- `track.decoration.layout`
+- `track.decoration.sizing`
+- `track.decoration.spacing`
+- customCssFields: card, connector, content, date, item, marker, spacer, title, track
+
+## divi/timeline-item
+*class `et_pb_timeline_item` · d4 `et_pb_timeline_item`*
+
+- `card.decoration.background`
+- `card.decoration.border`
+- `card.decoration.boxShadow`
+- `card.decoration.layout`
+- `card.decoration.sizing`
+- `card.decoration.spacing`
+- `connector.decoration.background`
+- `connector.decoration.border`
+- `connector.decoration.boxShadow`
+- `connector.decoration.sizing`
+- `connector.decoration.spacing`
+- `content.advanced.text`
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `date.decoration.font`
+- `date.innerContent`
+- `marker.advanced` → position
+- `marker.advanced.position`
+- `marker.decoration.background`
+- `marker.decoration.border`
+- `marker.decoration.boxShadow`
+- `marker.decoration.icon`
+- `marker.decoration.sizing`
+- `marker.decoration.spacing`
+- `marker.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `spacer.advanced.displayElementsOnSpacer`
+- `spacer.decoration.background`
+- `spacer.decoration.border`
+- `spacer.decoration.boxShadow`
+- `spacer.decoration.layout`
+- `spacer.decoration.sizing`
+- `spacer.decoration.spacing`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: card, connector, content, date, marker, spacer, title
+
+## divi/toggle
+*class `` · d4 `et_pb_toggle`*
+
+- `closedTitle.decoration.font`
+- `closedTitle.innerContent`
+- `closedToggle.decoration.background`
+- `closedToggleIcon.decoration.icon`
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.open`
+- `module.advanced.text`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `openToggle.decoration.background` → color
+- `openToggle.decoration.font`
+- `openToggle.decoration.font.font` → color
+- `openToggleIcon.decoration.icon`
+- `title.decoration.font`
+- `title.innerContent`
+- customCssFields: openToggle, toggleContent, toggleIcon, toggleTitle
+
+## divi/tooltip
+*class `et_pb_tooltip`*
+
+- `content.decoration.bodyFont`
+- `content.innerContent`
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.advanced.link`
+- `module.advanced.loop`
+- `module.advanced.tooltip` → arrowColor, arrowOffset, arrowPlacement, arrowSize, closeDelay, distance, openDelay, placement, positionMode, showArrow, skid, trigger
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+
+## divi/video
+*class `` · d4 `et_pb_video`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.border`
+- `module.decoration.boxShadow`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.layout`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.decoration.background` → color
+- `overlay.innerContent`
+- `playIcon.decoration.icon`
+- `thumbnail.innerContent` → src
+- `video.innerContent` → src, webm
+- customCssFields: videoIcon
+
+## divi/video-slider
+*class `` · d4 `et_pb_video_slider` · children: `divi/video-slider-item`*
+
+- `module.advanced.elements`
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.background`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.scroll`
+- `module.decoration.sizing`
+- `module.decoration.spacing`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.advanced` → showImageOverlay
+- `overlay.advanced.showImageOverlay`
+- `overlay.decoration.background` → color
+- `playIcon.decoration.background`
+- `playIcon.decoration.icon`
+- `sliderControls.advanced` → color, useArrows, useThumbnails
+- `sliderControls.advanced.color`
+- `sliderControls.advanced.useArrows`
+- `sliderControls.advanced.useThumbnails`
+- `video.decoration.border`
+- `video.decoration.boxShadow`
+- customCssFields: playButton, sliderArrows, thumbnailItem
+
+## divi/video-slider-item
+*class `` · d4 `et_pb_video_slider_item`*
+
+- `module.advanced.html`
+- `module.decoration.animation`
+- `module.decoration.attributes`
+- `module.decoration.conditions`
+- `module.decoration.disabledOn`
+- `module.decoration.filters`
+- `module.decoration.interactions`
+- `module.decoration.order`
+- `module.decoration.overflow`
+- `module.decoration.position`
+- `module.decoration.sticky`
+- `module.decoration.transform`
+- `module.decoration.transition`
+- `module.decoration.zIndex`
+- `module.meta.adminLabel`
+- `overlay.decoration.background` → color
+- `overlay.innerContent`
+- `playIcon.decoration.icon`
+- `sliderControls.advanced` → color
+- `sliderControls.advanced.color`
+- `thumbnail.innerContent` → src
+- `video.innerContent` → src, webm

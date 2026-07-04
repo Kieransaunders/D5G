@@ -47,15 +47,24 @@ const ALLOWED_CHILDREN = {
   row: new Set(['column']),
   // column and group can contain any module plus nested rows/groups
 };
+// Parent → only-allowed-child map, verified against childrenName in the Divi
+// theme source module.json files (Divi 5.8.1 — see
+// references/module-schema-reference.md, regenerate via scripts/extract-module-schema.py).
 const CONTAINER_ONLY_CHILD = {
   accordion: 'accordion-item',
   'icon-list': 'icon-list-item',
   'pricing-tables': 'pricing-table',
   slider: 'slide',
+  'fullwidth-slider': 'slide',
   'video-slider': 'video-slider-item',
   'contact-form': 'contact-field',
   'social-media-follow': 'social-media-follow-network',
   'group-carousel': 'group',
+  counters: 'counter',
+  map: 'map-pin',
+  'fullwidth-map': 'map-pin',
+  tabs: 'tab',
+  timeline: 'timeline-item',
 };
 
 const errors = [];

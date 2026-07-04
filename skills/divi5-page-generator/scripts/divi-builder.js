@@ -731,6 +731,27 @@ function accordion(items, opts) {
   return block('accordion', attrs, children);
 }
 
+/**
+ * timeline(items: [{title, date, body, adminLabel}], opts) — chronology / roadmap / history.
+ * `body` is HTML (wrap plain text in <p> yourself, like text()). `date` is a plain string.
+ * Attribute paths verified against the Divi 5.8.1 theme source (references/module-schema-reference.md)
+ * and a live import + render on 04/07/2026. Requires Divi >= 5.6 on the target site.
+ */
+function timeline(items, opts) {
+  const o = opts || {};
+  const children = (items || []).map((it) =>
+    block('timeline-item', prune({
+      title: { innerContent: dv(htmlContent(it.title)) },
+      date: it.date ? { innerContent: dv(String(it.date)) } : undefined,
+      content: { innerContent: dv(htmlContent(it.body)) },
+      module: it.adminLabel ? { meta: { adminLabel: dv(it.adminLabel) } } : undefined,
+    }), null)
+  );
+  let attrs = prune(merge(o.attrs || {}, withTheatre(o)));
+  attrs = applyPreset(attrs, o.preset);
+  return block('timeline', attrs, children);
+}
+
 /** numberCounter({ title, number, percent, numberColor, numberSize }) */
 function numberCounter(opts) {
   const o = opts || {};
@@ -1177,7 +1198,7 @@ module.exports = {
   dv, block, placeholder, merge, prune, htmlContent,
   applyGroupPreset,
   section, overlaySection, row, column,
-  heading, heroHeading, text, eyebrow, button, blurb, image, icon, accordion, numberCounter, divider, codeBlock,
+  heading, heroHeading, text, eyebrow, button, blurb, image, icon, accordion, timeline, numberCounter, divider, codeBlock,
   theatreAttrs, theatrePartAttrs, withTheatre, normaliseCustomAttrs,
   isPinPreset, resolvePreset, theatrePresets, PRESET_MANIFEST,
   createBuilder, randomId,

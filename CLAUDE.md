@@ -100,6 +100,9 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | `divi5-plugin-dev` | Custom Divi 5 module/plugin development |
 | `divitheatre-engine` | Theatre.js motion engine reference |
 | `divitheatre-section` | Generate a single Divi 5 section showcasing one DiviTheatre animation preset from the manifest-backed real catalog (15 presets; pin:product-reveal, stagger, marquee, aurora, etc.) |
+| `divi5-css-patterns` | Divi 5.6 CSS knowledge base: module selectors, override specificity, design tokens, Canvas/Loop Builder patterns, 5.3–5.6 feature reference (vendored from cjsimon2/Divi5-ToolKit v2.3.0, MIT — see NOTICE.md) |
+| `divi5-compatibility` | Divi 5 CSS validation rules, common issues/fixes, plugin conflicts, version bug-fix history, error reference (vendored, MIT — see NOTICE.md) |
+| `divi5-performance` | Critical CSS / Dynamic CSS, font loading, Core Web Vitals diagnostics for Divi 5 (vendored, MIT — see NOTICE.md) |
 
 ## SEO plugin support (Divi Tools Importer ≥ 1.6.0)
 
