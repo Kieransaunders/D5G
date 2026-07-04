@@ -77,3 +77,12 @@ claude plugin install divi5-toolkit@divi5-toolkit
 ```
 
 Useful for post-import CSS refinement, audits, and its `/responsive` device-matrix check.
+
+## Follow-up (04/07/2026) — responsive rules + design-review checks
+
+`references/responsive-rules.md` now encodes ET's mobile best practices as emission rules;
+`design-review` gained the matching WARN checks incl. plan item 6 (aspect ratio,
+chronology→Timeline, long-form→TOC). Number global variables remain known-broken on
+import (see divi-builder.js typeScale comment) — re-test on 5.8.1. Five value shapes
+still to capture from one real export: minmax columns, Display Order, Aspect Ratio,
+image-off per breakpoint, Background Mask.
