@@ -21,6 +21,20 @@ class DTI_RestApi {
 			),
 		) );
 
+		register_rest_route( self::NAMESPACE, '/theme-builder-template', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'handle_theme_builder_template_import' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+			'args'                => array(
+				'key'    => array( 'required' => true,  'type' => 'string' ),
+				'use_on' => array( 'required' => true ),
+				'title'  => array( 'required' => false, 'type' => 'string', 'default' => '' ),
+				'body'   => array( 'required' => true,  'type' => 'string' ),
+				'header' => array( 'required' => false, 'type' => 'string', 'default' => null ),
+				'footer' => array( 'required' => false, 'type' => 'string', 'default' => null ),
+			),
+		) );
+
 		register_rest_route( self::NAMESPACE, '/preview', array(
 			'methods'             => 'POST',
 			'callback'            => array( __CLASS__, 'handle_preview' ),
@@ -301,6 +315,34 @@ class DTI_RestApi {
 		}
 
 		return new WP_REST_Response( array( 'deleted' => $slug, 'id' => $post_id ), 200 );
+	}
+
+	public static function handle_theme_builder_template_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$payload = array(
+			'key'    => (string) $request->get_param( 'key' ),
+			'use_on' => $request->get_param( 'use_on' ),
+			'title'  => (string) $request->get_param( 'title' ),
+			'body'   => (string) $request->get_param( 'body' ),
+			'header' => $request->get_param( 'header' ),
+			'footer' => $request->get_param( 'footer' ),
+		);
+
+		try {
+			$result = DTI_ThemeBuilderImporter::import( $payload );
+		} catch ( InvalidArgumentException $e ) {
+			return new WP_Error( 'validation_failed', $e->getMessage(), array( 'status' => 422 ) );
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		DTI_Auth::log_import( array(
+			'slug'     => 'tb:' . $payload['key'],
+			'action'   => $result['action'],
+			'status'   => 'theme_builder_template',
+			'warnings' => $result['warnings'],
+		) );
+
+		return new WP_REST_Response( $result, 200 );
 	}
 
 	public static function handle_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
