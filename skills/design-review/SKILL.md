@@ -131,9 +131,20 @@ If NON-COMPLIANT, list the generator script changes needed to add missing sectio
 - Consistent column gaps (30px standard)
 
 ### Responsive
+(full rules: `divi5-page-generator/references/responsive-rules.md`)
 - Rows wrap on phone/phoneWide (`flexWrap: wrap`)
 - Non-full-width columns get `flexType: 24_24` on phone/phoneWide
-- Section padding reduces ~40% on phone
+- Section padding reduces ~40% on phone — or better, uses the fluid clamp() ramp
+- Spacing is clamp()-based, not fixed px repeated per breakpoint — WARN on fixed-px section/hero padding with per-breakpoint overrides doing what one clamp() would
+- Font sizes clamp()-based — WARN on per-breakpoint `phone: { size }` overrides that just shrink the scale (a deliberate display-size break is fine)
+- Background images do not persist to phone — WARN when a section relies on a bg image (or gradient-over-image) at phone breakpoint for looks or text contrast; mobile should get a solid colour
+- When a hero/split row stacks on phone, the primary CTA column stacks above decorative images — WARN if the CTA lands below the fold behind an image column
+- Images declare an aspect ratio (Divi 5.5+) to reserve space and avoid CLS — WARN when missing (skip until the generator can emit it; see responsive-rules.md verification table)
+
+### Module choice (Divi 5.6+)
+- Chronology/process/history content built as blurb or text stacks — WARN: suggest the Timeline module
+- Long-form pages (roughly >1,500 words or >6 h2 sections) without a Table of Contents module — WARN
+- Inline vector graphics faked with image modules — suggest the SVG module
 
 ### Buttons & components
 - Exactly two button styles (primary filled, ghost outlined); correct inversion on accent backgrounds
