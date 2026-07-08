@@ -101,6 +101,12 @@ Settings → Divi5 Generator → Regenerate Key. Your old key stops working imme
 
 == Changelog ==
 
+= 1.8.0 =
+* New: Navigation menu creation — `POST /menus` creates a named menu (or appends to an existing one) with page-link and custom-URL items, parent-child nesting via `id`/`parent_id`, and optional assignment to a theme location.
+* New: `GET /menus` lists all menus (or one by `?name=`) as a nested item tree with `theme_locations` and `item_count`.
+* New: `POST /menus/auto-place` places a list of generated pages into an existing menu, nesting each under a top-level item whose label shares a significant word with the page title (pages with no match are appended at the top level; pages already in the menu are skipped).
+* 59 PHPUnit tests.
+
 = 1.7.0 =
 * Renamed plugin from "Divi Tools Connector" to "Divi5 Generator"
 * New REST API namespace: `/wp-json/divi5-generator/v1/` (was `divi-tools/v1`)

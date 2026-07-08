@@ -264,7 +264,7 @@ function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
     '--plugin-dir', PLUGIN_DIR, fullPrompt], {
     cwd: outputPath,
     // DIVI5_OUT is the explicit contract with the page-generator/extract-style/
-    // import-to-local skills: write all artefacts here, never into the repo.
+    // divi5-deploy skills: write all artefacts here, never into the repo.
     env: { ...process.env, DIVI5_OUT: outputPath },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
@@ -429,7 +429,7 @@ app.get('/exports', (req, res) => {
 app.get('/download-plugin', (req, res) => {
   // The zip isn't committed (the Claude Code plugin installer rejects nested
   // zips), so always build it from the unpacked source on demand.
-  const buildScript = path.join(PLUGIN_DIR, 'skills', 'import-to-local', 'scripts', 'build-plugin-zip.sh');
+  const buildScript = path.join(PLUGIN_DIR, 'skills', 'divi5-deploy', 'scripts', 'build-plugin-zip.sh');
   if (!fs.existsSync(buildScript)) return res.status(404).json({ error: 'Plugin build script not found' });
   try {
     const zip = execSync(`bash "${buildScript}"`).toString().trim();

@@ -15,7 +15,7 @@ SKILL.md MUST NOT contain language preferring the scratch page over the clone.
 - WHEN the skill runs Stage 0 and `et-pages.js match` returns a non-null result
 - THEN `et-pages.js clone` produces `[brand]-base-page.json`
 - AND that file is mutated via `mutate.js`
-- AND the mutated file is the single artefact passed to `import-to-local`
+- AND the mutated file is the single artefact passed to `divi5-deploy`
 
 #### Scenario: No match falls back to scratch
 - GIVEN a brief whose page type does not match any ET template

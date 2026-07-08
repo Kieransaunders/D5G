@@ -12,7 +12,7 @@ The **Divi Tools Importer** WordPress plugin ships as unpacked source (a Claude 
 
 ```bash
 SCRIPT=$(find ~/.claude/skills ~/.claude/plugins/cache ~/.claude/plugins/marketplaces \
-  -path '*import-to-local/scripts/build-plugin-zip.sh' 2>/dev/null | head -1)
+  -path '*divi5-deploy/scripts/build-plugin-zip.sh' 2>/dev/null | head -1)
 [ -n "$SCRIPT" ] && bash "$SCRIPT" ~/Downloads
 ```
 
@@ -33,7 +33,8 @@ Works on any host — Local, Kinsta, WP Engine, SiteGround, Flywheel. No SSH/WP-
 Ask for the **Site URL** and **API key**, then hand off:
 
 - **Generate a page** → invoke the `divi5-page-generator` skill (`/divi5-tools:divi5-page-generator`).
-- **Import an existing JSON** → invoke the `import-to-local` skill with the site URL + API key.
+- **Import an existing JSON** → invoke the `divi5-deploy` skill with the site URL + API key.
+- **Create a nav menu** → invoke the `divi5-deploy` skill with the page IDs to build or auto-place a menu.
 
 Never log or store the API key — use it only in the request header.
 
@@ -42,6 +43,7 @@ Never log or store the API key — use it only in the request header.
 | Want to… | Do this |
 |----------|---------|
 | Build a page | `/divi5-tools:divi5-page-generator "<brief>"` |
-| Import/preview a page | `import-to-local` skill |
+| Import/preview a page | `divi5-deploy` skill |
+| Create a nav menu from pages | `divi5-deploy` skill (menu mode) |
 | Standalone browser UI | double-click `app/launch.command` (→ http://localhost:3747) |
 | Review a Divi export | `design-review` / `divi5-style-check` skills |
