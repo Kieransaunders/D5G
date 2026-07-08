@@ -53,4 +53,4 @@ RED tests are written in the propose step (see `tests/`); each task turns its sc
 ## 8. Close-out
 
 - [x] 8.1 Full suite green (except known-red `e2e-render.test.js` needing a live server)
-- [ ] 8.2 Regenerate the divi5-generator sample page and confirm contrast PASS + fidelity PASS
+- [x] 8.2 Regenerate the divi5-generator sample page and confirm contrast PASS + fidelity PASS
