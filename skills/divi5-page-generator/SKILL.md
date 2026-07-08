@@ -98,7 +98,7 @@ Run `fidelity-check.js` against the Stage 2 HTML before anything is handed off:
 node scripts/fidelity-check.js [brand]-landing-page.json preview-[brand].html
 ```
 
-This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you proceed to import via the `import-to-local` skill.
+This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you proceed to import via the `divi5-deploy` skill.
 
 ### Stage 4 — Visual fidelity gate (automated, blocks delivery)
 

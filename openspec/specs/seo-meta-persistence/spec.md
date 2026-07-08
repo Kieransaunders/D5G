@@ -147,7 +147,7 @@ The SEO persistence logic SHALL be organised as one adapter class per supported 
 
 ### Requirement: No overwrite of pre-existing SEO on re-import is undocumented
 
-Re-importing a page with the same slug SHALL overwrite that page's SEO meta with the incoming payload's values. This matches the existing refine-loop behaviour for layout and presets. This overwrite semantics SHALL be documented in the `import-to-local` skill so the user is aware before re-importing over a manually-tuned page.
+Re-importing a page with the same slug SHALL overwrite that page's SEO meta with the incoming payload's values. This matches the existing refine-loop behaviour for layout and presets. This overwrite semantics SHALL be documented in the `divi5-deploy` skill so the user is aware before re-importing over a manually-tuned page.
 
 #### Scenario: Re-import over manually edited SEO
 - **WHEN** a page was imported with title "A", then the user manually changed the title in Yoast to "B", then the same slug is re-imported with title "A"

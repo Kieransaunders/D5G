@@ -1,12 +1,14 @@
 ---
-name: import-to-local
-description: "Import Divi 5 landing page JSON into any WordPress site (local or hosted) as a published page via the Divi5 Generator REST API, screenshot it live, and run the accept/refine loop. Use when importing or deploying a generated Divi 5 page into WordPress and previewing it live. Triggers: import divi page, import to local, localwp import, preview divi page, publish divi landing page, divi local site, import divi hosted, deploy divi page."
+name: divi5-deploy
+description: "Deploy generated Divi 5 content to any WordPress site (local or hosted) via the Divi5 Generator REST API — publish pages/sections as live pages, preview them in real Divi 5, screenshot and verify, persist SEO meta, manage draft pages, and create/list/auto-place navigation menus. Use when importing, publishing, previewing, or deploying a generated Divi 5 page into WordPress, or when creating a WordPress nav menu from generated pages. Triggers: import divi page, deploy divi page, publish divi landing page, preview divi page, live preview divi, import divi hosted, localwp import, create wordpress menu, divi navigation menu, nav menu from pages, auto-place pages in menu, list divi menus, delete divi draft, manage divi pages."
 argument-hint: "[site-url] [api-key]  — or omit to be prompted"
 ---
 
-# Divi 5 Page Importer
+# Divi 5 Deploy
 
-Close the loop on a generated Divi 5 page: validate it, push it to any WordPress site via the Divi5 Generator plugin, open the preview, then act on the user's verdict. Works on **any host** — Local, Kinsta, WP Engine, SiteGround, Flywheel — no SSH or WP-CLI required.
+Deploy generated Divi 5 content to any WordPress site and act on the result. This skill closes the loop on **pages** (validate → preview → import → publish → screenshot → verify) and also manages **navigation menus** (create, list, auto-place generated pages into a menu). Works on **any host** — Local, Kinsta, WP Engine, SiteGround, Flywheel — no SSH or WP-CLI required.
+
+Every call below hits the Divi5 Generator REST API (`/wp-json/divi5-generator/v1/`) with the `X-D5G-Key` header. Pages, previews, draft management, and menus all use the same site URL + API key.
 
 ## Pre-requisite
 
@@ -243,3 +245,139 @@ Returns `{ "deleted": "invoice-software", "id": 123 }`. **Safety:** the endpoint
 2. Re-import your refined layout against the same `slug` → updates the existing draft in place (no new page created).
 3. Only delete when you want to start clean for that slug: `DELETE /pages?slug=…`.
 4. `GET /pages` again to confirm.
+
+---
+
+## Navigation menus (plugin ≥ 1.8.0)
+
+Create, list, and auto-fill WordPress navigation menus from the generated pages. Three endpoints, same `X-D5G-Key` auth as page import.
+
+### Resolve inputs
+
+- **Site URL + API key** — same as the page flow (step 1 above). If you already resolved them for a page import in this session, reuse them.
+- **Menu name** — required for create and auto-place. Confirm with the user if not given.
+- **Theme location** (optional) — a registered nav menu location slug from the active theme (e.g. `primary`, `footer`). The plugin checks the theme's registered locations; a bad location creates the menu anyway and returns a warning.
+- **Pages** — for auto-place, gather `{page_id, title}` pairs. The `page_id` comes from the import response of each generated page; `title` is the page's title (used for parent-matching). Reuse the page IDs you already have from earlier `/import` calls in the session.
+
+### Create a menu — `POST /menus`
+
+Creates a new menu, or **appends** to an existing menu if the name already exists (returns a `warnings` entry). Items can nest via client-supplied `id` / `parent_id`.
+
+```bash
+curl -s -X POST "<site-url>/wp-json/divi5-generator/v1/menus" \
+  -H "Content-Type: application/json" \
+  -H "X-D5G-Key: <api-key>" \
+  -d '{
+    "name": "Main Menu",
+    "location": "primary",
+    "items": [
+      { "label": "Home",        "page_id": 12 },
+      { "label": "Services",    "id": "svc", "page_id": 18 },
+      { "label": "Roofing",     "parent_id": "svc", "page_id": 24 },
+      { "label": "Google",      "url": "https://google.com" }
+    ]
+  }'
+```
+
+Item fields:
+- `label` — required (items without it are skipped with a warning).
+- `page_id` — link to a WordPress page (optional `post_type`, default `page`).
+- `url` — custom-URL item (use this OR `page_id`, not both).
+- `id` — optional client-side handle for nesting (defaults to `idx_{i}`).
+- `parent_id` — references another item's `id` to nest as a child.
+
+Response (HTTP 201):
+```json
+{
+  "menu_id": 5,
+  "name": "Main Menu",
+  "location": "primary",
+  "item_count": 4,
+  "items": [
+    { "db_id": 101, "label": "Home",        "page_id": 12 },
+    { "db_id": 102, "label": "Services",    "page_id": 18 },
+    { "db_id": 103, "label": "Roofing",     "page_id": 24, "parent_db_id": 102 },
+    { "db_id": 104, "label": "Google",      "url": "https://google.com" }
+  ],
+  "warnings": []
+}
+```
+
+Warnings you may see: `"menu_exists"` (appended to existing menu), `"invalid_location"` (location not registered in the active theme — menu still created, just not assigned), or per-item `"missing_label"` / `"missing_page_id_or_url"`.
+
+### List menus — `GET /menus`
+
+Returns every menu as a nested tree. Optional `?name=` filters to one menu.
+
+```bash
+curl -s "<site-url>/wp-json/divi5-generator/v1/menus?name=Main%20Menu" \
+  -H "X-D5G-Key: <api-key>"
+```
+
+Response (HTTP 200):
+```json
+{
+  "menus": [
+    {
+      "id": 5,
+      "name": "Main Menu",
+      "slug": "main-menu",
+      "theme_locations": ["primary"],
+      "item_count": 4,
+      "items": [
+        { "db_id": 101, "label": "Home",     "page_id": 12, "type": "post_type", "url": "", "order": 1, "children": [] },
+        { "db_id": 102, "label": "Services", "page_id": 18, "type": "post_type", "url": "", "order": 2,
+          "children": [
+            { "db_id": 103, "label": "Roofing", "page_id": 24, "type": "post_type", "url": "", "order": 1, "children": [] }
+          ]
+        },
+        { "db_id": 104, "label": "Google",   "type": "custom", "url": "https://google.com", "order": 3, "children": [] }
+      ]
+    }
+  ]
+}
+```
+
+Use this to verify a create, or to inspect an existing menu before deciding what to add.
+
+### Auto-place generated pages — `POST /menus/auto-place`
+
+Given a target menu and a list of generated pages, this endpoint places each page into the menu by **title-word overlap**: if a page title shares a significant word with an existing top-level item's label, the page is added as a child of that item; otherwise it's appended as a new top-level item. Pages already present in the menu (by `page_id`) are skipped with a warning.
+
+```bash
+curl -s -X POST "<site-url>/wp-json/divi5-generator/v1/menus/auto-place" \
+  -H "Content-Type: application/json" \
+  -H "X-D5G-Key: <api-key>" \
+  -d '{
+    "menu_name": "Main Menu",
+    "pages": [
+      { "page_id": 24, "title": "Roofing Repairs Exeter" },
+      { "page_id": 31, "title": "Gutter Cleaning" },
+      { "page_id": 42, "title": "About Us" }
+    ]
+  }'
+```
+
+Response (HTTP 200):
+```json
+{
+  "menu_id": 5,
+  "placed": 3,
+  "skipped": 0,
+  "items": [
+    { "db_id": 110, "label": "Roofing Repairs Exeter", "page_id": 24, "parent_db_id": 102 },
+    { "db_id": 111, "label": "Gutter Cleaning",        "page_id": 31 },
+    { "db_id": 112, "label": "About Us",               "page_id": 42 }
+  ],
+  "warnings": []
+}
+```
+
+An entry with `parent_db_id` was nested under a matched top-level item; an entry without it was appended at the top level. A `skipped` count > 0 means some pages were already in the menu — each gets a warning entry.
+
+### Menu workflow tips
+
+- **Pair with page import.** After importing a batch of generated pages, gather their `page_id`s and call `/menus/auto-place` to wire them into the site nav in one shot — no manual menu editing in WP Admin.
+- **Two-pass nesting.** `POST /menus` resolves `parent_id` references in a single pass: list parents before children in the `items` array so `id` handles resolve.
+- **Verify with `GET /menus`.** Always list the menu after a create or auto-place to confirm the tree shape matches the user's intent before reporting success.
+- **Bad location is not fatal.** If the theme lacks the requested location, the menu is still created — surface the warning and tell the user which locations their theme actually registers (visible in the `theme_locations` of any existing menu, or WP Admin → Appearance → Menus → Manage Locations).

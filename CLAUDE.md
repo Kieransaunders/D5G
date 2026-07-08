@@ -44,7 +44,7 @@ flowchart TD
     E --> I{Which skill matches the request?}
     I -- Generate page or section --> J[divi5-page-generator]
     I -- Extract brand/style --> K[divi5-extract-style or brand-extract]
-    I -- Import to WordPress --> L[import-to-local]
+    I -- Import to WordPress --> L[divi5-deploy]
     I -- Audit output --> M[design-review or divi5-style-check]
 
     H --> J
@@ -64,6 +64,7 @@ Typical prompts:
 - "Create a Divi 5 landing page for a roofing company in Exeter."
 - "Extract the brand style from this Divi export, then generate a services page."
 - "Import the latest generated page into my WordPress site."
+- "Create a nav menu from my generated pages and put it in the primary location."
 - "Review this Divi export against the original brief."
 
 ## Plugin registration (settings.json)
@@ -83,7 +84,7 @@ Generated pages, sections, previews, tokens, SEO meta and `generate-*.js` script
 
 - `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages`.
 
-The app (`app/server.js`) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `import-to-local`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
+The app (`app/server.js`) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `divi5-deploy`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
 
 `.gitignore` keeps only a safety-net for stray root artefacts — the real fix is that nothing should be written here in the first place.
 
@@ -126,7 +127,7 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | Skill | Purpose |
 |---|---|
 | `divi5-page-generator` | Generate SEO-optimised Divi 5 page JSON (pages + sections) |
-| `import-to-local` | Import JSON into WordPress via REST API as a published page, screenshot it live, run accept/refine loop |
+| `divi5-deploy` | Deploy generated pages to WordPress (preview, import, publish, screenshot, SEO meta, draft list/delete) and create/list/auto-place navigation menus via REST API |
 | `launch-app` | Launch the Divi 5 Generator app |
 | `design-review` | Audit Divi 5 JSON for structure, SEO, spec compliance |
 | `divi5-extract-style` | Extract brand tokens from a Divi 5 export / brand guide |
