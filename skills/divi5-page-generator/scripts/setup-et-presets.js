@@ -77,7 +77,9 @@ function api(method, endpoint, body) {
   console.log(`  ✓ Imported ${importRes.body.imported_count} presets (${Object.keys(importRes.body.id_mappings || {}).length} IDs remapped)`);
 
   // ── 3. Fetch and save the registry ────────────────────────────────────────
-  const listRes = await api('GET', '/wp-json/divi-tools/v1/presets');
+  // with_attrs=1 → name→{id,attrs}: the generator needs the real colours/fonts so
+  // single-import bundles styled presets AND validate.js can gate contrast offline.
+  const listRes = await api('GET', '/wp-json/divi-tools/v1/presets?with_attrs=1');
   if (listRes.status !== 200) {
     console.error('Registry fetch failed:', listRes.body);
     process.exit(1);
@@ -89,6 +91,12 @@ function api(method, endpoint, body) {
   // ── 4. Write registry to disk ─────────────────────────────────────────────
   fs.writeFileSync(REGISTRY_OUT, JSON.stringify(registry, null, 2));
   console.log(`  ✓ Registry written to: references/et-preset-registry.json`);
+
+  // ── 4b. Derive the compact, contrast-aware preset catalogue ───────────────
+  const { buildCatalogue } = require('./preset-catalogue.js');
+  const catalogue = buildCatalogue(registry);
+  fs.writeFileSync(path.join(SKILL_DIR, 'references/preset-catalogue.json'), JSON.stringify(catalogue));
+  console.log(`  ✓ Catalogue written: ${catalogue.length} entries → references/preset-catalogue.json`);
 
   // ── 5. Summary of key presets ─────────────────────────────────────────────
   console.log('\nKey preset IDs now available:');

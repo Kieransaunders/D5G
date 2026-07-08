@@ -47,6 +47,7 @@ function loadRegistry(opts) {
 }
 
 const KIND_TO_DIVI_MODULE = {
+  section: 'divi/section',
   button: 'divi/button',
   heading: 'divi/heading',
   heroHeading: 'divi/heading',
@@ -76,9 +77,12 @@ function specToDivi(spec, opts) {
     const id = typeof regEntry === 'string' ? regEntry
       : (regEntry && regEntry.id) ? String(regEntry.id)
       : D.randomId();
-    const attrs = (regEntry && regEntry.attrs)
-      ? regEntry.attrs
-      : (moduleName === 'divi/button' ? BUNDLED_BUTTON_BASE : {});
+    // Reference presets by ID only — the target site owns their styling (matched
+    // by ID on import, as setup-et-presets.js guarantees the presets exist there).
+    // Inlining the registry's attrs would re-stamp the designer's raw hex/gcid onto
+    // every block, tripping the token/gcid gates for no render benefit. validate.js
+    // reads colours from the registry (not the bundle) for the contrast gate.
+    const attrs = (moduleName === 'divi/button') ? BUNDLED_BUTTON_BASE : {};
     if (!presetStore[moduleName]) presetStore[moduleName] = { default: id, items: {} };
     if (!presetStore[moduleName].items[id]) {
       presetStore[moduleName].items[id] = {
@@ -126,6 +130,7 @@ function specToDivi(spec, opts) {
       D.column({ flexType: w.flexTypes[i] }, col.map(buildModule)));
     const rowOpts = {};
     const sectionOpts = { adminLabel: w.section.id || w.section.type || 'section' };
+    if (w.section.preset) sectionOpts.preset = resolvePreset('section', w.section.preset);
     if (w.theatre) sectionOpts.theatre = w.theatre;
     return D.section(sectionOpts, [D.row(rowOpts, columns)]);
   });

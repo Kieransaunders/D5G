@@ -524,6 +524,100 @@ if (definedColors.size) pass(`${definedColors.size} global colours defined, refe
   }
 })();
 
+// ─── section contrast gate (white-on-white / dark-on-dark footgun) ──────────
+// A heading or text whose font colour matches the background of the section (or
+// nearest container) it sits in renders invisible. Colours almost always live in
+// the PRESET attrs, not inline — so resolve each block by reading its inline
+// attrs first, then its modulePreset's bundled attrs. This is the gate that
+// catches "Hero H1 (white) on Section — Hero (white)" at generation time.
+;(() => {
+  const path = require('path');
+  const CONTAINERS = new Set(['section', 'row', 'column', 'group']);
+
+  // preset id → attrs. The on-disk registry is the base (it carries real colours);
+  // bundled doc.presets attrs override only when non-empty (single-import pages).
+  const attrsById = new Map();
+  const nonEmpty = (o) => o && typeof o === 'object' && Object.keys(o).length > 0;
+  try {
+    const reg = require(path.join(__dirname, '../references/et-preset-registry.json'));
+    for (const group of Object.values(reg.presets || reg || {})) {
+      for (const entry of Object.values(group || {})) {
+        if (entry && typeof entry === 'object' && entry.id && nonEmpty(entry.attrs)) {
+          attrsById.set(String(entry.id), entry.attrs);
+        }
+      }
+    }
+  } catch (e) { /* registry absent or name→id only — bundled attrs still cover single-import pages */ }
+  for (const group of Object.values(doc.presets?.module || {})) {
+    for (const [id, item] of Object.entries(group.items || {})) {
+      if (nonEmpty(item.attrs)) attrsById.set(String(id), item.attrs);
+    }
+  }
+
+  const firstBp = (obj, leaf) => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (const bp of ['desktop', 'tablet', 'phone', 'phoneWide']) {
+      const v = obj[bp]?.value?.[leaf];
+      if (v != null) return v;
+    }
+    return undefined;
+  };
+  const get = (o, p) => p.split('.').reduce((x, k) => (x && x[k]), o);
+  const hex = (v) => (typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v)) ? v.toLowerCase() : undefined;
+  const relLum = (h) => {
+    const s = h.replace('#', '');
+    const n = s.length === 3 ? s.split('').map(c => c + c).join('') : s.slice(0, 6);
+    const ch = [0, 2, 4].map(i => {
+      const c = parseInt(n.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  const contrast = (a, b) => (Math.max(relLum(a), relLum(b)) + 0.05) / (Math.min(relLum(a), relLum(b)) + 0.05);
+
+  // inline attrs win over the module's preset attrs (that's how applyPreset merges)
+  const resolveAt = (token, decoPath) => {
+    const inline = token.attrs || {};
+    const pid = Array.isArray(inline.modulePreset) ? inline.modulePreset[0] : null;
+    const preset = pid ? (attrsById.get(pid) || {}) : {};
+    return hex(firstBp(get(inline, decoPath), 'color')) ?? hex(firstBp(get(preset, decoPath), 'color'));
+  };
+  const bgOf = (t) => resolveAt(t, 'module.decoration.background');
+  const fgOf = (t) => t.name === 'heading' ? resolveAt(t, 'title.decoration.font.font')
+                    : t.name === 'text'    ? resolveAt(t, 'content.decoration.bodyFont.body.font')
+                    : undefined;
+  const labelOf = (t) => t.name === 'heading'
+    ? String(t.attrs?.title?.innerContent?.desktop?.value || '(heading)').slice(0, 50)
+    : String(t.attrs?.content?.innerContent?.desktop?.value || '(text)').replace(/<[^>]+>/g, '').slice(0, 50);
+
+  let clashFails = 0, checked = 0;
+  for (const blockList of Object.values(tokensByKey)) {
+    const bgStack = []; // effective background per open container (inherits inward)
+    for (const t of blockList) {
+      if (t.closing) { if (CONTAINERS.has(t.name)) bgStack.pop(); continue; }
+      if (CONTAINERS.has(t.name)) {
+        const own = bgOf(t);
+        bgStack.push(own || bgStack[bgStack.length - 1]);
+        if (t.selfClosing) bgStack.pop();
+        continue;
+      }
+      if (t.name !== 'heading' && t.name !== 'text') continue;
+      const fg = fgOf(t), bg = bgStack[bgStack.length - 1];
+      if (!fg || !bg) continue; // only judge when BOTH resolve to a hex
+      checked++;
+      const ratio = contrast(fg, bg);
+      if (ratio < 1.5) {
+        err(`CONTRAST: ${t.name} "${labelOf(t)}" is ${fg} on ${bg} (ratio ${ratio.toFixed(2)}:1) — effectively invisible`);
+        clashFails++;
+      } else if (ratio < 3) {
+        warn(`CONTRAST: ${t.name} "${labelOf(t)}" ${fg} on ${bg} is low contrast (${ratio.toFixed(2)}:1, WCAG AA large-text needs 3:1)`);
+      }
+    }
+  }
+  if (checked && !clashFails) pass(`CONTRAST: ${checked} heading/text block(s) legible against their section background`);
+  else if (!checked) warn('CONTRAST: no resolvable heading/text vs background colours to check (presets carry no attrs?)');
+})();
+
 // ─── ET design system token check ───────────────────────────────────────────
 // FAIL when a raw hex colour in the JSON matches a known Elegant Themes token.
 // Generators must use builder.colorRef('Label') instead of hard-coded hex.
