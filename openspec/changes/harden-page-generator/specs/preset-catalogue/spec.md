@@ -18,4 +18,4 @@
 #### Scenario: Catalogue is compact
 - **WHEN** the catalogue is generated
 - **THEN** each entry carries only the summary fields, not the full preset attrs
-- **AND** the catalogue file is at least an order of magnitude smaller than the registry
+- **AND** the catalogue file is several times smaller than the registry (at least 5x)

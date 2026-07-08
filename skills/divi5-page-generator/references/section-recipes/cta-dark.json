@@ -1,0 +1,10 @@
+{
+  "id": "cta",
+  "layout": "full",
+  "preset": "Section — Plasma CTA",
+  "modules": [
+    { "kind": "heading", "level": 2, "text": "a bold closing call to action", "preset": "CTA H2" },
+    { "kind": "text", "preset": "Body — on dark", "html": "<p>One line of reassurance under the CTA heading.</p>" },
+    { "kind": "button", "text": "Get started", "href": "#", "preset": "Button — on Plasma" }
+  ]
+}

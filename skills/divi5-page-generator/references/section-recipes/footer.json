@@ -1,0 +1,9 @@
+{
+  "id": "footer",
+  "layout": "full",
+  "preset": "Section — Footer",
+  "modules": [
+    { "kind": "text", "preset": "Footer wordmark", "html": "<p><strong>Brand</strong> - a short tagline</p>" },
+    { "kind": "text", "preset": "Footer links", "html": "<p><a href=\"#\">Link one</a> &nbsp; <a href=\"#\">Link two</a></p>" }
+  ]
+}

@@ -41,6 +41,9 @@ function validateSpec(spec) {
     if (sec.theatre && !theatreNames.includes(sec.theatre)) {
       errors.push(`section "${sid}": theatre preset "${sec.theatre}" is not in preset-manifest.json — known: ${theatreNames.join(', ')}`);
     }
+    if (sec.preset != null && typeof sec.preset !== 'string') {
+      errors.push(`section "${sid}": preset must be a string preset name`);
+    }
 
     const cols = Array.isArray(sec.columns) ? sec.columns : [sec.modules || []];
     if (Array.isArray(sec.columns) && sec.layout && sec.columns.length > (V.LAYOUTS[sec.layout] || []).length) {

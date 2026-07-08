@@ -1,0 +1,10 @@
+{
+  "id": "features",
+  "layout": "thirds",
+  "preset": "Section — White",
+  "columns": [
+    [ { "kind": "blurb", "title": "First feature", "body": "What this feature does, in one clear sentence.", "preset": "Feature Card" } ],
+    [ { "kind": "blurb", "title": "Second feature", "body": "A distinct benefit, described a little differently to vary the rhythm.", "preset": "Feature Card" } ],
+    [ { "kind": "blurb", "title": "Third feature", "body": "The third value, phrased short.", "preset": "Feature Card" } ]
+  ]
+}

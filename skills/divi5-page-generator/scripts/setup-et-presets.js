@@ -92,6 +92,12 @@ function api(method, endpoint, body) {
   fs.writeFileSync(REGISTRY_OUT, JSON.stringify(registry, null, 2));
   console.log(`  ✓ Registry written to: references/et-preset-registry.json`);
 
+  // ── 4b. Derive the compact, contrast-aware preset catalogue ───────────────
+  const { buildCatalogue } = require('./preset-catalogue.js');
+  const catalogue = buildCatalogue(registry);
+  fs.writeFileSync(path.join(SKILL_DIR, 'references/preset-catalogue.json'), JSON.stringify(catalogue));
+  console.log(`  ✓ Catalogue written: ${catalogue.length} entries → references/preset-catalogue.json`);
+
   // ── 5. Summary of key presets ─────────────────────────────────────────────
   console.log('\nKey preset IDs now available:');
   const KEY_PRESETS = [

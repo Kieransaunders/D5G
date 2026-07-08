@@ -69,7 +69,7 @@ Ask (or extract from prompt): brand + offer, primary SEO keyword (+ secondaries/
 
 ### Stage 2 — Author `page-spec.json`, compile the preview (taste + approval gate)
 
-**Spec-first (default for scratch builds).** The only artefact you author and edit is `page-spec.json` — sections, layouts, copy, preset names, theatre, SEO. Preview and Divi JSON are both compiled from it, so fidelity is by construction and every fix is a small spec edit. Clone/mutate stay **JSON-native** (no spec round-trip). Run `node scripts/spec/validate-spec.js page-spec.json` (the compat gate — vocabulary = proven Divi mappings; `raw` is the WARN escape hatch; extend export-first via `scripts/spec/vocabulary.js`), then `node scripts/spec/spec-to-html.js page-spec.json > preview-[brand].html`. The preview is the base stylesheet + aesthetic override (`scripts/spec/aesthetics/`); motion renders as a `⚡ preset` annotation, judged at the live Divi preview. Interactive mode: serve, screenshot, get approval. Headless: self-approve. Fix zero-em-dash and layout-variety issues in the spec here — cheaper than after the JSON exists.
+**Spec-first (default for scratch builds).** The only artefact you author and edit is `page-spec.json` — sections, layouts, copy, preset names, theatre, SEO. Preview and Divi JSON are both compiled from it, so fidelity is by construction and every fix is a small spec edit. Clone/mutate stay **JSON-native** (no spec round-trip). Run `node scripts/spec/validate-spec.js page-spec.json` (the compat gate — vocabulary = proven Divi mappings; `raw` is the WARN escape hatch; extend export-first via `scripts/spec/vocabulary.js`), then `node scripts/spec/spec-to-html.js page-spec.json > preview-[brand].html`. The preview is the base stylesheet + aesthetic override (`scripts/spec/aesthetics/`); motion renders as a `⚡ preset` annotation, judged at the live Divi preview. Interactive mode: serve, screenshot, get approval. Headless: self-approve. Fix zero-em-dash and layout-variety issues in the spec here — cheaper than after the JSON exists. Start sections from the validated blueprints in [references/section-recipes/](references/section-recipes/) (`hero-light`, `features-3col`, `cta-dark`, `footer`), and choose presets by surface using [references/preset-catalogue.json](references/preset-catalogue.json) so a light-text preset never lands on a light section.
 
 ### Stage 3 — Compile + validate
 
@@ -98,7 +98,7 @@ Run `fidelity-check.js` against the Stage 2 HTML before anything is handed off:
 node scripts/fidelity-check.js [brand]-landing-page.json preview-[brand].html
 ```
 
-This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you proceed to import via the `import-to-local` skill.
+This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you import. **Import** (`divi-tools-importer` plugin): `POST /wp-json/divi-tools/v1/import`, header `X-Divi-Tools-Key`, body `{layout, seo, schema, publish}` — `publish: false` = draft (default; `true` only when asked to go live). Registry once per site via `GET /presets?with_attrs=1` (`setup-et-presets.js`). Details: [site profile](references/site-profile.md).
 
 ### Stage 4 — Visual fidelity gate (automated, blocks delivery)
 
