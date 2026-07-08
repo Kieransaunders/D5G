@@ -1,16 +1,16 @@
 ---
 name: import-to-local
-description: "Import Divi 5 landing page JSON into any WordPress site (local or hosted) as a published page via the Divi Tools Importer plugin REST API, screenshot it live, and run the accept/refine loop. Use when importing or deploying a generated Divi 5 page into WordPress and previewing it live. Triggers: import divi page, import to local, localwp import, preview divi page, publish divi landing page, divi local site, import divi hosted, deploy divi page."
+description: "Import Divi 5 landing page JSON into any WordPress site (local or hosted) as a published page via the Divi5 Generator REST API, screenshot it live, and run the accept/refine loop. Use when importing or deploying a generated Divi 5 page into WordPress and previewing it live. Triggers: import divi page, import to local, localwp import, preview divi page, publish divi landing page, divi local site, import divi hosted, deploy divi page."
 argument-hint: "[site-url] [api-key]  — or omit to be prompted"
 ---
 
 # Divi 5 Page Importer
 
-Close the loop on a generated Divi 5 page: validate it, push it to any WordPress site via the Divi Tools Importer plugin, open the preview, then act on the user's verdict. Works on **any host** — Local, Kinsta, WP Engine, SiteGround, Flywheel — no SSH or WP-CLI required.
+Close the loop on a generated Divi 5 page: validate it, push it to any WordPress site via the Divi5 Generator plugin, open the preview, then act on the user's verdict. Works on **any host** — Local, Kinsta, WP Engine, SiteGround, Flywheel — no SSH or WP-CLI required.
 
 ## Pre-requisite
 
-The **Divi Tools Importer** plugin must be installed and active on the target site.
+The **Divi5 Generator** plugin must be installed and active on the target site.
 
 The plugin ships as unpacked source under `plugin-src/` (a bundled `.zip` can't live inside a Claude Code plugin — the installer rejects nested zips). Build the installable zip on demand:
 
@@ -18,11 +18,11 @@ The plugin ships as unpacked source under `plugin-src/` (a bundled `.zip` can't 
 bash "${CLAUDE_SKILL_DIR}/scripts/build-plugin-zip.sh" ~/Downloads
 ```
 
-It prints the path to the finished zip (e.g. `~/Downloads/divi-tools-importer.zip`). Tell the user:
+It prints the path to the finished zip (e.g. `~/Downloads/divi5-generator.zip`). Tell the user:
 
-> "I've built the plugin zip at `~/Downloads/divi-tools-importer.zip`. Install it via **WordPress Admin → Plugins → Add New → Upload Plugin**, then activate it."
+> "I've built the plugin zip at `~/Downloads/divi5-generator.zip`. Install it via **WordPress Admin → Plugins → Add New → Upload Plugin**, then activate it."
 
-After activation they go to **Settings → Divi Tools Importer** to copy their site URL and API key.
+After activation they go to **Settings → Divi5 Generator** to copy their site URL and API key.
 
 ## Output location
 
@@ -60,7 +60,7 @@ Check the `context` field to determine import type:
 
 **Site URL + API key** — from `$ARGUMENTS`, or ask via AskUserQuestion:
 - "What is your WordPress site URL?" (e.g. `https://mysite.com` or `http://mysite.local`)
-- "What is your Divi Tools Importer API key?" (starts with `dtik_`)
+- "What is your Divi5 Generator API key?" (starts with `d5gk_`)
 
 ### 2. Validate
 
@@ -86,9 +86,9 @@ require('fs').writeFileSync('preview-payload.json', JSON.stringify({layout:l}));
 POST it to the preview endpoint:
 
 ```bash
-curl -s -X POST "<site-url>/wp-json/divi-tools/v1/preview" \
+curl -s -X POST "<site-url>/wp-json/divi5-generator/v1/preview" \
   -H "Content-Type: application/json" \
-  -H "X-Divi-Tools-Key: <api-key>" \
+  -H "X-D5G-Key: <api-key>" \
   -d @preview-payload.json
 ```
 
@@ -110,18 +110,18 @@ Wait for the user's verdict:
 ### 3. Ping the site
 
 ```bash
-curl -s "<site-url>/wp-json/divi-tools/v1/ping?dti_key=<api-key>"
+curl -s "<site-url>/wp-json/divi5-generator/v1/ping?d5g_key=<api-key>"
 ```
 
 Check the response:
 - `status: "ok"` → proceed
-- HTTP 401 → wrong key, ask the user to check Settings → Divi Tools Importer
+- HTTP 401 → wrong key, ask the user to check Settings → Divi5 Generator
 - HTTP 404 → plugin not active, ask user to activate it
 - Connection refused / timeout → site is down or URL is wrong
 
 > **Where this runs:** every call below curls the target site. If you're in an environment that can't reach `localhost` (e.g. a sandboxed/Cowork session, which can't reach the user's Mac at `localhost:10024`), target a **public** URL or drive the site via the browser extension instead. Under Claude Code on the Mac, `localhost` works fine.
 
-Report what was detected: the `seo_plugin` field in the ping response names the active SEO plugin (one of `rank_math`, `yoast`, `aioseo`, `seopress`, `tsf`, or `null`). The importer writes the full SEO sidecar — title, description, focus + secondary keywords, OpenGraph, Twitter, canonical, and robots directives — to whichever plugin is active, using its native post-meta keys. **If `seo_plugin` is `null`** (no supported plugin installed), DTI falls back to neutral `_dti_seo_*` keys and stores/injects schema by slug — nothing is lost, but the SEO plugin UI won't show the values until one is installed.
+Report what was detected: the `seo_plugin` field in the ping response names the active SEO plugin (one of `rank_math`, `yoast`, `aioseo`, `seopress`, `tsf`, or `null`). The importer writes the full SEO sidecar — title, description, focus + secondary keywords, OpenGraph, Twitter, canonical, and robots directives — to whichever plugin is active, using its native post-meta keys. **If `seo_plugin` is `null`** (no supported plugin installed), D5G falls back to neutral `_d5g_seo_*` keys and stores/injects schema by slug — nothing is lost, but the SEO plugin UI won't show the values until one is installed.
 
 ### 4. Build the payload and import
 
@@ -139,9 +139,9 @@ Assemble `payload.json` in the output folder (`${DIVI5_OUT:-~/Desktop/Divi5 Page
 Send it:
 
 ```bash
-curl -s -X POST "<site-url>/wp-json/divi-tools/v1/import" \
+curl -s -X POST "<site-url>/wp-json/divi5-generator/v1/import" \
   -H "Content-Type: application/json" \
-  -H "X-Divi-Tools-Key: <api-key>" \
+  -H "X-D5G-Key: <api-key>" \
   -d @payload.json
 ```
 
@@ -193,9 +193,9 @@ Show the user:
 ## Publish flow (after accept)
 
 ```bash
-curl -s -X POST "<site-url>/wp-json/divi-tools/v1/import" \
+curl -s -X POST "<site-url>/wp-json/divi5-generator/v1/import" \
   -H "Content-Type: application/json" \
-  -H "X-Divi-Tools-Key: <api-key>" \
+  -H "X-D5G-Key: <api-key>" \
   -d @payload.json  # same payload with "publish": true
 ```
 
@@ -210,8 +210,8 @@ When refining a page across several rounds, drafts pile up on the site. Two endp
 ### List imported pages
 
 ```bash
-curl -s "<site-url>/wp-json/divi-tools/v1/pages" \
-  -H "X-Divi-Tools-Key: <api-key>"
+curl -s "<site-url>/wp-json/divi5-generator/v1/pages" \
+  -H "X-D5G-Key: <api-key>"
 ```
 
 Returns an array:
@@ -229,8 +229,8 @@ Returns an array:
 ### Delete a draft page
 
 ```bash
-curl -s -X DELETE "<site-url>/wp-json/divi-tools/v1/pages/<slug>" \
-  -H "X-Divi-Tools-Key: <api-key>"
+curl -s -X DELETE "<site-url>/wp-json/divi5-generator/v1/pages/<slug>" \
+  -H "X-D5G-Key: <api-key>"
 ```
 
 The slug goes in the **path**, not as a query param — e.g. `/pages/invoice-software`, not `/pages?slug=invoice-software` (the query-param form returns 404 `rest_no_route`).

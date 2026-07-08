@@ -20,8 +20,8 @@ flowchart TD
     PROJECT --> PREVIEWCARD["Inline preview card"]
     PREVIEWCARD --> OK{Looks right?}
     OK -->|Refine| ASK
-    OK -->|Import| IMPORTCARD["Import card → WordPress draft\n(GET /pages lists it, DELETE /pages/:slug removes it)"]
-    IMPORTCARD --> DONE([✓ Draft live in WordPress])
+    OK -->|Import| IMPORTCARD["Import card → real Divi preview\nthen published WordPress page"]
+    IMPORTCARD --> DONE([✓ Live page verified in WordPress])
 
     style EXTRACT fill:#f0f4ff,stroke:#4a6cf7,color:#000
     style PROJECT fill:#f0f4ff,stroke:#4a6cf7,color:#000
@@ -41,7 +41,7 @@ flowchart TD
     START([Start]) --> Q1{Do you have an\nexisting Divi site\nor export?}
 
     %% ── Branch A: existing design ──────────────────────────────────────────
-    Q1 -->|Yes| A1["/divi5-tools:divi5-extract-style\nhomepage-export.json"]
+    Q1 -->|Export file| A1["divi5-extract-style\nhomepage-export.json"]
     A1 --> A2["Outputs:\nClientBrand.tokens.js\nClientBrand.variables.json"]
     A2 --> Q2{Fresh site\nor existing?}
     Q2 -->|Fresh site| A3["Import ClientBrand.variables.json\nDivi Library → Import Global Variables\n\nImport original export\nwith 'Import Presets' checked"]
@@ -49,8 +49,11 @@ flowchart TD
     A3 --> GEN
     A4 --> GEN
 
+    Q1 -->|Live WordPress site| A5["brand-extract\nsite URL + Divi Tools Connector API key\n→ saved Brand Profile"]
+    A5 --> GEN
+
     %% ── Branch B: brand guide only ─────────────────────────────────────────
-    Q1 -->|No — have brand guide| B1["/divi5-tools:divi5-extract-style\n'Primary #1A2744, Accent #F97316,\nfont Space Grotesk…'"]
+    Q1 -->|No — have brand guide| B1["divi5-extract-style\n'Primary #1A2744, Accent #F97316,\nfont Space Grotesk…'"]
     B1 --> B2["Outputs:\nBrand_Global-Variables.json"]
     B2 --> B3["Import via\nDivi Library → Import Global Variables"]
     B3 --> GEN
@@ -59,36 +62,43 @@ flowchart TD
     Q1 -->|No — start from scratch| GEN
 
     %% ── Generation ─────────────────────────────────────────────────────────
-    GEN["/divi5-tools:divi5-page-generator\nbrand · keyword · sections · CTA"]
-    GEN --> BRIEF["Stage 1 — Brief\nDetect tokens.js → reuse designer IDs\nSet Design Read + dials"]
-    BRIEF --> PREVIEW["Stage 2 — HTML Preview\nBuild preview-brand.html\nTaste pre-flight checklist\nScreenshot → user approves"]
+    GEN["divi5-page-generator\nbrand · keyword · sections · CTA"]
+    GEN --> BRIEF["Stage 1 — Brief\nBrand + offer · keyword · aesthetic · sections · CTA\nState Design Read"]
+    BRIEF --> SPEC["Stage 2 — page-spec.json\nAuthor the source spec\nRun validate-spec.js"]
+    SPEC --> PREVIEW["HTML preview\nspec-to-html.js → preview-brand.html\nInteractive: user approves\nHeadless: self-approve"]
     PREVIEW --> APPROVED{Approved?}
-    APPROVED -->|No — iterate| PREVIEW
-    APPROVED -->|Yes| BUILD["Stage 3 — Generate + Validate\nWrite generate-brand.js\nRun validator --keyword --meta\nFix all FAILs"]
+    APPROVED -->|No — iterate| SPEC
+    APPROVED -->|Yes| BUILD["Stage 3 — Compile + validate\nspec-to-divi.js → layout JSON + SEO + schema\nRun validate.js + taste-check.js\nFix all FAILs"]
+    BUILD --> FIDELITY["Stage 3.5 — Fidelity gate\nfidelity-check.js against approved HTML\nBlocks delivery on FAIL"]
 
     %% ── Gate 1: style check ────────────────────────────────────────────────
-    BUILD --> Q3{Designer export\npresent?}
-    Q3 -->|Yes| STYLECHECK["/divi5-tools:divi5-style-check\noriginal-export.json  new-page.json"]
+    FIDELITY --> Q3{Designer export\npresent?}
+    Q3 -->|Yes| STYLECHECK["divi5-style-check\noriginal-export.json  new-page.json"]
     STYLECHECK --> SC_RESULT{Result?}
-    SC_RESULT -->|INCONSISTENT — FAILs| FIX1["Fix generator script\nRegenerate"]
+    SC_RESULT -->|INCONSISTENT — FAILs| FIX1["Fix page-spec or generator inputs\nRegenerate"]
     FIX1 --> STYLECHECK
     SC_RESULT -->|CONSISTENT ✓\nor WARN-only| IMPORT
     Q3 -->|No| IMPORT
 
     %% ── Import ─────────────────────────────────────────────────────────────
-    IMPORT["/divi5-tools:import-to-local\nbrand-page.json"]
-    IMPORT --> LIVE_PREVIEW["Divi renders page\nStage 4 — Playwright screenshot\nCompare live vs HTML mockup"]
+    IMPORT["import-to-local\nbrand-page.json"]
+    IMPORT --> REAL_PREVIEW["POST /preview\nReal Divi render before full import\nApprove or refine"]
+    REAL_PREVIEW --> PREVIEW_OK{Preview approved?}
+    PREVIEW_OK -->|No — refine| FIX2["Fix page-spec or generator inputs\nRegenerate + re-validate"]
+    FIX2 --> BUILD
+    PREVIEW_OK -->|Yes| PUBLISH["POST /import\nstatus: publish\nsame slug updates in place"]
+    PUBLISH --> LIVE_PREVIEW["Playwright screenshot\nCompare live page vs HTML mockup\nRun visual diff where available"]
     LIVE_PREVIEW --> RENDER_OK{Render matches\nmockup?}
-    RENDER_OK -->|No — render bug| FIX2["Fix preset CSS / button enable /\ncache / shortcode token\nRe-import"]
-    FIX2 --> LIVE_PREVIEW
-    RENDER_OK -->|Yes| PUBLISH["Publish page"]
+    RENDER_OK -->|No — render bug| FIX4["Fix preset CSS / button enable /\ncache / shortcode token\nRe-import"]
+    FIX4 --> REAL_PREVIEW
+    RENDER_OK -->|Yes| POSTCHECK
 
     %% ── Gate 2: spec compliance ────────────────────────────────────────────
-    PUBLISH --> EXPORT_PAGE["Export live page from Divi\nexported-page.json"]
+    POSTCHECK["Optional post-import evidence"] --> EXPORT_PAGE["Export live page from Divi\nexported-page.json"]
     EXPORT_PAGE --> Q4{Brief or spec\ndocument exists?}
-    Q4 -->|Yes| SPECCHECK["/divi5-tools:design-review\nexported-page.json --spec brief.md"]
+    Q4 -->|Yes| SPECCHECK["design-review\nexported-page.json --spec brief.md"]
     SPECCHECK --> SC2_RESULT{Result?}
-    SC2_RESULT -->|NON-COMPLIANT — FAILs| FIX3["Fix missing sections / CTAs / copy\nin generator, regenerate + re-import"]
+    SC2_RESULT -->|NON-COMPLIANT — FAILs| FIX3["Fix missing sections / CTAs / copy\nin page-spec, regenerate + re-import"]
     FIX3 --> SPECCHECK
     SC2_RESULT -->|COMPLIANT ✓| DELIVER
     Q4 -->|No| DELIVER
@@ -104,6 +114,7 @@ flowchart TD
     style FIX1       fill:#fff0f0,stroke:#ef4444,color:#000
     style FIX2       fill:#fff0f0,stroke:#ef4444,color:#000
     style FIX3       fill:#fff0f0,stroke:#ef4444,color:#000
+    style FIX4       fill:#fff0f0,stroke:#ef4444,color:#000
     style DELIVER    fill:#f0fff4,stroke:#22c55e,color:#000
     style START      fill:#1e293b,stroke:#1e293b,color:#fff
 ```
@@ -119,9 +130,15 @@ flowchart TD
 
 ## Gate summary
 
-| Gate | Skill | When required | Blocks on |
-|------|-------|---------------|-----------|
-| **Gate 1** — Style consistency | `/divi5-style-check` | Designer export present | FAIL: new preset IDs or off-palette colours |
-| **Gate 2** — Spec compliance | `/design-review --spec` | Brief/spec document exists | FAIL: missing sections, wrong CTAs, absent content |
+| Gate | Skill/script | When required | Blocks on |
+|------|--------------|---------------|-----------|
+| Spec compatibility | `validate-spec.js` | Every spec-first page build | Unknown or unsupported page-spec vocabulary |
+| Structural + SEO validation | `validate.js` | Every page build | FAIL: invalid Divi JSON, missing SEO contract, broken structure |
+| Taste check | `taste-check.js` | Every page build | FAIL: obvious design-quality issues |
+| Fidelity check | `fidelity-check.js` | Every page build before import | FAIL: generated JSON does not match the approved HTML preview |
+| Style consistency | `divi5-style-check` | Designer export present | FAIL: new preset IDs or off-palette colours |
+| Real Divi preview | `import-to-local` `/preview` step | Before full WordPress import | User rejects preview or render is visibly broken |
+| Live visual check | `import-to-local` screenshot / `visual-diff.js` | After import | Render drift above threshold or visible live-page defects |
+| Spec compliance | `design-review --spec` | Brief/spec document exists | FAIL: missing sections, wrong CTAs, absent content |
 
-Both gates are required when their inputs are present. Skipping Gate 1 risks importing a page that silently diverges from the site design system. Skipping Gate 2 risks delivering a page that doesn't match the agreed brief.
+The skills treat the generator, fidelity, and import preview gates as blocking. Style consistency and spec compliance are conditional on having the relevant source export or brief, but should not be skipped when those inputs exist.

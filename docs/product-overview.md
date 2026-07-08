@@ -1,6 +1,6 @@
 # Divi 5 AI Page Generator — Technical Overview & Product Opportunity
 
-*Written 2026-06-21. Based on the landing-page skill, divi-tools-importer plugin, and learnings from the Rub You Well build.*
+*Written 2026-06-21. Based on the page generator skill, Divi Tools Connector plugin, and learnings from the Rub You Well build.*
 
 ---
 
@@ -17,19 +17,19 @@ The output is a `.json` file that can be imported directly into any Divi 5 WordP
 The system has three layers that work in sequence:
 
 ```
-BRIEF → [AI Skill Layer] → JSON → [Import Plugin] → [Divi 5 WordPress Site]
+BRIEF → [AI Skill Layer] → JSON → [Divi Tools Connector] → [Divi 5 WordPress Site]
 ```
 
-### Layer 1 — The AI Skill (`skills/landing-page/`)
+### Layer 1 — The AI Skill (`skills/divi5-page-generator/`)
 
 The Claude skill that orchestrates the entire generation pipeline. It is a set of instructions, constraints, and referenced assets that guides the AI through a structured workflow.
 
 **Key stages:**
 1. **Brief** — extracts brand, keyword, aesthetic, sections, CTA from conversation
 2. **HTML preview** — builds a full styled HTML mock served locally; user approves before any Divi JSON is generated
-3. **Generation** — writes a Node.js generator script that uses the builder library
-4. **Validation** — runs an automated validator; must pass before delivery
-5. **Import** — pushes JSON to the live WordPress site via the REST API
+3. **Spec compilation** — authors `page-spec.json`, then compiles it to both preview HTML and Divi JSON
+4. **Validation** — runs spec, structural, SEO, taste, and fidelity gates; failures block delivery
+5. **Import** — uses the importer skill's real Divi preview, then publishes and screenshots the live WordPress page
 
 **Taste system** (`references/taste.md`, `references/aesthetics.md`):
 Five pre-built aesthetic palettes (Organic Tech, Midnight Luxe, Brutalist Signal, Vapor Clinic, Minimal Editorial) with explicit guardrails — typography rules, layout dials (VARIANCE / MOTION / DENSITY), anti-patterns, and a pre-flight checklist. The AI is trained to self-check against the Floria reference screenshots before delivery.
@@ -71,9 +71,9 @@ D.section({ preset: P.secCream, padding: { top: '90px', bottom: '90px' } }, [
 
 ---
 
-### Layer 3 — The Import Plugin (`plugin/divi-tools-importer/`)
+### Layer 3 — The WordPress Site Connector (`plugin/divi5-generator/`)
 
-A WordPress REST API plugin that bridges the AI output to a live Divi 5 site. It handles the non-trivial parts of pushing JSON into Divi's internal data model correctly.
+A WordPress REST API plugin that bridges Claude/Divi5Generate to a live Divi 5 site. It previews live Divi renders, imports pages and library sections, exports site design data, moves preset packs and global variables, writes SEO/schema metadata, lists/deletes managed pages, and supports database export/import with URL rewriting.
 
 **Endpoints:**
 | Method | Path | Purpose |

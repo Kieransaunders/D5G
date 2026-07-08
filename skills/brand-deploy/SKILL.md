@@ -11,7 +11,7 @@ Push a saved Brand Profile's variables and presets to any Divi 5 WordPress site 
 ## Pre-requisites
 
 - A saved Brand Profile in the app (run `/divi5generate:brand-extract` first if you haven't).
-- **Divi Tools Importer v1.4+** installed and active on the **target** site.
+- **Divi5 Generator v1.7+** installed and active on the **target** site.
 - The **Divi5Generator app** running at `http://localhost:3747`.
 
 ## Steps
@@ -24,7 +24,7 @@ If not provided, ask for:
   curl -s http://localhost:3747/brand | python3 -m json.tool
   ```
 - **Target site URL** — the new site to deploy to
-- **Target site API key** — `dtik_…` from the new site's Settings → Divi Tools Importer
+- **Target site API key** — `d5gk_…` from the new site's Settings → Divi5 Generator
 
 ### 2. Deploy
 

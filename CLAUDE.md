@@ -15,7 +15,7 @@ Divi5Generate/
 ├── commands/
 ├── docs/
 ├── app/                     # Node builder library (page generator)
-└── plugin/                  # WordPress importer plugin (PHP)
+└── plugin/                  # WordPress site connector plugin (PHP)
 ```
 
 ## Install on a new machine
@@ -26,6 +26,45 @@ claude plugin install divi5generate@divi5generate
 ```
 
 Then open Claude Code Desktop — it picks up the install automatically from `~/.claude`.
+
+## User workflow diagram
+
+```mermaid
+flowchart TD
+    A[Install Divi5Generate plugin] --> B[Open Claude Code Desktop]
+    B --> C{How do you want to start?}
+
+    C -- Browser app --> D[Run /divi5generate:launch]
+    C -- Chat prompt --> E[Ask Claude for a Divi 5 page, section, import, or review]
+
+    D --> F[Chat with the generator app]
+    F --> G[Create or select a brand profile]
+    G --> H[Approve the page proposal]
+
+    E --> I{Which skill matches the request?}
+    I -- Generate page or section --> J[divi5-page-generator]
+    I -- Extract brand/style --> K[divi5-extract-style or brand-extract]
+    I -- Import to WordPress --> L[import-to-local]
+    I -- Audit output --> M[design-review or divi5-style-check]
+
+    H --> J
+    K --> J
+    J --> N[Validated Divi 5 JSON + SEO files]
+    N --> L
+    L --> O[Live WordPress page preview]
+    O --> P{Accept or refine?}
+    P -- Refine --> J
+    P -- Accept --> Q[Publish or deliver final files]
+    M --> P
+```
+
+Typical prompts:
+
+- "Launch the Divi 5 generator."
+- "Create a Divi 5 landing page for a roofing company in Exeter."
+- "Extract the brand style from this Divi export, then generate a services page."
+- "Import the latest generated page into my WordPress site."
+- "Review this Divi export against the original brief."
 
 ## Plugin registration (settings.json)
 
@@ -101,9 +140,9 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | `divitheatre-engine` | Theatre.js motion engine reference |
 | `divitheatre-section` | Generate a single Divi 5 section showcasing one DiviTheatre animation preset from the manifest-backed real catalog (15 presets; pin:product-reveal, stagger, marquee, aurora, etc.) |
 
-## SEO plugin support (Divi Tools Importer ≥ 1.6.0)
+## SEO plugin support (Divi5 Generator ≥ 1.7.0)
 
-The importer (`plugin/divi-tools-importer/`) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `dti/seo/adapter_order` filter):
+The importer (`plugin/divi5-generator/`) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `d5g/seo/adapter_order` filter):
 
 | Plugin | Adapter | Detection signal |
 |---|---|---|

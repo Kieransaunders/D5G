@@ -51,8 +51,10 @@ skills/divi5-page-generator/*-registry.json
 skills/divi5-page-generator/*-seo-meta.json
 skills/divi5-page-generator/__unlink_probe*
 
-# Divi Tools Importer — dev tooling only (not shipped in the installable zip).
+# Divi5 Generator — dev tooling only (not shipped in the installable zip).
 # vendor/ is installed by `composer install`; tests/.phpunit.cache is PHPUnit's
 # result cache. Both are excluded from the zip by build-plugin-zip.sh.
-plugin/divi-tools-importer/vendor/
-plugin/divi-tools-importer/tests/.phpunit.cache/
+plugin/divi5-generator/vendor/
+plugin/divi5-generator/tests/.phpunit.cache/
+plugin/divi5-generator/package-lock.json
+plugin/divi5-generator/node_modules/

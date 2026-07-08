@@ -71,7 +71,7 @@ flowchart TD
 | Command | What it does |
 |---------|-------------|
 | `/divi5generate:launch` | Start the local generator app and open it at http://localhost:3747 |
-| `/divi5generate:help` | Setup guide — install the WordPress importer plugin and get your API key |
+| `/divi5generate:help` | Setup guide — install the WordPress site connector plugin and get your API key |
 
 ---
 
@@ -175,12 +175,12 @@ divi5-page-generator "Landing page for Westcountry Pet Rescue,
 
 ---
 
-## WordPress Importer Plugin
+## WordPress Site Connector Plugin
 
-`import-to-local` pushes pages into WordPress via the **Divi Tools Importer** plugin.
+`import-to-local`, `brand-extract`, and `brand-deploy` work through the **Divi5 Generator** plugin. It handles real Divi previews, page/library imports, page exports, preset and global-variable import/export, SEO/schema persistence, managed page cleanup, and site data transfer helpers.
 
 ```
 /divi5generate:help
 ```
 
-Builds `divi-tools-importer.zip` → install via **WP Admin → Plugins → Add New → Upload Plugin → Activate** → copy your Site URL and API key from **Settings → Divi Tools Importer**.
+Builds `divi5-generator.zip` → install via **WP Admin → Plugins → Add New → Upload Plugin → Activate** → copy your Site URL and API key from **Settings → Divi5 Generator**.

@@ -16,7 +16,7 @@ SCRIPT=$(find ~/.claude/skills ~/.claude/plugins/cache ~/.claude/plugins/marketp
 [ -n "$SCRIPT" ] && bash "$SCRIPT" ~/Downloads
 ```
 
-Report the printed zip path (e.g. `~/Downloads/divi-tools-importer.zip`) to the user. If the script isn't found, the plugin isn't installed — have them re-install divi5-tools.
+Report the printed zip path (e.g. `~/Downloads/divi5-generator.zip`) to the user. If the script isn't found, the plugin isn't installed — have them re-install divi5-tools.
 
 ## 2. Install it in WordPress
 
