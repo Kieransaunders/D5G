@@ -711,21 +711,30 @@
         <a href="#paths">Inputs</a>
         <a href="#flow">Flow</a>
         <a href="#gates">Gates</a>
+        <a href="https://wordpress.org/plugins/divi5-generator/" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 12h16M12 4a8 8 0 0 1 8 8 8 8 0 0 1-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          WP Plugin
+        </a>
       </nav>
     </header>
 
     <section id="overview" class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <span class="eyebrow">Source of truth: skills</span>
-        <h2 id="hero-title">A clearer operating map for users and agents.</h2>
+        <span class="eyebrow">From brief to live page in one workflow</span>
+        <h2 id="hero-title">Build Divi 5 pages without opening the Builder.</h2>
         <p>
-          This page shows the current Divi5Generate workflow as defined by the skills:
-          start from a brand source or brief, compile a page spec, validate the output,
-          preview in real Divi, then publish and verify the live WordPress page.
+          Divi5Generate turns a brand, a brief, or an existing site into a published
+          WordPress page — with proper SEO, your design system intact, and quality
+          gates that catch issues before they go live. No clicking around the Divi
+          Builder. No guessing whether presets match. No copy-pasting SEO metadata.
+          Describe what you need and get a verified, importable page back.
         </p>
       </div>
 
-      <aside class="summary-panel" aria-label="Workflow summary">
+      <aside class="summary-panel" aria-label="Plugin benefits">
         <div class="metric">
           <div class="metric-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -733,8 +742,8 @@
             </svg>
           </div>
           <div>
-            <strong>Preferred build path</strong>
-            <span><code>page-spec.json</code> compiles to preview HTML and Divi JSON.</span>
+            <strong>Go from brief to published page in minutes</strong>
+            <span>Describe the page, pick your brand, and get importable Divi JSON with SEO, schema, and visual preview — no Builder session required.</span>
           </div>
         </div>
         <div class="metric">
@@ -744,8 +753,8 @@
             </svg>
           </div>
           <div>
-            <strong>Blocking quality gates</strong>
-            <span>Spec, validation, taste, fidelity, preview, and live visual checks.</span>
+            <strong>Quality gates prevent bad output from shipping</strong>
+            <span>Every page passes spec validation, SEO checks, taste review, fidelity comparison, and real Divi preview before you ever hit publish.</span>
           </div>
         </div>
         <div class="metric">
@@ -755,8 +764,8 @@
             </svg>
           </div>
           <div>
-            <strong>Import behavior</strong>
-            <span>The importer previews in real Divi, then imports with <code>status: publish</code>.</span>
+            <strong>Reuse your brand system across every page</strong>
+            <span>Extract colours, fonts, and presets from a live site or export — then deploy the same design system to any new page or site.</span>
           </div>
         </div>
         <div class="metric">
@@ -766,8 +775,8 @@
             </svg>
           </div>
           <div>
-            <strong>No repo output</strong>
-            <span>Generated artifacts belong in <code>DIVI5_OUT</code> or <code>~/Desktop/Divi5 Pages</code>.</span>
+            <strong>Works with your existing SEO setup</strong>
+            <span>SEO metadata lands in the right post-meta for Yoast, Rank Math, AIOSEO, SEOPress, or TSF — no extra configuration.</span>
           </div>
         </div>
       </aside>
@@ -804,15 +813,15 @@ claude plugin install divi5generate@divi5generate</code>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 3v12M8 11l4 4 4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            WordPress site connector
+            WordPress plugin
           </h3>
-          <p>Install the Divi Tools Connector on each target WordPress site. It previews and imports pages, moves presets and global variables, exports site design data, writes SEO/schema, and supports managed page cleanup.</p>
+          <p>Install the <strong>Divi5 Generator</strong> WordPress plugin on each target site. It previews and imports pages, moves presets and global variables, exports site design data, writes SEO/schema, and supports managed page cleanup.</p>
           <code class="command">/divi5generate:help</code>
           <ol class="install-list">
-            <li>Build or download <code>divi-tools-connector.zip</code>.</li>
-            <li>In WordPress Admin, go to Plugins -> Add New -> Upload Plugin.</li>
-            <li>Activate <code>Divi Tools Connector</code>.</li>
-            <li>Open Settings -> Divi Tools Connector and copy the Site URL and API key.</li>
+            <li>Download from <a href="https://wordpress.org/plugins/divi5-generator/" target="_blank">wordpress.org/plugins/divi5-generator/</a> or <code>plugin/build-zip.sh</code>.</li>
+            <li>In WordPress Admin, go to Plugins → Add New → Upload Plugin.</li>
+            <li>Activate <strong>Divi5 Generator</strong>.</li>
+            <li>Open Settings → Divi5 Generator and copy the Site URL and API key.</li>
             <li>Give those to <code>import-to-local</code>, <code>brand-extract</code>, or <code>brand-deploy</code> when Claude needs to work with that site.</li>
           </ol>
         </article>
