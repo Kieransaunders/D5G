@@ -43,6 +43,7 @@ require_once D5G_DIR . 'src/GlobalVariablesImporter.php';
 require_once D5G_DIR . 'src/PagesLister.php';
 require_once D5G_DIR . 'src/DbExporter.php';
 require_once D5G_DIR . 'src/DbImporter.php';
+require_once D5G_DIR . 'src/MenuImporter.php';
 require_once D5G_DIR . 'src/RestApi.php';
 require_once D5G_DIR . 'admin/SettingsPage.php';
 

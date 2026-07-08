@@ -328,3 +328,4 @@ require_once $src . '/Seo/SEOPress.php';
 require_once $src . '/Seo/TSF.php';
 require_once $src . '/Seo/Detector.php';
 require_once $src . '/SeoWriter.php';
+require_once $src . '/MenuImporter.php';

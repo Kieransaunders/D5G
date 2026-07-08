@@ -114,6 +114,37 @@ class D5G_RestApi {
 				'slug' => array( 'required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_title' ),
 			),
 		) );
+
+		register_rest_route( self::NAMESPACE, '/menus', array(
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'handle_menu_create' ),
+				'permission_callback' => array( __CLASS__, 'authenticate' ),
+				'args'                => array(
+					'name'     => array( 'required' => true, 'type' => 'string' ),
+					'location' => array( 'required' => false, 'type' => 'string', 'default' => '' ),
+					'items'    => array( 'required' => false, 'type' => 'array',  'default' => array() ),
+				),
+			),
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'handle_menus_list' ),
+				'permission_callback' => array( __CLASS__, 'authenticate' ),
+				'args'                => array(
+					'name' => array( 'required' => false, 'type' => 'string', 'default' => '' ),
+				),
+			),
+		) );
+
+		register_rest_route( self::NAMESPACE, '/menus/auto-place', array(
+			'methods'             => 'POST',
+			'callback'            => array( __CLASS__, 'handle_menu_auto_place' ),
+			'permission_callback' => array( __CLASS__, 'authenticate' ),
+			'args'                => array(
+				'menu_name' => array( 'required' => true, 'type' => 'string' ),
+				'pages'     => array( 'required' => true, 'type' => 'array' ),
+			),
+		) );
 	}
 
 	public static function authenticate( WP_REST_Request $request ): bool|WP_Error {
@@ -256,6 +287,53 @@ class D5G_RestApi {
 		} catch ( RuntimeException $e ) {
 			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
 		}
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_menus_list( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$name = sanitize_text_field( (string) $request->get_param( 'name' ) );
+
+		try {
+			$result = D5G_MenuImporter::list_menus( $name ?: null );
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'list_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 200 );
+	}
+
+	public static function handle_menu_create( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$payload = array(
+			'name'     => sanitize_text_field( (string) $request->get_param( 'name' ) ),
+			'location' => sanitize_text_field( (string) $request->get_param( 'location' ) ),
+			'items'    => $request->get_param( 'items' ) ?: array(),
+		);
+
+		try {
+			$result = D5G_MenuImporter::create( $payload );
+		} catch ( InvalidArgumentException $e ) {
+			return new WP_Error( 'validation_failed', $e->getMessage(), array( 'status' => 422 ) );
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'menu_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $result, 201 );
+	}
+
+	public static function handle_menu_auto_place( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$payload = array(
+			'menu_name' => sanitize_text_field( (string) $request->get_param( 'menu_name' ) ),
+			'pages'     => $request->get_param( 'pages' ) ?: array(),
+		);
+
+		try {
+			$result = D5G_MenuImporter::auto_place( $payload );
+		} catch ( InvalidArgumentException $e ) {
+			return new WP_Error( 'validation_failed', $e->getMessage(), array( 'status' => 422 ) );
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'auto_place_failed', $e->getMessage(), array( 'status' => 500 ) );
+		}
+
 		return new WP_REST_Response( $result, 200 );
 	}
 
