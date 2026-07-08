@@ -103,6 +103,190 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 	}
 }
 
+// --- Menu test infrastructure ------------------------------------------------
+
+if ( ! class_exists( 'WP_Error' ) ) {
+	class WP_Error {
+		private $code;
+		private $message;
+		public function __construct( $code = '', $message = '', $data = '' ) {
+			$this->code    = $code;
+			$this->message = $message;
+		}
+		public function get_error_message() { return $this->message; }
+		public function get_error_code()    { return $this->code; }
+	}
+}
+
+if ( ! function_exists( 'is_wp_error' ) ) {
+	function is_wp_error( $thing ) {
+		return $thing instanceof WP_Error;
+	}
+}
+
+final class MenuStore {
+	private static $menus = array();
+	private static $menu_data = array();
+	private static $items = array();
+	private static $locations = array();
+	private static $next_term_id = 100;
+	private static $next_item_id = 500;
+
+	public static function reset(): void {
+		self::$menus = array();
+		self::$menu_data = array();
+		self::$items = array();
+		self::$locations = array();
+		self::$next_term_id = 100;
+		self::$next_item_id = 500;
+	}
+
+	public static function get_menu_id( string $name ): ?int {
+		return self::$menus[ $name ] ?? null;
+	}
+
+	public static function get_items( int $menu_id ): array {
+		return self::$items[ $menu_id ] ?? array();
+	}
+
+	public static function get_locations(): array {
+		return self::$locations;
+	}
+
+	public static function create_menu( string $name ): int {
+		$id = self::$next_term_id++;
+		self::$menus[ $name ] = $id;
+		self::$menu_data[ $id ] = array( 'term_id' => $id, 'name' => $name );
+		self::$items[ $id ] = array();
+		return $id;
+	}
+
+	public static function add_item( int $menu_id, array $args ): int {
+		$item_id = self::$next_item_id++;
+		self::$items[ $menu_id ][ $item_id ] = $args;
+		return $item_id;
+	}
+
+	public static function update_item( int $menu_id, int $item_id, array $args ): void {
+		if ( isset( self::$items[ $menu_id ][ $item_id ] ) ) {
+			self::$items[ $menu_id ][ $item_id ] = array_merge( self::$items[ $menu_id ][ $item_id ], $args );
+		}
+	}
+
+	public static function set_location( string $location, int $menu_id ): void {
+		self::$locations[ $location ] = $menu_id;
+	}
+
+	public static function menu_exists( string $name ): bool {
+		return isset( self::$menus[ $name ] );
+	}
+
+	public static function get_all_menus(): array {
+		$out = array();
+		foreach ( self::$menu_data as $id => $data ) {
+			$out[] = (object) $data;
+		}
+		return $out;
+	}
+
+	public static function get_menu_item_objects( int $menu_id ): array {
+		if ( ! isset( self::$items[ $menu_id ] ) ) {
+			return array();
+		}
+		$out = array();
+		foreach ( self::$items[ $menu_id ] as $id => $args ) {
+			$parent = isset( $args['menu-item-parent-id'] ) ? (int) $args['menu-item-parent-id'] : 0;
+			$out[] = (object) array(
+				'ID'               => $id,
+				'title'            => $args['menu-item-title'] ?? '',
+				'menu_item_parent' => (string) $parent,
+				'object_id'        => $args['menu-item-object-id'] ?? 0,
+				'object'           => $args['menu-item-object'] ?? '',
+				'type'             => $args['menu-item-type'] ?? 'custom',
+				'url'              => $args['menu-item-url'] ?? '',
+				'menu_order'       => $args['menu-item-position'] ?? 0,
+				'db_id'            => $id,
+			);
+		}
+		return $out;
+	}
+}
+
+if ( ! function_exists( 'wp_get_nav_menus' ) ) {
+	function wp_get_nav_menus( $args = array() ) {
+		return MenuStore::get_all_menus();
+	}
+}
+
+if ( ! function_exists( 'wp_get_nav_menu_items' ) ) {
+	function wp_get_nav_menu_items( $menu_id, $args = array() ) {
+		return MenuStore::get_menu_item_objects( (int) $menu_id );
+	}
+}
+
+if ( ! function_exists( 'wp_create_nav_menu' ) ) {
+	function wp_create_nav_menu( $name ) {
+		if ( MenuStore::menu_exists( $name ) ) {
+			return new WP_Error( 'menu_exists', "Menu '{$name}' already exists." );
+		}
+		return MenuStore::create_menu( $name );
+	}
+}
+
+if ( ! function_exists( 'wp_get_nav_menu_object' ) ) {
+	function wp_get_nav_menu_object( $name ) {
+		$id = MenuStore::get_menu_id( $name );
+		if ( ! $id ) {
+			return false;
+		}
+		return (object) array( 'term_id' => $id, 'name' => $name );
+	}
+}
+
+if ( ! function_exists( 'wp_update_nav_menu_item' ) ) {
+	function wp_update_nav_menu_item( $menu_id, $item_id = 0, $args = array() ) {
+		if ( $item_id === 0 ) {
+			return MenuStore::add_item( $menu_id, $args );
+		}
+		MenuStore::update_item( $menu_id, $item_id, $args );
+		return $item_id;
+	}
+}
+
+if ( ! function_exists( 'has_nav_menu' ) ) {
+	function has_nav_menu( $location ) {
+		return array_key_exists( $location, MenuStore::get_locations() );
+	}
+}
+
+if ( ! function_exists( 'get_theme_mod' ) ) {
+	function get_theme_mod( $key, $default = false ) {
+		if ( $key === 'nav_menu_locations' ) {
+			return MenuStore::get_locations();
+		}
+		return $default;
+	}
+}
+
+if ( ! function_exists( 'set_theme_mod' ) ) {
+	function set_theme_mod( $key, $value ) {
+		if ( $key === 'nav_menu_locations' && is_array( $value ) ) {
+			foreach ( $value as $location => $menu_id ) {
+				MenuStore::set_location( $location, $menu_id );
+			}
+		}
+	}
+}
+
+if ( ! function_exists( 'sanitize_title' ) ) {
+	function sanitize_title( $title, $context = 'save' ) {
+		$title = (string) $title;
+		$title = strtolower( $title );
+		$title = preg_replace( '/[^a-z0-9\-]+/', '-', $title );
+		return trim( $title, '-' );
+	}
+}
+
 if ( ! function_exists( 'sanitize_text_field' ) ) {
 	function sanitize_text_field( $str ) {
 		if ( ! is_string( $str ) ) {
@@ -144,3 +328,4 @@ require_once $src . '/Seo/SEOPress.php';
 require_once $src . '/Seo/TSF.php';
 require_once $src . '/Seo/Detector.php';
 require_once $src . '/SeoWriter.php';
+require_once $src . '/MenuImporter.php';
