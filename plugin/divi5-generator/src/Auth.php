@@ -32,15 +32,16 @@ class D5G_Auth {
 	}
 
 	/**
-	 * Simple per-IP rate limit: max 30 requests per 60 seconds.
+	 * Per-IP rate limit: 30 req/min free, 120 req/min Pro.
 	 */
 	public static function check_rate_limit(): bool {
-		$ip      = sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? 'unknown' );
-		$key     = self::RATE_OPTION . '_' . md5( $ip );
-		$data    = get_transient( $key );
-		$count   = is_array( $data ) ? (int) $data['count'] : 0;
+		$max    = D5G_Limits::get_rate_limit_max();
+		$ip     = sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? 'unknown' );
+		$key    = self::RATE_OPTION . '_' . md5( $ip );
+		$data   = get_transient( $key );
+		$count  = is_array( $data ) ? (int) $data['count'] : 0;
 
-		if ( $count >= 30 ) {
+		if ( $count >= $max ) {
 			return false;
 		}
 

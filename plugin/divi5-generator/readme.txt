@@ -29,6 +29,10 @@ Divi5 Generator bridges AI-generated page builders (like Claude Code) with your 
 * Supports database export/import with URL rewriting for controlled site transfer
 * Logs all connector actions in the admin settings page
 
+= Support =
+
+Bug reports and feature requests: https://github.com/Kieransaunders/Divi5Generate/issues
+
 = How to use =
 
 1. Install and activate this plugin

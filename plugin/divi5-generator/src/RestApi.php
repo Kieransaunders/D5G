@@ -338,13 +338,26 @@ class D5G_RestApi {
 	}
 
 	public static function handle_ping( WP_REST_Request $request ): WP_REST_Response {
+		$usage  = D5G_Limits::get_usage();
+		$limits = array(
+			'page_imports'    => D5G_Limits::is_pro() ? -1 : D5G_Limits::PAGE_IMPORT_LIMIT,
+			'library_imports' => D5G_Limits::is_pro() ? -1 : D5G_Limits::LIBRARY_IMPORT_LIMIT,
+			'rate_per_min'    => D5G_Limits::get_rate_limit_max(),
+		);
+
 		return new WP_REST_Response( array(
 			'status'      => 'ok',
 			'site'        => get_bloginfo( 'name' ),
 			'url'         => home_url(),
+			'plan'        => D5G_Limits::is_pro() ? 'pro' : 'free',
+			'limits'      => $limits,
+			'usage'       => array(
+				'page_imports'    => $usage['page_imports'],
+				'library_imports' => $usage['library_imports'],
+				'period'          => gmdate( 'Y-m' ),
+			),
 			'divi5'       => class_exists( 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset' ),
 			'seo_plugin'  => D5G_Seo_Detector::detect_id(),
-			// Legacy boolean flags kept for back-compat — superseded by seo_plugin.
 			'yoast'       => defined( 'WPSEO_VERSION' ),
 			'rankmath'    => class_exists( 'RankMath' ),
 			'dti_version' => D5G_VERSION,
@@ -407,6 +420,11 @@ class D5G_RestApi {
 
 		// Route to library importer for et_builder_layouts (sections, rows, modules).
 		if ( $context === 'et_builder_layouts' ) {
+			$check = D5G_Limits::can_import_library();
+			if ( is_wp_error( $check ) ) {
+				return $check;
+			}
+
 			try {
 				$result = D5G_LibraryImporter::import( $layout );
 			} catch ( InvalidArgumentException $e ) {
@@ -414,6 +432,9 @@ class D5G_RestApi {
 			} catch ( RuntimeException $e ) {
 				return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
 			}
+
+			D5G_Limits::increment_library_import( count( $result['imported'] ) );
+
 			D5G_Auth::log_import( array(
 				'slug'     => $result['imported'][0]['title'] ?? 'library',
 				'action'   => $result['imported'][0]['action'] ?? 'created',
@@ -424,6 +445,11 @@ class D5G_RestApi {
 		}
 
 		// Standard page import.
+		$check = D5G_Limits::can_import_page();
+		if ( is_wp_error( $check ) ) {
+			return $check;
+		}
+
 		try {
 			$result = D5G_PageImporter::import( $layout, $seo, $publish );
 		} catch ( InvalidArgumentException $e ) {
@@ -431,6 +457,8 @@ class D5G_RestApi {
 		} catch ( RuntimeException $e ) {
 			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
 		}
+
+		D5G_Limits::increment_page_import();
 
 		// Save schema for automatic <head> injection.
 		if ( ! empty( $schema ) && is_array( $schema ) ) {
