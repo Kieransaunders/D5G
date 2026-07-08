@@ -1,6 +1,6 @@
 ---
 name: claude-design-to-divi
-description: "Turn a Claude Design hand-off into an importable Divi 5 page. Consumes the Claude Code hand-off bundle (design intent + component structure + styling context) — or a standalone HTML export as fallback — and drives the divi5-page-generator to emit validated Divi 5 JSON, ready for import-to-local. Use when a design built in Claude Design is ready to become a real Divi page. Triggers: claude design handoff, hand off to claude code, design bundle, claude design to divi, build this design in divi, mockup to divi, design export to wordpress."
+description: "Turn a Claude Design hand-off into an importable Divi 5 page. Consumes the Claude Code hand-off bundle (design intent + component structure + styling context) — or a standalone HTML export as fallback — and drives the divi5-page-generator to emit validated Divi 5 JSON, ready for divi5-deploy. Use when a design built in Claude Design is ready to become a real Divi page. Triggers: claude design handoff, hand off to claude code, design bundle, claude design to divi, build this design in divi, mockup to divi, design export to wordpress."
 argument-hint: "[path to hand-off bundle dir or export file] [--brand <name-or-id>] [--publish]"
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
@@ -14,7 +14,7 @@ parse the design, build a structured brief, and delegate:
 - **`divi5-page-generator`** assembles + validates the Divi 5 JSON (owns the builder).
 - **`design-sync`** owns the brand ↔ Claude Design bridge; reuse a brand profile
   rather than re-deriving tokens when one exists.
-- **`import-to-local`** previews and imports the result into WordPress.
+- **`divi5-deploy`** previews and imports the result into WordPress.
 
 This skill is the *front of that pipeline*: design in, brief out, generator runs,
 page lands as a draft.
@@ -128,7 +128,7 @@ the app's importer consumes (page / seo-meta / schema).
 
 ### 6. Preview and import
 
-Route to **`import-to-local`** (or the app) to preview and import:
+Route to **`divi5-deploy`** (or the app) to preview and import:
 
 - Preview the rendered page before touching WordPress.
 - Import as a **draft** by default. Only pass `--publish` (→ `publish: true` on

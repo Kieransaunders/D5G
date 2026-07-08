@@ -42,7 +42,7 @@ Used **after** the page has been imported into WordPress and re-exported (or aft
 
 ### When to run
 
-After `/import-to-local` completes and the page is live, either:
+After `/divi5-deploy` completes and the page is live, either:
 - Export the page JSON from Divi (Divi Library → Export) and pass it here with `--spec`, or
 - Pass the generated page JSON (pre-import) with `--spec` to do the check before going live
 

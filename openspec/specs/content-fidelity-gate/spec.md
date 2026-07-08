@@ -50,4 +50,4 @@ generation and before the delivery / import step. Delivery is blocked on any FAI
 #### Scenario: SKILL.md references fidelity-check before import
 - GIVEN the SKILL.md on disk
 - WHEN its text is searched for "fidelity-check" or "Stage 3.5"
-- THEN at least one of those strings appears before the import-to-local instruction
+- THEN at least one of those strings appears before the divi5-deploy instruction
