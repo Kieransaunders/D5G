@@ -58,3 +58,20 @@ plugin/divi5-generator/vendor/
 plugin/divi5-generator/tests/.phpunit.cache/
 plugin/divi5-generator/package-lock.json
 plugin/divi5-generator/node_modules/
+
+# Root vendor/ + composer files are unused cruft — the WordPress plugin under
+# plugin/divi5-generator/ carries its own vendor/. Nothing in skills/, commands/
+# or the plugin itself requires the root autoload.
+/vendor/
+/composer.json
+/composer.lock
+
+# macOS app bundle — local launcher convenience, not referenced by any skill or
+# command by path (launch-app and /launch use app/server.js directly).
+/Divi5 Generator.app/
+
+# Dev-only docs and planning notes — not loaded at plugin runtime.
+/docs/
+/DEVELOPMENT.md
+/PORTABLE-LIBRARY-PLAN.md
+/DESIGN-SYSTEM-REUSE.notes.md
