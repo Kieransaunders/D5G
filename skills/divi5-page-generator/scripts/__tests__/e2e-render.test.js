@@ -88,7 +88,7 @@ function post(url, apiKey, body) {
     const req = lib.request({
       hostname: parsed.hostname, port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
       path: parsed.pathname + parsed.search, method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data), 'X-Divi-Tools-Key': apiKey },
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data), 'X-D5G-Key': apiKey },
     }, res => {
       let buf = '';
       res.on('data', d => buf += d);
@@ -109,7 +109,7 @@ function post(url, apiKey, body) {
   let previewUrl;
   try {
     const res = await post(
-      `${creds.siteUrl}/wp-json/divi-tools/v1/preview`,
+      `${creds.siteUrl}/wp-json/divi5-generator/v1/preview`,
       creds.apiKey,
       { layout }
     );

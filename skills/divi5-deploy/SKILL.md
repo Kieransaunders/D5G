@@ -100,7 +100,7 @@ Parse the response and open the `preview_url` in the browser:
 open "<preview_url>"
 ```
 
-This renders the page via **real Divi 5** — full presets, global colours, animations, responsive breakpoints — without creating a named page. The preview overwrites a fixed draft (`dti-live-preview`) each time, so there is no page litter.
+This renders the page via **real Divi 5** — full presets, global colours, animations, responsive breakpoints — without creating a named page. The preview overwrites a fixed draft (`d5g-live-preview`) each time, so there is no page litter.
 
 Wait for the user's verdict:
 

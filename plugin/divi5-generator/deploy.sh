@@ -25,6 +25,8 @@ running_local_plugin_dir() {
     | sed -E 's/.*root[[:space:]]+"([^"]+)".*/\1/')"
   plugin="$root/wp-content/plugins/divi5-generator"
   [ -d "$plugin" ] && printf '%s' "$plugin" && return 0
+  # Back-compat: sites where the plugin is still physically installed under
+  # its pre-1.7.0 folder name. Removed only when that install base is gone.
   plugin="$root/wp-content/plugins/divi-tools-importer"
   [ -d "$plugin" ] && printf '%s' "$plugin" || return 1
 }
@@ -37,6 +39,7 @@ first_local_plugin_dir() {
       printf '%s' "${s}app/public/wp-content/plugins/divi5-generator"
       return 0
     fi
+    # Back-compat fallback (pre-1.7.0 install folder name).
     [ -d "${s}app/public/wp-content/plugins/divi-tools-importer" ] || continue
     printf '%s' "${s}app/public/wp-content/plugins/divi-tools-importer"
     return 0
@@ -58,7 +61,7 @@ fi
 
 if [ ! -d "$DEST" ]; then
   echo "Error: destination not found: $DEST" >&2
-  echo "Usage: ./deploy.sh [/path/to/wp-content/plugins/divi-tools-connector]" >&2
+  echo "Usage: ./deploy.sh [/path/to/wp-content/plugins/divi5-generator]" >&2
   exit 1
 fi
 

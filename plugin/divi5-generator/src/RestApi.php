@@ -377,7 +377,7 @@ class D5G_RestApi {
 			'post_status'    => array( 'draft', 'publish', 'pending', 'private', 'trash' ),
 			'posts_per_page' => 1,
 			'no_found_rows'  => true,
-			'meta_key'       => '_dti_imported',
+			'meta_key'       => '_d5g_imported',
 		) );
 
 		if ( empty( $query->posts ) ) {

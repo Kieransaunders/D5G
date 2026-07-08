@@ -59,6 +59,8 @@ two latent rename bugs stop shipping.
 
 ### Spec delta
 - `openspec/specs/importer-integration/spec.md`: namespace/header/plugin-name updated to D5G (it currently asserts the DTI names as SHALL requirements — factually wrong today).
+- `openspec/specs/seo-meta-persistence/spec.md`: the `/ping` endpoint reference moves from `divi-tools/v1` to `divi5-generator/v1`.
+- `openspec/specs/app-wp-rest-contract/spec.md` *(new capability)*: pins the four app↔plugin contract values + the secret-leak and DELETE-meta invariants; enforced by `app/tests/rest-contract.test.js`.
 
 ## Capabilities
 

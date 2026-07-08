@@ -15,7 +15,7 @@ class D5G_DbExporter {
 
 	/** Option rows we never ship: cache cruft + this plugin's own secrets. */
 	const SKIP_OPTION_LIKE = array( '_transient_%', '_site_transient_%' );
-	const SKIP_OPTION_NAME = array( 'dti_api_key_hash', 'dti_api_key_plain', 'dti_rate_limit' );
+	const SKIP_OPTION_NAME = array( 'd5g_api_key_hash', 'd5g_api_key_plain', 'd5g_rate_limit' );
 
 	public static function export(): array {
 		global $wpdb;

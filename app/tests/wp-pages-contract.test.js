@@ -13,7 +13,7 @@ const {
 } = require('../lib/wp-pages');
 
 const PAGES_LISTER_PHP = path.join(
-  __dirname, '..', '..', 'plugin', 'divi-tools-importer', 'src', 'PagesLister.php'
+  __dirname, '..', '..', 'plugin', 'divi5-generator', 'src', 'PagesLister.php'
 );
 
 // Pull the keys the plugin puts in each `$out[] = array( ... )` page entry.

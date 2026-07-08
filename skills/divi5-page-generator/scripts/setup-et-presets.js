@@ -36,7 +36,7 @@ function api(method, endpoint, body) {
       port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: url.pathname + url.search,
       headers: {
-        'X-Divi-Tools-Key': KEY,
+        'X-D5G-Key': KEY,
         ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}),
       },
     };
@@ -69,7 +69,7 @@ function api(method, endpoint, body) {
   console.log(`\nImporting ${totalPresets} ET presets across ${totalModules} modules...`);
 
   // ── 2. Import via preset endpoint ─────────────────────────────────────────
-  const importRes = await api('POST', '/wp-json/divi-tools/v1/presets/import', { presets });
+  const importRes = await api('POST', '/wp-json/divi5-generator/v1/presets/import', { presets });
   if (importRes.status !== 200) {
     console.error('Import failed:', importRes.body);
     process.exit(1);
@@ -79,7 +79,7 @@ function api(method, endpoint, body) {
   // ── 3. Fetch and save the registry ────────────────────────────────────────
   // with_attrs=1 → name→{id,attrs}: the generator needs the real colours/fonts so
   // single-import bundles styled presets AND validate.js can gate contrast offline.
-  const listRes = await api('GET', '/wp-json/divi-tools/v1/presets?with_attrs=1');
+  const listRes = await api('GET', '/wp-json/divi5-generator/v1/presets?with_attrs=1');
   if (listRes.status !== 200) {
     console.error('Registry fetch failed:', listRes.body);
     process.exit(1);

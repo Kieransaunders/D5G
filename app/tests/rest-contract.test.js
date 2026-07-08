@@ -12,14 +12,11 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-// NOTE: paths here resolve relative to this file's location in the change folder
-// (openspec/changes/app-plugin-contract-sync/tests/). The canonical, runnable
-// copy lives at app/tests/rest-contract.test.js with app-relative paths.
-const SERVER_JS   = path.join(__dirname, '..', '..', '..', '..', 'app', 'server.js');
-const REST_API    = path.join(__dirname, '..', '..', '..', '..', 'plugin', 'divi5-generator', 'src', 'RestApi.php');
-const DB_EXPORTER = path.join(__dirname, '..', '..', '..', '..', 'plugin', 'divi5-generator', 'src', 'DbExporter.php');
-const AUTH        = path.join(__dirname, '..', '..', '..', '..', 'plugin', 'divi5-generator', 'src', 'Auth.php');
-const PAGE_IMP    = path.join(__dirname, '..', '..', '..', '..', 'plugin', 'divi5-generator', 'src', 'PageImporter.php');
+const SERVER_JS   = path.join(__dirname, '..', 'server.js');
+const REST_API    = path.join(__dirname, '..', '..', 'plugin', 'divi5-generator', 'src', 'RestApi.php');
+const DB_EXPORTER = path.join(__dirname, '..', '..', 'plugin', 'divi5-generator', 'src', 'DbExporter.php');
+const AUTH        = path.join(__dirname, '..', '..', 'plugin', 'divi5-generator', 'src', 'Auth.php');
+const PAGE_IMP    = path.join(__dirname, '..', '..', 'plugin', 'divi5-generator', 'src', 'PageImporter.php');
 
 const read = (p) => fs.readFileSync(p, 'utf8');
 

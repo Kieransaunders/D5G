@@ -4,8 +4,8 @@
 //
 // 1. lib/screenshot.js — pure helpers (cacheKey stability, executable
 //    resolution) that the /screenshot endpoint depends on.
-// 2. Version-sync invariant — the EXPECTED_DTI_VERSION the app hardcodes must
-//    match the DTI_VERSION the plugin ships. We lived through a silent drift
+// 2. Version-sync invariant — the EXPECTED_D5G_VERSION the app hardcodes must
+//    match the D5G_VERSION the plugin ships. We lived through a silent drift
 //    here (plugin 1.5.3 vs code expecting 1.5.4's publish-default); this test
 //    fails the moment they diverge again.
 
@@ -16,7 +16,7 @@ const path = require('path');
 const { cacheKey, resolveExecutable } = require('../lib/screenshot');
 
 const PLUGIN_PHP = path.join(
-  __dirname, '..', '..', 'plugin', 'divi-tools-importer', 'divi-tools-importer.php'
+  __dirname, '..', '..', 'plugin', 'divi5-generator', 'divi5-generator.php'
 );
 const SERVER_JS = path.join(__dirname, '..', 'server.js');
 
@@ -47,22 +47,22 @@ test('resolveExecutable returns a string when Chrome exists, or null', () => {
 
 function pluginVersion() {
   const php = fs.readFileSync(PLUGIN_PHP, 'utf8');
-  const m = php.match(/define\(\s*'DTI_VERSION'\s*,\s*'([^']+)'\s*\)/);
-  assert.ok(m, 'DTI_VERSION define not found in plugin PHP');
+  const m = php.match(/define\(\s*'D5G_VERSION'\s*,\s*'([^']+)'\s*\)/);
+  assert.ok(m, 'D5G_VERSION define not found in plugin PHP');
   return m[1];
 }
 
 function appExpectedVersion() {
   const js = fs.readFileSync(SERVER_JS, 'utf8');
-  const m = js.match(/EXPECTED_DTI_VERSION\s*=\s*'([^']+)'/);
-  assert.ok(m, 'EXPECTED_DTI_VERSION not found in server.js');
+  const m = js.match(/EXPECTED_D5G_VERSION\s*=\s*'([^']+)'/);
+  assert.ok(m, 'EXPECTED_D5G_VERSION not found in server.js');
   return m[1];
 }
 
-test('app EXPECTED_DTI_VERSION matches the plugin DTI_VERSION', () => {
+test('app EXPECTED_D5G_VERSION matches the plugin D5G_VERSION', () => {
   const appV = appExpectedVersion();
   const pluginV = pluginVersion();
   assert.equal(appV, pluginV,
-    `Version drift: app expects DTI ${appV} but the plugin ships ${pluginV}. ` +
-    `Update EXPECTED_DTI_VERSION in app/server.js to match.`);
+    `Version drift: app expects D5G ${appV} but the plugin ships ${pluginV}. ` +
+    `Update EXPECTED_D5G_VERSION in app/server.js to match.`);
 });

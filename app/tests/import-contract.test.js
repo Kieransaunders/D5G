@@ -12,7 +12,7 @@ const path = require('path');
 const { buildImportPayload, IMPORT_PARAMS } = require('../lib/import-payload');
 
 const REST_API_PHP = path.join(
-  __dirname, '..', '..', 'plugin', 'divi-tools-importer', 'src', 'RestApi.php'
+  __dirname, '..', '..', 'plugin', 'divi5-generator', 'src', 'RestApi.php'
 );
 
 // Pull the declared arg keys for the /import route out of RestApi.php.
