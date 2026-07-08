@@ -77,7 +77,9 @@ function api(method, endpoint, body) {
   console.log(`  ✓ Imported ${importRes.body.imported_count} presets (${Object.keys(importRes.body.id_mappings || {}).length} IDs remapped)`);
 
   // ── 3. Fetch and save the registry ────────────────────────────────────────
-  const listRes = await api('GET', '/wp-json/divi-tools/v1/presets');
+  // with_attrs=1 → name→{id,attrs}: the generator needs the real colours/fonts so
+  // single-import bundles styled presets AND validate.js can gate contrast offline.
+  const listRes = await api('GET', '/wp-json/divi-tools/v1/presets?with_attrs=1');
   if (listRes.status !== 200) {
     console.error('Registry fetch failed:', listRes.body);
     process.exit(1);
