@@ -43,7 +43,7 @@ function api(method, path, body) {
       port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: url.pathname + url.search,
       headers: {
-        'X-Divi-Tools-Key': KEY,
+        'X-D5G-Key': KEY,
         ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}),
       },
     };
@@ -110,7 +110,7 @@ async function importPresetPack() {
   // Extract just the presets + global colours from assemble()
   const assembled = b.assemble({ context: 'et_builder', content: '', title: '', slug: '' });
 
-  const result = await api('POST', '/wp-json/divi-tools/v1/presets/import', {
+  const result = await api('POST', '/wp-json/divi5-generator/v1/presets/import', {
     presets: assembled.presets,
   });
 
@@ -125,7 +125,7 @@ async function importPresetPack() {
 async function fetchRegistry() {
   console.log('\n── Step 2: Fetching preset registry ────────────────────────────');
 
-  const result = await api('GET', '/wp-json/divi-tools/v1/presets');
+  const result = await api('GET', '/wp-json/divi5-generator/v1/presets');
   const total = Object.values(result.presets || {}).reduce((n, m) => n + Object.keys(m).length, 0);
   console.log(`  ${total} presets registered across ${Object.keys(result.presets || {}).length} modules`);
 
@@ -195,7 +195,7 @@ function generatePage(registry) {
 async function importPage(layout) {
   console.log('\n── Step 4: Importing page ───────────────────────────────────────');
 
-  const result = await api('POST', '/wp-json/divi-tools/v1/import', {
+  const result = await api('POST', '/wp-json/divi5-generator/v1/import', {
     layout,
     seo: { title: 'Preset First Example', slug: 'preset-first-example' },
     publish: false,

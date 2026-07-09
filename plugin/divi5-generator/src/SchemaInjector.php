@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class D5G_SchemaInjector {
 
-	const OPTION_PREFIX = 'dti_schema_';
+	const OPTION_PREFIX = 'd5g_schema_';
 
 	public static function save( string $slug, array $schema ): void {
 		update_option( self::OPTION_PREFIX . sanitize_key( $slug ), $schema, false );

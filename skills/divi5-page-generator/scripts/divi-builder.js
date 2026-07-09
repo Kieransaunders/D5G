@@ -849,7 +849,7 @@ function createBuilder(opts) {
     },
 
     /**
-     * Load a preset registry fetched from GET /wp-json/divi-tools/v1/presets.
+     * Load a preset registry fetched from GET /wp-json/divi5-generator/v1/presets.
      *
      * Without { withAttrs: true }: presetRef() will THROW — no attrs means buttons
      * render default blue. Only use this when all preset CSS is already on the site

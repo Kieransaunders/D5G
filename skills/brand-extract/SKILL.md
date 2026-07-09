@@ -73,9 +73,9 @@ Tell the user:
 
 | Data | Source endpoint |
 |---|---|
-| Global colours (`gcid-…`) | `GET /wp-json/divi-tools/v1/global-variables/export` |
+| Global colours (`gcid-…`) | `GET /wp-json/divi5-generator/v1/global-variables/export` |
 | Design variables (spacing, radii, font sizes) | same |
-| Module presets (buttons, text, cards) | `GET /wp-json/divi-tools/v1/presets/export` |
+| Module presets (buttons, text, cards) | `GET /wp-json/divi5-generator/v1/presets/export` |
 
 Typography (font family names) is captured if set as a variable. If the theme uses hardcoded font stacks, suggest the user add them as variables first.
 
@@ -88,6 +88,6 @@ These endpoints can fail on a real site even when the data plainly exists:
 
 Fallbacks:
 
-- **Colours:** recover from the migrator's `GET /wp-json/divi-tools/v1/db/export` — grep the dump for `gcid-*` slugs and the adjacent hex values (this is how `gcid-primary/-secondary/-heading/-body/-link` were recovered).
+- **Colours:** recover from the migrator's `GET /wp-json/divi5-generator/v1/db/export` — grep the dump for `gcid-*` slugs and the adjacent hex values (this is how `gcid-primary/-secondary/-heading/-body/-link` were recovered).
 - **Always report counts explicitly** (e.g. "0 presets", "10 colours"). When presets come back empty, do **not** silently accept `[]` — tell the user to confirm in the Divi UI that presets exist.
 - If `global-variables/export` 500s, tell the user to enable `WP_DEBUG` / `WP_DEBUG_LOG` and re-run so the trace is captured for the plugin fix.

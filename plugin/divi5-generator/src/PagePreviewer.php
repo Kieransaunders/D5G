@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class D5G_PagePreviewer {
 
-	const PREVIEW_SLUG  = 'dti-live-preview';
-	const PREVIEW_TITLE = 'DTI Live Preview';
+	const PREVIEW_SLUG  = 'd5g-live-preview';
+	const PREVIEW_TITLE = 'D5G Live Preview';
 
 	/**
 	 * Create or update the fixed preview page with the supplied Divi 5 layout.

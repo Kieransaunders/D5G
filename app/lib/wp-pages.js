@@ -1,11 +1,11 @@
 'use strict';
 
-// Client helpers for the Divi Tools Importer plugin's page-management routes:
-//   GET    /wp-json/divi-tools/v1/pages          → list DTI-imported pages
-//   DELETE /wp-json/divi-tools/v1/pages/{slug}    → delete one by slug
+// Client helpers for the Divi5 Generator plugin's page-management routes:
+//   GET    /wp-json/divi5-generator/v1/pages          → list D5G-imported pages
+//   DELETE /wp-json/divi5-generator/v1/pages/{slug}    → delete one by slug
 //
 // The plugin returns each page as { slug, title, status, modified, permalink,
-// design_hint } (see plugin/divi-tools-importer/src/PagesLister.php). We pin
+// design_hint } (see plugin/divi5-generator/src/PagesLister.php). We pin
 // that shape with tests/wp-pages-contract.test.js so the app's list UI can't
 // silently drift from what the plugin actually sends.
 

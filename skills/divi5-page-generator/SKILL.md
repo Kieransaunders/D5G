@@ -98,7 +98,7 @@ Run `fidelity-check.js` against the Stage 2 HTML before anything is handed off:
 node scripts/fidelity-check.js [brand]-landing-page.json preview-[brand].html
 ```
 
-This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you import via the `divi5-deploy` skill. **Endpoint** (`divi-tools-importer` plugin): `POST /wp-json/divi-tools/v1/import`, header `X-Divi-Tools-Key`, body `{layout, seo, schema, publish}` — `publish: false` = draft (default; `true` only when asked to go live). Registry once per site via `GET /presets?with_attrs=1` (`setup-et-presets.js`). Details: [site profile](references/site-profile.md).
+This checks the JSON's h1 and heading outline, and heading style/column-ratio fidelity, against the approved mockup. **On FAIL, fix the generator and re-run — do not deliver.** Only once this passes should you import via the `divi5-deploy` skill. **Endpoint** (`divi5-generator` plugin): `POST /wp-json/divi5-generator/v1/import`, header `X-D5G-Key`, body `{layout, seo, schema, publish}` — `publish: false` = draft (default; `true` only when asked to go live). Registry once per site via `GET /presets?with_attrs=1` (`setup-et-presets.js`). Details: [site profile](references/site-profile.md).
 
 ### Stage 4 — Visual fidelity gate (automated, blocks delivery)
 

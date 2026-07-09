@@ -73,10 +73,10 @@ class D5G_DbImporter {
 		) );
 	}
 
-	/** Dump current DB to uploads/dti-backups so a bad import is recoverable. */
+	/** Dump current DB to uploads/d5g-backups so a bad import is recoverable. */
 	private static function backup(): string {
 		$current = D5G_DbExporter::export();
-		$dir     = wp_upload_dir()['basedir'] . '/dti-backups';
+		$dir     = wp_upload_dir()['basedir'] . '/d5g-backups';
 		wp_mkdir_p( $dir );
 
 		$name = 'pre-import-' . gmdate( 'Ymd-His' ) . '.sql';

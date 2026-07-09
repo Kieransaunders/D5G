@@ -30,6 +30,7 @@ running_local_plugin_dir() {
     | sed -E 's/.*root[[:space:]]+"([^"]+)".*/\1/')"
   plugin="$root/wp-content/plugins/divi5-generator"
   [ -d "$plugin" ] && printf '%s' "$plugin" && return 0
+  # Back-compat: pre-1.7.0 install folder name. See deploy.sh for rationale.
   plugin="$root/wp-content/plugins/divi-tools-importer"
   [ -d "$plugin" ] && printf '%s' "$plugin" || return 1
 }
@@ -42,6 +43,7 @@ first_local_plugin_dir() {
       printf '%s' "${s}app/public/wp-content/plugins/divi5-generator"
       return 0
     fi
+    # Back-compat fallback (pre-1.7.0 install folder name).
     [ -d "${s}app/public/wp-content/plugins/divi-tools-importer" ] || continue
     printf '%s' "${s}app/public/wp-content/plugins/divi-tools-importer"
     return 0
