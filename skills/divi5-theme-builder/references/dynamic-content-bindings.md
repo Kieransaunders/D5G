@@ -22,6 +22,22 @@ $variable({"type":"content","value":{"name":"<META_KEY>","settings":{"before":"<
   (`"`); when emitted by a JS builder that JSON-stringifies attrs, that
   happens automatically. Emit the token as a normal string — don't double-escape.
 
+## One `$variable` per module — never cram several into one module's HTML
+
+Divi resolves **one** dynamic-content binding per module. Putting several
+`$variable(...)$` tokens inside a single Text module's HTML value (e.g.
+`<div><p>$variable(A)$</p><p>$variable(B)$</p>…</div>`) does **not** work — the
+tokens render **unresolved** on the frontend (you'll see literal `$variable(` in
+the page source), even though the same tokens resolve fine one-per-module.
+
+So a detail page with N fields needs **N separate Text modules**, each bound to
+one field — not one Text module listing them all. Verified live: a generated
+template that crammed 8 fields into one Text module left 16 unresolved tokens;
+splitting to one module per field resolved every one (0 surviving tokens). This
+is the single most common reason a generated/token-swapped detail template
+"doesn't resolve" while a hand-built one (which naturally uses one module per
+field) does.
+
 ## Module attribute paths (get these wrong → empty render, no error)
 
 The value lives at a module-specific path. Divi reads a nested
