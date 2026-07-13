@@ -1,0 +1,26 @@
+{
+  "skill_name": "divi5-theme-builder",
+  "evals": [
+    {
+      "id": 0,
+      "name": "cpt-detail-page-authoring",
+      "prompt": "I've got a custom post type `property_listing` in WordPress running Divi 5. Each listing has meta fields for price (_prop_price), bedrooms (_prop_beds), and a main photo (set as the WP featured image). I want every listing's single page to show those fields, styled in Divi so I can tweak the design in the builder. How do I build this, and can you give me the actual Divi markup/JSON to start from?",
+      "expected_output": "Guidance to build a Theme Builder BODY template scoped to the property_listing post type (or its taxonomy), with native Divi modules (Heading/Text/Image) bound via $variable dynamic content to the meta keys + post_featured_image. Should give real block markup or importable et_theme_builder JSON with correct module attribute paths (Heading title.innerContent, Image image.innerContent.desktop.value.src). Should NOT push a loop for a single detail page.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "programmatic-tb-install",
+      "prompt": "In my Divi 5 plugin I want a one-click button that installs a Theme Builder template for my `event` CPT detail pages, binding native Text and Image modules to the event's custom fields. I've tried creating the posts but Divi never shows the template in the Theme Builder. What's the correct way to create the et_template + body layout from PHP so it actually appears and renders?",
+      "expected_output": "The verified PHP write-path: create et_body_layout (with wp_slash on the markup) + et_template, set _et_use_on as a flat string, write the completeness meta, and crucially REGISTER the template id on the live Theme Builder post (_et_template meta via et_theme_builder_get_theme_builder_post_id) + bust caches. Should identify the missing-registry step as the reason it doesn't appear, and mention wp_slash for $variable, idempotency via marker meta, body-only.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "debug-blank-dynamic-content-vb",
+      "prompt": "My Divi Theme Builder body template for a custom post type shows the field values fine on the live frontend, but inside the Visual Builder the dynamic content is all blank so I can't design against real data. The bindings are plain post-meta fields, not in any loop. Why is it blank in the builder, and how do I fix it without wrapping everything in a loop?",
+      "expected_output": "Explain that plain bindings on a `:all` post-type-scoped template have no concrete record for the VB to sample, so they preview blank (frontend still resolves against the viewed post). Fix = scope the template to a TAXONOMY TERM (singular:taxonomy:TAX:term:id:N) so the VB has a record set to preview. Should explicitly debunk the need for a loop on a single-record detail page.",
+      "files": []
+    }
+  ]
+}
