@@ -314,6 +314,71 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 	}
 }
 
+// --- RestApi test infrastructure ----------------------------------------------
+
+/** In-memory transient store, keyed like get_transient()/set_transient(). */
+final class TransientStore {
+	private static $store = array();
+
+	public static function get( string $key ) {
+		return self::$store[ $key ] ?? false;
+	}
+
+	public static function set( string $key, $value ): void {
+		self::$store[ $key ] = $value;
+	}
+
+	public static function reset(): void {
+		self::$store = array();
+	}
+}
+
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( $key ) {
+		return TransientStore::get( (string) $key );
+	}
+}
+
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( $key, $value, $expiration = 0 ) {
+		TransientStore::set( (string) $key, $value );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_option' ) ) {
+	function get_option( $key, $default = false ) {
+		return $default;
+	}
+}
+
+/** Minimal WP_REST_Request double — only what D5G_RestApi::authenticate() reads. */
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {
+		private $route;
+		private $headers;
+		private $params;
+
+		public function __construct( string $route = '', array $headers = array(), array $params = array() ) {
+			$this->route   = $route;
+			$this->headers = $headers;
+			$this->params  = $params;
+		}
+
+		public function get_route() {
+			return $this->route;
+		}
+
+		public function get_header( $name ) {
+			return $this->headers[ $name ] ?? null;
+		}
+
+		public function get_param( $name ) {
+			return $this->params[ $name ] ?? null;
+		}
+	}
+}
+
 // --- Load the system under test ----------------------------------------------
 
 $src = __DIR__ . '/../src';
@@ -329,3 +394,6 @@ require_once $src . '/Seo/TSF.php';
 require_once $src . '/Seo/Detector.php';
 require_once $src . '/SeoWriter.php';
 require_once $src . '/MenuImporter.php';
+require_once $src . '/Limits.php';
+require_once $src . '/Auth.php';
+require_once $src . '/RestApi.php';

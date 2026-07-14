@@ -13,5 +13,8 @@
 		<testsuite name="Menu">
 			<file>tests/MenuImporterTest.php</file>
 		</testsuite>
+		<testsuite name="RestApi">
+			<file>tests/RestApiProGateTest.php</file>
+		</testsuite>
 	</testsuites>
 </phpunit>
