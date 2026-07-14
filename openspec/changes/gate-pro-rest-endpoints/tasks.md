@@ -5,14 +5,14 @@
 - [x] 1.4 Write `tests/RestApiProGateTest.php` (RED — confirmed failing for the right reason)
 
 ## 2. Route policy (pure)
-- [ ] 2.1 Add `D5G_RestApi::requires_pro( string $route ): bool` with the 9 Pro-only routes from PRD §3 — satisfies scenarios "Preset, global-variable, menu, and DB routes are classified Pro-only" / "Ping, preview, import, export, and pages routes are classified Free"
+- [x] 2.1 Add `D5G_RestApi::requires_pro( string $route ): bool` with the 9 Pro-only routes from PRD §3 — satisfies scenarios "Preset, global-variable, menu, and DB routes are classified Pro-only" / "Ping, preview, import, export, and pages routes are classified Free"
 
 ## 3. Licence gate
-- [ ] 3.1 Add `D5G_RestApi::pro_gate( string $route, bool $is_pro ): true|WP_Error` returning `WP_Error( 'pro_required', ..., [ 'status' => 403 ] )` when `requires_pro()` is true and `$is_pro` is false — satisfies "Free install calls a Pro-only route" / "Pro install calls the same route" / "Free install calls /ping"
+- [x] 3.1 Add `D5G_RestApi::pro_gate( string $route, bool $is_pro ): true|WP_Error` returning `WP_Error( 'pro_required', ..., [ 'status' => 403 ] )` when `requires_pro()` is true and `$is_pro` is false — satisfies "Free install calls a Pro-only route" / "Pro install calls the same route" / "Free install calls /ping"
 
 ## 4. Wire into authenticate()
-- [ ] 4.1 Call `self::pro_gate( $request->get_route(), D5G_Limits::is_pro() )` in `authenticate()` after the key check, before returning `true` — satisfies "Missing key on a Pro-only route" (already green, guards no regression)
+- [x] 4.1 Call `self::pro_gate( $request->get_route(), D5G_Limits::is_pro() )` in `authenticate()` after the key check, before returning `true` — satisfies "Missing key on a Pro-only route" (already green, guards no regression)
 
 ## 5. Verify
-- [ ] 5.1 `./vendor/bin/phpunit --testsuite RestApi` — all 6 tests green
-- [ ] 5.2 `./vendor/bin/phpunit` (full suite) — no regressions
+- [x] 5.1 `./vendor/bin/phpunit --testsuite RestApi` — all 6 tests green
+- [x] 5.2 `./vendor/bin/phpunit` (full suite) — no regressions (65 tests, 202 assertions)

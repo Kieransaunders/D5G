@@ -147,6 +147,39 @@ class D5G_RestApi {
 		) );
 	}
 
+	/**
+	 * Routes that require a paying (Pro) licence, per PRD §3's Free/Pro split.
+	 * Everything not listed here (ping, preview, import, export, pages) stays Free.
+	 */
+	const PRO_ONLY_ROUTES = array(
+		'/divi5-generator/v1/presets/import',
+		'/divi5-generator/v1/presets',
+		'/divi5-generator/v1/presets/export',
+		'/divi5-generator/v1/global-variables',
+		'/divi5-generator/v1/global-variables/export',
+		'/divi5-generator/v1/db/export',
+		'/divi5-generator/v1/db/import',
+		'/divi5-generator/v1/menus',
+		'/divi5-generator/v1/menus/auto-place',
+	);
+
+	public static function requires_pro( string $route ): bool {
+		return in_array( $route, self::PRO_ONLY_ROUTES, true );
+	}
+
+	public static function pro_gate( string $route, bool $is_pro ): bool|WP_Error {
+		if ( self::requires_pro( $route ) && ! $is_pro ) {
+			$upgrade_url = function_exists( 'dg_fs' ) ? dg_fs()->get_upgrade_url() : '';
+			return new WP_Error(
+				'pro_required',
+				'This feature requires Divi5 Generator Pro. Upgrade: ' . $upgrade_url,
+				array( 'status' => 403 )
+			);
+		}
+
+		return true;
+	}
+
 	public static function authenticate( WP_REST_Request $request ): bool|WP_Error {
 		if ( ! D5G_Auth::check_rate_limit() ) {
 			return new WP_Error( 'rate_limited', 'Too many requests. Try again in 60 seconds.', array( 'status' => 429 ) );
@@ -160,6 +193,11 @@ class D5G_RestApi {
 
 		if ( ! $key || ! D5G_Auth::verify( $key ) ) {
 			return new WP_Error( 'unauthorized', 'Invalid or missing API key.', array( 'status' => 401 ) );
+		}
+
+		$gate = self::pro_gate( $request->get_route(), D5G_Limits::is_pro() );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
 		}
 
 		return true;
