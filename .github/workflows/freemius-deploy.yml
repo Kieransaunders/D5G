@@ -46,5 +46,7 @@ jobs:
           PUBLIC_KEY: ${{ secrets.FREEMIUS_PUBLIC_KEY }}
           DEV_ID: ${{ secrets.FREEMIUS_DEV_ID }}
           SECRET_KEY: ${{ secrets.FREEMIUS_SECRET_KEY }}
-          PLUGIN_SLUG: ${{ secrets.FREEMIUS_PLUGIN_SLUG }}
-          PLUGIN_ID: ${{ secrets.FREEMIUS_PLUGIN_ID }}
+          # slug/id are public identifiers, not credentials — hardcoded so only
+          # the three real secrets need configuring
+          PLUGIN_SLUG: divi5-generator
+          PLUGIN_ID: "33991"
