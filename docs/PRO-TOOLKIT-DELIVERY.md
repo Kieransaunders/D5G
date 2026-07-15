@@ -1,4 +1,17 @@
-# Pro toolkit delivery (Freemius-hosted add-on)
+# Pro toolkit delivery
+
+> **DEAD — SUPERSEDED 15/07/2026 by PRD §3.1.** Everything below describes the
+> gated-zip model, which is reversed. The toolkit is **public** at
+> `github.com/Kieransaunders/D5G`; the gate is the Pro connector's last-mile
+> compile step (`/import` resolves presets + brand variables), not the download.
+> §3.1 deletes the licence-checked download, the add-on hosting and
+> `build-pro-zip` outright — so this is history, not a fallback. Don't follow it.
+>
+> What ships instead: the settings page's `is_pro()` branch shows
+> `claude plugin marketplace add Kieransaunders/D5G`, the Free branch shows
+> `Kieransaunders/divi5-starter`. Repo obscurity is a bonus, not the lock.
+
+## Historical: Freemius-hosted add-on
 
 How a paying customer receives the full private toolkit (the `divi5generate`
 Claude Code plugin — skills, builder, references) after buying Pro.
