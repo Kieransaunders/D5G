@@ -28,6 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Install Freemius SDK
+        # vendor/ is gitignored; Freemius rejects zips without its SDK inside
+        run: composer install --no-dev --no-interaction --working-dir=plugin/divi5-generator
+
       - name: Build plugin zip
         # must be absolute: build-zip.sh cd's into a temp dir before zipping,
         # so a relative output path lands in the temp dir and gets cleaned up
