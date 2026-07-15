@@ -2,11 +2,15 @@ name: Deploy to Freemius
 
 # Manual only — this uploads a paid product to Freemius. Not wired to push/main
 # so a routine merge can never trigger it by accident.
+#
+# Auth: product-scoped API bearer token from
+# dashboard.freemius.com → product → Settings → API Token,
+# saved as the FREEMIUS_API_TOKEN repo secret.
 on:
   workflow_dispatch:
     inputs:
       release_mode:
-        description: "Freemius release mode"
+        description: "Freemius release mode (pending = uploaded but invisible to customers)"
         required: true
         default: "pending"
         type: choice
@@ -14,11 +18,9 @@ on:
           - pending
           - beta
           - released
-      sandbox:
-        description: "Upload in Freemius sandbox mode (test, doesn't go live)"
-        required: true
-        default: true
-        type: boolean
+
+env:
+  PRODUCT_ID: "33991"
 
 jobs:
   deploy:
@@ -26,30 +28,31 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Read plugin version
-        id: version
-        run: |
-          v=$(grep -oP "define\( 'D5G_VERSION', '\K[^']+" plugin/divi5-generator/divi5-generator.php)
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
       - name: Build plugin zip
         # must be absolute: build-zip.sh cd's into a temp dir before zipping,
         # so a relative output path lands in the temp dir and gets cleaned up
         run: bash plugin/build-zip.sh "$PWD"
 
-      - name: Deploy to Freemius
-        # v0.1.2 built the API path from the slug (400 Invalid request path); v0.1.3 uses the numeric id
-        uses: buttonizer/freemius-deploy@v0.1.3
-        with:
-          file_name: divi5-generator.zip
-          release_mode: ${{ inputs.release_mode }}
-          version: ${{ steps.version.outputs.version }}
-          sandbox: ${{ inputs.sandbox }}
+      - name: Upload to Freemius
         env:
-          PUBLIC_KEY: ${{ secrets.FREEMIUS_PUBLIC_KEY }}
-          DEV_ID: ${{ secrets.FREEMIUS_DEV_ID }}
-          SECRET_KEY: ${{ secrets.FREEMIUS_SECRET_KEY }}
-          # slug/id are public identifiers, not credentials — hardcoded so only
-          # the three real secrets need configuring
-          PLUGIN_SLUG: divi5-generator
-          PLUGIN_ID: "33991"
+          TOKEN: ${{ secrets.FREEMIUS_API_TOKEN }}
+          RELEASE_MODE: ${{ inputs.release_mode }}
+        run: |
+          resp=$(curl -sS -X POST "https://api.freemius.com/v2/products/$PRODUCT_ID/tags.json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -F "file=@divi5-generator.zip")
+          echo "$resp" | jq .
+          tag_id=$(echo "$resp" | jq -r '.id // empty')
+          if [ -z "$tag_id" ]; then
+            echo "::error::Freemius upload failed: $(echo "$resp" | jq -r '.error.message // "unknown error"')"
+            exit 1
+          fi
+          echo "Uploaded version $(echo "$resp" | jq -r '.version') as tag $tag_id (release_mode: pending)"
+
+          if [ "$RELEASE_MODE" != "pending" ]; then
+            curl -sS --fail-with-body -X PUT "https://api.freemius.com/v2/products/$PRODUCT_ID/tags/$tag_id.json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"release_mode\":\"$RELEASE_MODE\"}" | jq .
+            echo "Set release_mode: $RELEASE_MODE"
+          fi
