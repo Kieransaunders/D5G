@@ -50,12 +50,12 @@ class D5G_DbExporter {
 	private static function dump_table( string $table ): string {
 		global $wpdb;
 
-		$create = $wpdb->get_row( "SHOW CREATE TABLE `$table`", ARRAY_N );
+		$create = $wpdb->get_row( $wpdb->prepare( 'SHOW CREATE TABLE %i', $table ), ARRAY_N );
 		$out  = "DROP TABLE IF EXISTS `$table`;\n";
 		$out .= $create[1] . ";\n";
 
 		$where = self::skip_where( $table );
-		$rows  = $wpdb->get_results( "SELECT * FROM `$table` $where", ARRAY_A );
+		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i $where", $table ), ARRAY_A );
 		if ( empty( $rows ) ) {
 			return $out . "\n";
 		}
