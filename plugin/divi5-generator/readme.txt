@@ -1,14 +1,14 @@
 === Divi5 Generator ===
 Contributors: iconnectit
-Tags: divi, divi 5, ai, page generator, seo
+Tags: divi, divi 5, ai page generator, json import, divi library
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI-powered Divi 5 page generator. Import pages, presets, global variables, and SEO metadata via REST API — no SSH or WP-CLI required.
+Import AI-generated pages, sections and Divi Library layouts into Divi 5 via REST API — no SSH, no WP-CLI, no manual JSON paste.
 
 == Description ==
 
@@ -129,6 +129,11 @@ The REST route defaults `publish` to `true`. The import skill intentionally publ
 Settings → Divi5 Generator → Regenerate Key. Your old key stops working immediately.
 
 == Changelog ==
+
+= 2.0.1 =
+* New: Settings page now shows how to install the Claude Code skills — Free installs get the public divi5-starter with an upgrade link; Pro installs get the licensed full toolkit from the Add-Ons screen.
+* New: Pro toolkit is delivered as a Freemius add-on download (the full divi5generate Claude Code plugin).
+* Changed: clearer plugin description and search tags.
 
 = 2.0.0 =
 * New: Licence gating — page creation, SEO/schema writing, preset packs, global variables, menu creation, brand extract/deploy and DB export/import now require Divi5 Generator Pro. Free installs get `403 { "code": "pro_required" }` with an upgrade link.
