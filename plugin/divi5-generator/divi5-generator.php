@@ -36,12 +36,14 @@ if ( ! function_exists( 'dg_fs' ) ) {
         global $dg_fs;
 
         if ( ! isset( $dg_fs ) ) {
-            // TODO(Kieran, KIERAN-ONLY): 'id' and 'public_key' below are still
-            // Airloop's Freemius product (copy-pasted — PRD §4 gap 1). Licensing
-            // will activate against the WRONG product until you create a
-            // dedicated "Divi5 Generator" product in the Freemius dashboard and
-            // swap these two values for its real id + public key. premium_slug
-            // is already fixed to this product's own slug.
+            // id 33991 / slug 'divi5-generator' is THIS product's own Freemius
+            // entry — confirmed 15/07/2026 by Kieran and cross-checked against
+            // Airloop, which is a different product (id 31132, slug 'airloop').
+            //
+            // PRD §4 gap 1 claimed this id was copy-pasted from Airloop and would
+            // activate against the wrong product. That was a bad inference from
+            // the one value that WAS copy-pasted — premium_slug, which said
+            // 'Airloop-premium' and is now correct. Don't reintroduce that claim.
             $dg_fs = fs_dynamic_init( array(
                 'id'                  => '33991',
                 'slug'                => 'divi5-generator',

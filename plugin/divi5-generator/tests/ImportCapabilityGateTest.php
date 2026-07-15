@@ -68,6 +68,32 @@ class ImportCapabilityGate_Test extends TestCase {
 		$this->assertSame( 'pro_required', $result->get_error_code() );
 	}
 
+	// -----------------------------------------------------------------------
+	// Preview creates a page, so it takes the page gate
+	// -----------------------------------------------------------------------
+
+	public function test_preview_is_page_creation_and_is_refused_on_free(): void {
+		// RED — found by end-to-end test on a live Divi 5.9.0 site, 15/07/2026.
+		// D5G_PagePreviewer::preview() calls wp_insert_post() with post_status
+		// 'draft': it creates a REAL page. /preview is not in PRO_ONLY_ROUTES and
+		// handle_preview() never called the gate, so a Free install could POST a
+		// page payload to /preview, get a real draft page, and hit Publish —
+		// bypassing the capability gate completely. Verified: free install
+		// created page 3914 (post_type 'page', 7181 bytes).
+		//
+		// Preview always takes the page path (it rejects library exports), so it
+		// gates as a page import regardless of the payload's context.
+		$result = D5G_RestApi::preview_gate( false );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'pro_required', $result->get_error_code() );
+		$this->assertSame( 403, $result->get_error_data()['status'] );
+	}
+
+	public function test_preview_is_allowed_on_pro(): void {
+		$this->assertTrue( D5G_RestApi::preview_gate( true ) );
+	}
+
 	public function test_free_page_refusal_names_the_library_alternative(): void {
 		// A 403 that only says "upgrade" wastes the moment. Free CAN have this
 		// section — just via the Library — and the message should say so.

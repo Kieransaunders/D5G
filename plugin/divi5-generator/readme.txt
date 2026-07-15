@@ -62,7 +62,7 @@ The importer detects the active SEO plugin on every request and writes generated
 
 == REST capabilities ==
 
-* `POST /preview` — render generated Divi JSON on a fixed preview page before full import
+* `POST /preview` — render generated Divi JSON on a real draft page before full import (Pro — it creates a page)
 * `POST /import` — import or update pages; also routes `et_builder_layouts` into the Divi Library importer
 * `GET /export` — export a page by ID or slug
 * `POST /presets/import`, `GET /presets`, `GET /presets/export` — manage Divi preset packs
@@ -102,9 +102,9 @@ Yes. Every request requires an `X-D5G-Key` header matching a hashed key stored i
 
 **Free imports sections into your Divi Library. Pro creates pages.**
 
-Free, with no monthly cap: `/ping`, `/preview`, `/export`, managed-page list/delete, and unlimited `/import` of sections, rows and modules into your Divi Library. Drop an imported section onto any page from the Divi Library in the Visual Builder — it's yours, permanently.
+Free, with no monthly cap: `/ping`, `/export`, managed-page list/delete, and unlimited `/import` of sections, rows and modules into your Divi Library. Drop an imported section onto any page from the Divi Library in the Visual Builder — it's yours, permanently.
 
-Pro adds full page creation, SEO meta and schema writing, preset packs, global variables/colours, navigation menu creation, brand extract/deploy, and DB export/import. A Free install calling a Pro-only route gets a `403 pro_required` response with an upgrade link.
+Pro adds full page creation, `/preview` (which builds a real draft page for QA), SEO meta and schema writing, preset packs, global variables/colours, navigation menu creation, brand extract/deploy, and DB export/import. A Free install calling a Pro-only route gets a `403 pro_required` response with an upgrade link.
 
 There are no import quotas on either plan. Free isn't a trial that runs out — it's a smaller tool that keeps working.
 

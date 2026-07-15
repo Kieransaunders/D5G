@@ -17,7 +17,22 @@ In Claude Code, just ask:
 
 > Build me a services section for my plumbing business - emergency callouts, boiler servicing, bathroom installs. Brand colour #0B6E4F.
 
-You'll get a `*-services-section.json` file. Import it via **WP Admin → Divi → Divi Library → Import & Export → Import**, then add the layout to any page.
+You'll get a `*-services-section.json` file. Import it via **WP Admin → Divi → Divi Library → Import & Export → Import**, then add the layout to any page from the library.
+
+### Skip the upload
+
+Install the free [Divi5 Generator](https://wordpress.org/plugins/) connector and the starter puts
+the section straight into your Divi Library — no file shuffling. Grab your key from
+**Settings → Divi5 Generator** (it's shown once), then:
+
+```bash
+export D5G_SITE_URL=https://your-site.com
+export D5G_API_KEY=d5gk_...
+```
+
+Library imports are free and unlimited. Keys live in your environment, not in a config file.
+If the connector isn't there or the key is wrong, you still get the JSON file and the manual
+instructions above — nothing is lost.
 
 ## What's in the section
 
@@ -34,7 +49,7 @@ You'll get a `*-services-section.json` file. Import it via **WP Admin → Divi �
 
 ## Want full pages?
 
-This starter builds one section type. The **full D5G toolkit** generates complete SEO-optimised Divi 5 pages, extracts and reuses your brand's design system across sites, and deploys straight to WordPress with screenshot QA - one command, no copy-paste.
+This starter builds one section, from a fixed template, in one layout. The **full D5G toolkit** builds complete pages in your brand — hero, features, process, FAQ and schema, composed freely rather than one section at a time — by extracting your site's own colours, fonts and presets and generating against them, with screenshot QA before anything goes live.
 
 **→ https://iconnectit.co.uk**
 
