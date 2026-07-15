@@ -15,7 +15,7 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 | # | Task | Where | Est |
 |---|---|---|---|
 | <a id="k1"></a>**K1** | **Confirm the Freemius product is launch-ready** — plans, pricing, and a premium build pipeline. ~~Create the product / swap the id~~ **not needed:** `33991` / slug `divi5-generator` is this product's own id (confirmed 15/07; Airloop is a different product, id `31132`). The id and public_key stand; what's unverified is whether the product is *configured*. **Unblocks: F2, .org, the `D5G_ASSUME_PRO` decision, and every Pro test path.** | freemius.com | 15 min |
-| **K2** | Render test: fill script → import → **look at it** on Divi 5.9.0 *and* 5.8.0 (see [Test plan](#test-plan)). Nothing in the starter has ever been rendered. | Local | 15 min |
+| ~~**K2**~~ | ~~Render test on Divi 5.9.0~~ **DONE 15/07** — see [Test results](#test-results). Renders correctly on 5.9.0, watermark and CTA intact. **5.8.0 half still outstanding** (that Local site wasn't running) — the risky case where migrations are skipped. | Local | 5 min |
 | **K3** | Merge [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) — capability gate. Mergeable, CI clean. | GitHub | 5 min |
 | **K4** | Create public repo `Kieransaunders/divi5-starter`, push `free-toolkit/` contents to its root. **After K2 only.** | GitHub | 10 min |
 | **K5** | Freemius: attach the full-toolkit zip as a Pro-licensed download. Needs K1. | Freemius | 15 min |
@@ -70,6 +70,37 @@ default: migrations gate on `has_legacy_*_attrs_tree()` and no-op on current con
 Update it before testing the 2.0.0 REST paths there.
 
 ---
+
+## <a id="test-results"></a>Test results — live Divi 5.9.0, 15/07/2026
+
+Ran the whole free loop against `divi-5-airtable-plugin` (Divi 5.9.0, WP 7.0.1) with the
+2.0.0 build deployed and activated.
+
+| Check | Result |
+|---|---|
+| Activation + key generation | ✅ `D5G_VERSION 2.0.0`, key generated, Divi 5 detected |
+| **Airloop licence bleed** | ✅ **`is_pro: false`** — Airloop's Freemius does *not* leak into D5G, despite both being installed |
+| `/ping` shape | ✅ `plan: free`, `can` map, `rate_per_min`, **no usage counter** — matches the spec exactly |
+| Free → Library import | ✅ 200, created `et_pb_layout`, no warnings |
+| Free → page import | ✅ 403 `pro_required`, message names the Library, real upgrade URL |
+| **Free → `/preview`** | ❌ **BYPASS — created page 3914 on a Free install.** Fixed (`3efd62c`), re-verified 403 |
+| `D5G_ASSUME_PRO` | ✅ works — `plan: pro` after opcache picked up wp-config |
+| **Render on Divi 5.9.0** | ✅ **Correct.** Eyebrow, heading, intro, 3 icon columns, "Book a Call" button (exercises the `enable:'on'` toggle), watermark line all present |
+
+**Verdict on `builderVersion: "5.9.0"`:** proven correct *on a 5.9.0 site*. The claim is no
+longer unverified there. **Still unproven on 5.8.0**, which is the case that matters — content
+claiming 5.9.0 on an older site skips every migration, and a stale attr shape would fail
+silently as wrong rendering.
+
+**Site left in this state** (dev site, all reversible):
+- `divi5-generator` **2.0.0 deployed and activated** (`divi-tools-importer` 1.7.0 left active and untouched — no class conflict, different REST namespaces).
+- **`define( 'D5G_ASSUME_PRO', true );` added to `wp-config.php` line 77.** Remove it to test the Free path again.
+- Test artefacts deleted (page 3914, library item 3913).
+- API key: `d5gk_edab66208ce70b67ba8a3d688b3133584d4aae9bbb44c649`
+
+**Two issues found in passing, not yet actioned:**
+1. `deploy.sh` rsyncs `vendor/` — including PHPUnit and dev dependencies — into the WP plugin dir. Fine for dev; must not reach the .org build.
+2. `CLAUDE.md` still describes the SEO adapters as implementing `DTI_Seo_Adapter`. Stale — the rename to `D5G_` is complete; the 2.0.0 source declares no `DTI_` classes.
 
 ## Status of the code
 
