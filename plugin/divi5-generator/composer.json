@@ -1,5 +1,5 @@
 {
-	"name": "iconnectit/divi-tools-connector",
+	"name": "iconnectit/divi5-generator",
 	"description": "Secure REST connector for Divi5Generate and Divi 5 sites.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
