@@ -184,3 +184,7 @@ divi5-page-generator "Landing page for Westcountry Pet Rescue,
 ```
 
 Builds `divi5-generator.zip` → install via **WP Admin → Plugins → Add New → Upload Plugin → Activate** → copy your Site URL and API key from **Settings → Divi5 Generator**.
+
+---
+
+*Divi is a registered trademark of Elegant Themes, Inc. This project is not affiliated with nor endorsed by Elegant Themes.*
