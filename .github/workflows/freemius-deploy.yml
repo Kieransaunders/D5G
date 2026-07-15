@@ -33,7 +33,9 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
 
       - name: Build plugin zip
-        run: bash plugin/build-zip.sh .
+        # must be absolute: build-zip.sh cd's into a temp dir before zipping,
+        # so a relative output path lands in the temp dir and gets cleaned up
+        run: bash plugin/build-zip.sh "$PWD"
 
       - name: Deploy to Freemius
         # v0.1.2 built the API path from the slug (400 Invalid request path); v0.1.3 uses the numeric id
