@@ -33,6 +33,9 @@ class D5G_DbImporter {
 		$statements = self::split( $sql );
 		$ran = 0;
 		foreach ( $statements as $stmt ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $stmt is a full
+			// statement from our own D5G_DbExporter dump, not user input; there's
+			// no identifier/value to parametrize, we're replaying a trusted dump.
 			if ( $wpdb->query( $stmt ) === false ) {
 				throw new RuntimeException( "SQL failed near: " . substr( $stmt, 0, 120 ) . " — {$wpdb->last_error}" );
 			}
@@ -125,7 +128,7 @@ class D5G_DbImporter {
 				continue; // Can't safely update rows without a unique key.
 			}
 
-			$rows = $wpdb->get_results( "SELECT * FROM `$table`", ARRAY_A );
+			$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i', $table ), ARRAY_A );
 			foreach ( $rows as $row ) {
 				$update = array();
 				foreach ( $row as $col => $val ) {
@@ -149,7 +152,7 @@ class D5G_DbImporter {
 
 	private static function primary_key( string $table ): ?string {
 		global $wpdb;
-		$keys = $wpdb->get_results( "SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'", ARRAY_A );
+		$keys = $wpdb->get_results( $wpdb->prepare( "SHOW KEYS FROM %i WHERE Key_name = 'PRIMARY'", $table ), ARRAY_A );
 		return $keys[0]['Column_name'] ?? null;
 	}
 
