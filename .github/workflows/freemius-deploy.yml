@@ -24,7 +24,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Read plugin version
         id: version
@@ -36,7 +36,8 @@ jobs:
         run: bash plugin/build-zip.sh .
 
       - name: Deploy to Freemius
-        uses: buttonizer/freemius-deploy@v0.1.2
+        # v0.1.2 built the API path from the slug (400 Invalid request path); v0.1.3 uses the numeric id
+        uses: buttonizer/freemius-deploy@v0.1.3
         with:
           file_name: divi5-generator.zip
           release_mode: ${{ inputs.release_mode }}
