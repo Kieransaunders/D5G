@@ -17,7 +17,13 @@
 
 'use strict';
 
-const BUILDER_VERSION = '5.0.0-public-beta.9.1';
+// Divi 5 went official 26/02/2026 (now on 5.9) — this used to read
+// '5.0.0-public-beta.9.1', a stale pre-launch beta marker (PRD §4 gap 5).
+// UNVERIFIED: not yet confirmed against a real export from a live Divi 5.9
+// site — do that as part of the on-Mac smoke test (docs/FOLLOW-UP.md) before
+// relying on it, since import/preview compatibility hinges on this string
+// matching what Divi 5 itself expects.
+const BUILDER_VERSION = '5.9.0';
 const CRLF = '\r\n';
 
 // Single source of truth for the banned-glyph set lives in scripts/glyphs.js.
@@ -870,7 +876,7 @@ function createBuilder(opts) {
     },
 
     /**
-     * Load a preset registry fetched from GET /wp-json/divi-tools/v1/presets.
+     * Load a preset registry fetched from GET /wp-json/divi5-generator/v1/presets.
      *
      * Without { withAttrs: true }: presetRef() will THROW — no attrs means buttons
      * render default blue. Only use this when all preset CSS is already on the site

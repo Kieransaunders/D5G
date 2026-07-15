@@ -1,6 +1,6 @@
 # Divi 5 Render-Safety Fault Finder — Specification
 
-> Status: **draft** · Owner: divi5-tools/landing-page · Spans two repos (the landing-page skill and the `divi-tools-importer` WordPress plugin).
+> Status: **draft** · Owner: divi5-tools/landing-page · Spans two repos (the landing-page skill and the `divi5-generator` WordPress plugin).
 
 ## 1. Problem & thesis
 
@@ -222,7 +222,7 @@ The verifier needs the rendered HTML of a freshly-imported page. The importer cr
 | **A. Playwright, publish-then-revert** | public permalink while briefly published | none needed | **Recommended** |
 | B. Playwright, draft + cookie/nonce | log in / inject cookie, hit preview URL | scripted wp-login / nonce mgmt | fallback |
 | C. Standalone Playwright/node script | same as A/B, no MCP | same | CI |
-| D. Server-side `/verify` endpoint | importer renders server-side, returns findings | reuses `X-Divi-Tools-Key` | partial only |
+| D. Server-side `/verify` endpoint | importer renders server-side, returns findings | reuses `X-D5G-Key` | partial only |
 
 **Recommendation: Option A — publish-then-revert, driven by the Playwright MCP** (and the equivalent standalone script for CI; shared probe code). It sidesteps draft-auth entirely (a published page serves anonymously), gives a faithful render (faults 5–7 need real layout + the DiviTheatre runtime), has a bounded blast radius (published for seconds on staging, then reverted in a `finally`), and reuses the importer's idempotent slug-keyed update for the revert. Trade-off: a brief published window — **staging/LocalWP only**, optionally `noindex` during the window. If even that is unacceptable, fall back to Option B; only the navigation/auth wrapper changes.
 
@@ -326,7 +326,7 @@ Site: https://divi-airtable.local   Page: /airloop/faq (page_id 412)
 
 ### Cleanup & safety
 
-Always revert (in `finally`) via a re-import with `publish:false` (idempotent, slug-keyed). Track and optionally delete placeholder parent pages the importer auto-created (read its warnings) — never delete pre-existing pages. Never log the key (read `DTI_KEY` env, send only in `X-Divi-Tools-Key`, never the `dti_key` query param — it leaks into access logs). Back off on HTTP 429. Staging only.
+Always revert (in `finally`) via a re-import with `publish:false` (idempotent, slug-keyed). Track and optionally delete placeholder parent pages the importer auto-created (read its warnings) — never delete pre-existing pages. Never log the key (read `DTI_KEY` env, send only in `X-D5G-Key`, never the `dti_key` query param — it leaks into access logs). Back off on HTTP 429. Staging only.
 
 ### Optional: server-side `/verify` endpoint (Tier 1.5)
 

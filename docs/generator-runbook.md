@@ -13,14 +13,18 @@ file as the source of truth, but use this as the quick checklist for new runs.
 ## Required flow
 
 1. Run the creative gate first.
-2. Build the HTML preview and approve it.
-3. Write the generator script.
-4. Run `node --check` on the script before executing it.
-5. Generate the page JSON, SEO sidecar, and schema.
-6. Run `validate.js`.
-7. Run `taste-check.js`.
-8. Run the fidelity check against the approved mockup.
-9. Import only after the gates pass.
+2. Author `page-spec.json` as the source artifact.
+3. Run `node scripts/spec/validate-spec.js page-spec.json`.
+4. Build the HTML preview with `node scripts/spec/spec-to-html.js page-spec.json > preview-[brand].html`.
+5. Approve the preview interactively, or self-approve only in headless/brief mode.
+6. Compile the Divi output with `node scripts/spec/spec-to-divi.js page-spec.json`.
+7. Generate the page JSON, SEO sidecar, and schema in the Divi5 output folder.
+8. Run `validate.js`.
+9. Run `taste-check.js`.
+10. Run the fidelity check against the approved mockup.
+11. Import only after the gates pass.
+
+Legacy generator scripts are a fallback path only. If used, run `node --check` before executing the script and keep the script in the output folder for reruns.
 
 ## Lessons learned
 

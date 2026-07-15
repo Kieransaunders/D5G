@@ -10,7 +10,7 @@
  *   T2  h1 mismatch → exit 1 + FAIL output
  *   T3  Matching h1 → no h1 FAIL
  *   T4  Heading outline reorder → exit 1 + outline FAIL
- *   T5  SKILL.md references "fidelity-check" before import-to-local instruction
+ *   T5  SKILL.md references "fidelity-check" before divi5-deploy instruction
  */
 
 'use strict';
@@ -73,19 +73,19 @@ if (fs.existsSync(CHECK)) {
   ok('T4 outline reorder output has FAIL',  (r4.stdout + r4.stderr).toLowerCase().includes('fail'), 'No FAIL in output');
 }
 
-// T5: SKILL.md wires fidelity-check before import-to-local
+// T5: SKILL.md wires fidelity-check before divi5-deploy
 const skill = fs.readFileSync(SKILL_MD, 'utf8');
 const fidIdx    = Math.min(
   skill.includes('fidelity-check') ? skill.indexOf('fidelity-check') : Infinity,
   skill.includes('Stage 3.5')      ? skill.indexOf('Stage 3.5')      : Infinity
 );
-const importIdx = skill.includes('import-to-local') ? skill.indexOf('import-to-local') : Infinity;
+const importIdx = skill.includes('divi5-deploy') ? skill.indexOf('divi5-deploy') : Infinity;
 ok(
-  'T5 SKILL.md references fidelity-check before import-to-local',
+  'T5 SKILL.md references fidelity-check before divi5-deploy',
   fidIdx < importIdx,
   fidIdx === Infinity
     ? 'Neither "fidelity-check" nor "Stage 3.5" found in SKILL.md'
-    : `fidelity-check at ${fidIdx}, import-to-local at ${importIdx}`
+    : `fidelity-check at ${fidIdx}, divi5-deploy at ${importIdx}`
 );
 
 // Summary

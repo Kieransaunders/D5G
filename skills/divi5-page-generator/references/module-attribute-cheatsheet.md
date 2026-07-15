@@ -6,7 +6,7 @@ Regenerate: `python3 scripts/extract-attr-paths.py`
 
 These paths are GROUND TRUTH (from actual Divi-saved JSON). If a builder helper writes a path not listed here for a module that IS listed, treat it as suspect and cross-check before shipping — this is how the number-counter percent-sign bug (wrong path `percent.advanced.sign` instead of `number.advanced.enablePercentSign`) was found.
 
-Modules with NO entry here have no verified export example in this repo. Do not guess their attribute paths — export a real example from Divi first (Divi Library → Import & Export, or the Divi Tools Importer `/export` endpoint) before building a helper for them.
+Modules with NO entry here have no verified export example in this repo. Do not guess their attribute paths — export a real example from Divi first (Divi Library → Import & Export, or the Divi Tools Connector `/export` endpoint) before building a helper for them.
 
 ## accordion-item
 - `title.innerContent`

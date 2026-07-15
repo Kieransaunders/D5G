@@ -1,10 +1,10 @@
 'use strict';
 
-// Builds the request body sent to the Divi Tools Importer plugin's
-// POST /wp-json/divi-tools/v1/import endpoint.
+// Builds the request body sent to the Divi5 Generator plugin's
+// POST /wp-json/divi5-generator/v1/import endpoint.
 //
 // The plugin declares exactly these params (see
-// plugin/divi-tools-importer/src/RestApi.php → /import route args):
+// plugin/divi5-generator/src/RestApi.php → /import route args):
 //   layout  (object, required)
 //   seo     (object, optional)
 //   schema  (object, optional)

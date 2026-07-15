@@ -31,7 +31,7 @@ Active & archived changes live under `openspec/changes/`. Specs are capabilities
   **No build step.** A reskin is in progress against the Claude Design mockup — see
   `app/REDESIGN-PLAN.md` for the phased plan and `app/redesgn /` for the mockup source.
   Each phase ships as its own SSWA change.
-- **WordPress importer (`plugin/divi-tools-importer/`)**: PHP, flat-file `require_once`
+- **WordPress importer (`plugin/divi5-generator/`)**: PHP, flat-file `require_once`
   convention (no autoloader). Tests via PHPUnit ^9 (`composer test`); the test bootstrap
   stubs WP functions so no WP load is needed.
 - **Skills (`skills/<name>/SKILL.md`)**: frontmatter (`name`, `description`) is mandatory —
@@ -40,7 +40,7 @@ Active & archived changes live under `openspec/changes/`. Specs are capabilities
 - **SEO plugin support**: the importer detects the active SEO plugin and writes native meta
   keys for Yoast, Rank Math, AIOSEO, SEOPress, TSF, or neutral `_dti_seo_*` fallback. See
   `openspec/specs/seo-meta-persistence/spec.md` (the source of truth) and
-  `plugin/divi-tools-importer/src/Seo/`.
+  `plugin/divi5-generator/src/Seo/`.
 
 ## Output location (generated artefacts)
 

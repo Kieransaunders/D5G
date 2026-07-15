@@ -120,11 +120,11 @@ The social proof strip section uses `D.block('section', { module: { decoration: 
 
 Instead of generating presets + page together (fragile, causes CSS cache issues, accumulates stale presets), use a two-step approach:
 
-**Step 1 — Import presets separately** via `POST /wp-json/divi-tools/v1/presets/import`
+**Step 1 — Import presets separately** via `POST /wp-json/divi5-generator/v1/presets/import`
 - Calls `process_presets_for_import()` then `save_data()` → CSS generated immediately with stable IDs
 - Returns `id_mappings` so you know the final IDs
 
-**Step 2 — Fetch registry** via `GET /wp-json/divi-tools/v1/presets`
+**Step 2 — Fetch registry** via `GET /wp-json/divi5-generator/v1/presets`
 - Returns `{ "divi/button": { "Filled - Primary Color": "klcvu0qk4f", ... } }`
 - Save as `references/et-preset-registry.json`
 

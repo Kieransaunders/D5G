@@ -1,6 +1,6 @@
 # Divi 5 AI Page Generator — Technical Overview & Product Opportunity
 
-*Written 2026-06-21. Based on the landing-page skill, divi-tools-importer plugin, and learnings from the Rub You Well build.*
+*Written 2026-06-21. Based on the page generator skill, Divi Tools Connector plugin, and learnings from the Rub You Well build.*
 
 ---
 
@@ -17,19 +17,19 @@ The output is a `.json` file that can be imported directly into any Divi 5 WordP
 The system has three layers that work in sequence:
 
 ```
-BRIEF → [AI Skill Layer] → JSON → [Import Plugin] → [Divi 5 WordPress Site]
+BRIEF → [AI Skill Layer] → JSON → [Divi Tools Connector] → [Divi 5 WordPress Site]
 ```
 
-### Layer 1 — The AI Skill (`skills/landing-page/`)
+### Layer 1 — The AI Skill (`skills/divi5-page-generator/`)
 
 The Claude skill that orchestrates the entire generation pipeline. It is a set of instructions, constraints, and referenced assets that guides the AI through a structured workflow.
 
 **Key stages:**
 1. **Brief** — extracts brand, keyword, aesthetic, sections, CTA from conversation
 2. **HTML preview** — builds a full styled HTML mock served locally; user approves before any Divi JSON is generated
-3. **Generation** — writes a Node.js generator script that uses the builder library
-4. **Validation** — runs an automated validator; must pass before delivery
-5. **Import** — pushes JSON to the live WordPress site via the REST API
+3. **Spec compilation** — authors `page-spec.json`, then compiles it to both preview HTML and Divi JSON
+4. **Validation** — runs spec, structural, SEO, taste, and fidelity gates; failures block delivery
+5. **Import** — uses the importer skill's real Divi preview, then publishes and screenshots the live WordPress page
 
 **Taste system** (`references/taste.md`, `references/aesthetics.md`):
 Five pre-built aesthetic palettes (Organic Tech, Midnight Luxe, Brutalist Signal, Vapor Clinic, Minimal Editorial) with explicit guardrails — typography rules, layout dials (VARIANCE / MOTION / DENSITY), anti-patterns, and a pre-flight checklist. The AI is trained to self-check against the Floria reference screenshots before delivery.
@@ -71,17 +71,17 @@ D.section({ preset: P.secCream, padding: { top: '90px', bottom: '90px' } }, [
 
 ---
 
-### Layer 3 — The Import Plugin (`plugin/divi-tools-importer/`)
+### Layer 3 — The WordPress Site Connector (`plugin/divi5-generator/`)
 
-A WordPress REST API plugin that bridges the AI output to a live Divi 5 site. It handles the non-trivial parts of pushing JSON into Divi's internal data model correctly.
+A WordPress REST API plugin that bridges Claude/Divi5Generate to a live Divi 5 site. It previews live Divi renders, imports pages and library sections, exports site design data, moves preset packs and global variables, writes SEO/schema metadata, lists/deletes managed pages, and supports database export/import with URL rewriting.
 
 **Endpoints:**
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/wp-json/divi-tools/v1/import` | Import page (layout + SEO + publish flag) |
-| GET | `/wp-json/divi-tools/v1/export?slug=<slug>` | Export page with presets + global colors |
-| POST | `/wp-json/divi-tools/v1/presets/import` | Import a preset pack independently |
-| GET | `/wp-json/divi-tools/v1/presets` | List all presets as name→id map |
+| POST | `/wp-json/divi5-generator/v1/import` | Import page (layout + SEO + publish flag) |
+| GET | `/wp-json/divi5-generator/v1/export?slug=<slug>` | Export page with presets + global colors |
+| POST | `/wp-json/divi5-generator/v1/presets/import` | Import a preset pack independently |
+| GET | `/wp-json/divi5-generator/v1/presets` | List all presets as name→id map |
 
 **Key implementation details:**
 - **Direct DB write** — bypasses `wp_kses_post()` and `balanceTags()` which corrupt block comment delimiters containing JSON. Uses `$wpdb->update()` directly.
@@ -89,7 +89,7 @@ A WordPress REST API plugin that bridges the AI output to a live Divi 5 site. It
 - **Global colour import** — calls `GlobalData::set_global_colors()` to register `gcid-*` colour slots resolvable by `$variable(...)$` refs
 - **CSS cache clearing** — after every import, automatically deletes `et-cache/{post_id}/*.css` so stale preset class CSS is regenerated on next page load (hard-won lesson: Divi's own cache-clear API does NOT clear per-page CSS)
 - **SEO writing** — detects and writes to Yoast or RankMath if present
-- **Auth** — `X-Divi-Tools-Key` header only; no query param (prevents access log leaks)
+- **Auth** — `X-D5G-Key` header only; no query param (prevents access log leaks)
 
 ---
 
@@ -224,8 +224,8 @@ The key moat: **the technical knowledge of Divi 5's internal format** (preset-fi
 
 ## Open Questions Before Building
 
-1. **Market size** — how many agencies/freelancers use Divi 5 and would pay for AI page generation? ET claims 1M+ Divi users; Divi 5 is still in public beta as of mid-2026.
+1. **Market size** — how many agencies/freelancers use Divi 5 and would pay for AI page generation? ET claims 1M+ Divi users; Divi 5 went official on 26/02/2026 (now on 5.9), so the addressable base is everyone who's upgraded off Divi 4.
 2. **ET relationship** — would Elegant Themes see this as competitive or complementary? A partnership/listing on their marketplace would be the fastest distribution channel.
 3. **Claude API cost per page** — a full page generation including HTML preview, iteration, and JSON output likely uses 50k–150k tokens. At Claude Sonnet pricing (~$3/M input, $15/M output) that's roughly $0.50–$2.00 per page. Needs to be priced accordingly.
 4. **Preset portability** — the preset-first workflow requires the plugin to be installed. Is there a no-plugin option (e.g. export as a Divi Layout JSON with presets bundled)? Yes — the classic workflow still works, just with the CSS cache caveat.
-5. **Divi 5 stability** — block format is versioned (`builderVersion: "5.0.0-public-beta.9.1"`). Breaking changes in the format would require builder updates. Risk mitigated by the builder abstraction layer.
+5. **Divi 5 stability** — block format is versioned (`builderVersion`, now `"5.9.0"` — unverified against a live Divi 5.9 export, pending on-Mac smoke test). Breaking changes in the format would require builder updates. Risk mitigated by the builder abstraction layer.

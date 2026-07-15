@@ -1,0 +1,15 @@
+{
+  "id": "hero",
+  "layout": "split-14-10",
+  "preset": "Section — Hero",
+  "columns": [
+    [
+      { "kind": "eyebrow", "text": "Eyebrow label", "preset": "Eyebrow" },
+      { "kind": "heroHeading", "text": "the hero headline goes here", "preset": "H1 Hero" }
+    ],
+    [
+      { "kind": "text", "preset": "Body — on light", "html": "<p>A supporting sentence that sits beside the hero heading and sets up the offer.</p>" },
+      { "kind": "button", "text": "Primary action", "href": "#", "preset": "Button — Primary" }
+    ]
+  ]
+}

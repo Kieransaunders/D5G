@@ -51,8 +51,29 @@ skills/divi5-page-generator/*-registry.json
 skills/divi5-page-generator/*-seo-meta.json
 skills/divi5-page-generator/__unlink_probe*
 
-# Divi Tools Importer — dev tooling only (not shipped in the installable zip).
+# Divi5 Generator — dev tooling only (not shipped in the installable zip).
 # vendor/ is installed by `composer install`; tests/.phpunit.cache is PHPUnit's
 # result cache. Both are excluded from the zip by build-plugin-zip.sh.
-plugin/divi-tools-importer/vendor/
-plugin/divi-tools-importer/tests/.phpunit.cache/
+plugin/divi5-generator/vendor/
+plugin/divi5-generator/tests/.phpunit.cache/
+plugin/divi5-generator/package-lock.json
+plugin/divi5-generator/node_modules/
+
+# Root vendor/ + composer files are unused cruft — the WordPress plugin under
+# plugin/divi5-generator/ carries its own vendor/. Nothing in skills/, commands/
+# or the plugin itself requires the root autoload.
+/vendor/
+/composer.json
+/composer.lock
+
+# macOS app bundle — local launcher convenience, not referenced by any skill or
+# command by path (launch-app and /launch use app/server.js directly).
+/Divi5 Generator.app/
+
+# Dev-only docs and planning notes — not loaded at plugin runtime.
+# /docs/ is tracked deliberately: this repo is private, and docs/PRD.md is the
+# source of truth for the commercial model and licence terms. Untracked, it had
+# no history and no backup.
+/DEVELOPMENT.md
+/PORTABLE-LIBRARY-PLAN.md
+/DESIGN-SYSTEM-REUSE.notes.md

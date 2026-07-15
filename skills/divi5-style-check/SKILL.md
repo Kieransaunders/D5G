@@ -1,6 +1,6 @@
 ---
 name: divi5-style-check
-description: "Divi 5 style consistency auditor — compares an original designer Divi 5 export against a newly generated page JSON and verifies that presets, colours, and typography from the original are actually reused, not replaced with new IDs or inline values. Use as a QA gate after divi5-page-generator and before import-to-local, to verify a generated page inherits the designer's design system rather than creating its own. Triggers: check divi style, verify divi consistency, divi style audit, divi preset check, divi colour check, style check divi, divi design inheritance, divi style gate."
+description: "Divi 5 style consistency auditor — compares an original designer Divi 5 export against a newly generated page JSON and verifies that presets, colours, and typography from the original are actually reused, not replaced with new IDs or inline values. Use as a QA gate after divi5-page-generator and before divi5-deploy, to verify a generated page inherits the designer's design system rather than creating its own. Triggers: check divi style, verify divi consistency, divi style audit, divi preset check, divi colour check, style check divi, divi design inheritance, divi style gate."
 argument-hint: "<original-export.json> <generated-page.json>"
 allowed-tools: Bash(node *)
 ---
@@ -15,7 +15,7 @@ You are a Divi 5 style consistency auditor. A web designer has an existing Divi 
 /divi5-extract-style  → *.tokens.js
 /divi5-page-generator → new-page.json
 /divi5-style-check original-export.json new-page.json  ← YOU ARE HERE
-/import-to-local      → live page
+/divi5-deploy         → live page
 ```
 
 Run this check **before** importing a generated page. If it returns INCONSISTENT, fix the generator script and regenerate — do not import a page that fails.

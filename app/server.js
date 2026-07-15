@@ -23,11 +23,11 @@ const { startOrContinue, answerInput, detachSink } = require('./lib/claude-agent
 const { registerGenerationFromDir } = require('./lib/generation-registrar');
 const { screenshot: takeScreenshot, resolveExecutable } = require('./lib/screenshot');
 
-// The DTI plugin version this app's client behaviour is written against. When
+// The D5G plugin version this app's client behaviour is written against. When
 // /ping reports a lower deployed version, the health chip warns — e.g. an older
 // plugin defaults imports to draft (pre-1.5.4), which silently breaks live QA.
-// Bump this in lockstep with plugin/divi-tools-importer.php DTI_VERSION.
-const EXPECTED_DTI_VERSION = '1.7.0';
+// Bump this in lockstep with plugin/divi5-generator/divi5-generator.php D5G_VERSION.
+const EXPECTED_D5G_VERSION = '2.0.0';
 
 // Local/loopback hosts the QA loop is *meant* to screenshot — the user's own
 // WordPress site. Unlike brand-extract (which fetches arbitrary public URLs and
@@ -264,7 +264,7 @@ function runClaudeGeneration(genId, outputPath, fullPrompt, exportPath = null) {
     '--plugin-dir', PLUGIN_DIR, fullPrompt], {
     cwd: outputPath,
     // DIVI5_OUT is the explicit contract with the page-generator/extract-style/
-    // import-to-local skills: write all artefacts here, never into the repo.
+    // divi5-deploy skills: write all artefacts here, never into the repo.
     env: { ...process.env, DIVI5_OUT: outputPath },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
@@ -429,11 +429,11 @@ app.get('/exports', (req, res) => {
 app.get('/download-plugin', (req, res) => {
   // The zip isn't committed (the Claude Code plugin installer rejects nested
   // zips), so always build it from the unpacked source on demand.
-  const buildScript = path.join(PLUGIN_DIR, 'skills', 'import-to-local', 'scripts', 'build-plugin-zip.sh');
+  const buildScript = path.join(PLUGIN_DIR, 'skills', 'divi5-deploy', 'scripts', 'build-plugin-zip.sh');
   if (!fs.existsSync(buildScript)) return res.status(404).json({ error: 'Plugin build script not found' });
   try {
     const zip = execSync(`bash "${buildScript}"`).toString().trim();
-    res.download(zip, 'divi-tools-importer.zip');
+    res.download(zip, 'divi5-generator.zip');
   } catch (e) {
     res.status(500).json({ error: 'Could not build plugin ZIP' });
   }
@@ -845,11 +845,11 @@ app.post('/import/:id', async (req, res) => {
     const timeout = setTimeout(() => controller.abort(), 30000);
     let wpRes;
     try {
-      wpRes = await fetch(`${siteUrl}/wp-json/divi-tools/v1/import`, {
+      wpRes = await fetch(`${siteUrl}/wp-json/divi5-generator/v1/import`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Divi-Tools-Key': apiKey,
+          'X-D5G-Key': apiKey,
         },
         body: JSON.stringify(buildImportPayload({ layout, seo, schema, publish })),
         signal: controller.signal,
@@ -882,14 +882,14 @@ app.post('/import/:id', async (req, res) => {
   }
 });
 
-// Map WordPress/DTI HTTP errors to actionable user messages instead of raw
+// Map WordPress/D5G HTTP errors to actionable user messages instead of raw
 // `${status}: ${text}`. Keep the underlying detail for the curious.
 function mapImportError(status, text) {
   let detail = text;
   try { detail = JSON.parse(text).message || text; } catch { /* keep raw */ }
   switch (status) {
-    case 401: return 'API key rejected — check it in Settings → Divi Tools Importer on your site.';
-    case 404: return 'Plugin not found at /wp-json/divi-tools/v1 — is Divi Tools Importer active?';
+    case 401: return 'API key rejected — check it in Settings → Divi5 Generator on your site.';
+    case 404: return 'Plugin not found at /wp-json/divi5-generator/v1 — is the Divi5 Generator plugin active?';
     case 409: return `Conflict: ${detail}`;
     case 422: return `Layout rejected: ${detail}`;
     case 429: return 'Rate limited by the site (max 30/min). Wait a minute and retry.';
@@ -911,8 +911,8 @@ app.get('/test-connection', async (req, res) => {
     const timeout = setTimeout(() => controller.abort(), 5000);
     let wpRes;
     try {
-      wpRes = await fetch(`${siteUrl}/wp-json/divi-tools/v1/ping`, {
-        headers: { 'X-Divi-Tools-Key': apiKey },
+      wpRes = await fetch(`${siteUrl}/wp-json/divi5-generator/v1/ping`, {
+        headers: { 'X-D5G-Key': apiKey },
         signal: controller.signal,
       });
     } finally {
@@ -935,8 +935,8 @@ app.get('/test-connection', async (req, res) => {
       yoast: ping.yoast === true,
       rankmath: ping.rankmath === true,
       pluginVersion: deployed,
-      versionOk: deployed ? versionOk(deployed, EXPECTED_DTI_VERSION) : null,
-      expectedVersion: EXPECTED_DTI_VERSION,
+      versionOk: deployed ? versionOk(deployed, EXPECTED_D5G_VERSION) : null,
+      expectedVersion: EXPECTED_D5G_VERSION,
     });
   } catch (err) {
     const msg = err.name === 'AbortError' ? 'Connection timed out' : err.message;
@@ -970,9 +970,9 @@ async function wpFetch(pathname, { method = 'GET', apiKey, siteUrl, timeoutMs = 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(`${siteUrl}/wp-json/divi-tools/v1${pathname}`, {
+    return await fetch(`${siteUrl}/wp-json/divi5-generator/v1${pathname}`, {
       method,
-      headers: { 'X-Divi-Tools-Key': apiKey },
+      headers: { 'X-D5G-Key': apiKey },
       signal: controller.signal,
     });
   } finally {
@@ -980,7 +980,7 @@ async function wpFetch(pathname, { method = 'GET', apiKey, siteUrl, timeoutMs = 
   }
 }
 
-// ─── GET /wp-pages — list DTI-imported pages on the connected site ───────────
+// ─── GET /wp-pages — list D5G-imported pages on the connected site ───────────
 app.get('/wp-pages', async (req, res) => {
   const { siteUrl, apiKey } = wpConnection();
   if (!siteUrl || !apiKey) return res.status(400).json({ error: 'WordPress settings not configured' });
@@ -995,7 +995,7 @@ app.get('/wp-pages', async (req, res) => {
   }
 });
 
-// ─── DELETE /wp-pages/:slug — remove one DTI-imported page (no-litter) ───────
+// ─── DELETE /wp-pages/:slug — remove one D5G-imported page (no-litter) ───────
 app.delete('/wp-pages/:slug', async (req, res) => {
   const { slug } = req.params;
   if (!isValidSlug(slug)) return res.status(400).json({ error: 'invalid slug' });
@@ -1114,9 +1114,9 @@ app.post('/preview/:id', async (req, res) => {
   }
 
   try {
-    const wpRes = await fetch(`${siteUrl}/wp-json/divi-tools/v1/preview`, {
+    const wpRes = await fetch(`${siteUrl}/wp-json/divi5-generator/v1/preview`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Divi-Tools-Key': apiKey },
+      headers: { 'Content-Type': 'application/json', 'X-D5G-Key': apiKey },
       body: JSON.stringify({ layout }),
       signal: AbortSignal.timeout(30000),
     });
@@ -1207,7 +1207,7 @@ app.get('/brand/extract-url', async (req, res) => {
 
 // ─── GET /brand/extract-divi — pull brand from a live Divi 5 site ────────────
 // Calls the plugin's export endpoints, saves the result as a brand_profile.
-// Query params: site (WP home URL), key (DTI API key), name (optional profile name)
+// Query params: site (WP home URL), key (D5G API key), name (optional profile name)
 app.get('/brand/extract-divi', async (req, res) => {
   const { site, key, name } = req.query;
   if (!site || !key) return res.status(400).json({ error: 'site and key query params required' });
@@ -1219,8 +1219,8 @@ app.get('/brand/extract-divi', async (req, res) => {
     return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
   }
 
-  const base = siteUrl.origin + '/wp-json/divi-tools/v1';
-  const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
+  const base = siteUrl.origin + '/wp-json/divi5-generator/v1';
+  const headers = { 'X-D5G-Key': key, 'Content-Type': 'application/json' };
 
   let variables, presets;
   try {
@@ -1259,8 +1259,8 @@ app.post('/brand/:id/deploy', async (req, res) => {
     return res.status(400).json({ error: 'blocked: private/loopback/link-local host' });
   }
 
-  const base = siteUrl.origin + '/wp-json/divi-tools/v1';
-  const headers = { 'X-Divi-Tools-Key': key, 'Content-Type': 'application/json' };
+  const base = siteUrl.origin + '/wp-json/divi5-generator/v1';
+  const headers = { 'X-D5G-Key': key, 'Content-Type': 'application/json' };
   const { variables, presets } = profile.data || {}; // getBrandProfile already parsed it
 
   if (!variables && !presets) {
@@ -1312,13 +1312,13 @@ app.post('/migrate/pull', async (req, res) => {
     return res.status(400).json({ error: 'blocked: remote is a private/loopback host' });
   }
 
-  const remoteApi = remoteUrl.origin + '/wp-json/divi-tools/v1';
-  const localApi  = localUrl.origin  + '/wp-json/divi-tools/v1';
+  const remoteApi = remoteUrl.origin + '/wp-json/divi5-generator/v1';
+  const localApi  = localUrl.origin  + '/wp-json/divi5-generator/v1';
 
   try {
     // 1. Pull the dump from the remote.
     const exp = await fetch(`${remoteApi}/db/export`, {
-      headers: { 'X-Divi-Tools-Key': remoteKey },
+      headers: { 'X-D5G-Key': remoteKey },
       signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
     if (!exp.ok) return res.status(502).json({ error: `remote export failed: ${exp.status}` });
@@ -1327,7 +1327,7 @@ app.post('/migrate/pull', async (req, res) => {
     // 2. Push it into the local site, rewriting remote URL → local URL.
     const imp = await fetch(`${localApi}/db/import`, {
       method: 'POST',
-      headers: { 'X-Divi-Tools-Key': localKey, 'Content-Type': 'application/json' },
+      headers: { 'X-D5G-Key': localKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ sql: dump.sql, from_url: dump.home_url, to_url: localUrl.origin }),
       signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
@@ -1361,13 +1361,13 @@ app.post('/migrate/push', async (req, res) => {
     return res.status(400).json({ error: 'blocked: remote is a private/loopback host' });
   }
 
-  const remoteApi = remoteUrl.origin + '/wp-json/divi-tools/v1';
-  const localApi  = localUrl.origin  + '/wp-json/divi-tools/v1';
+  const remoteApi = remoteUrl.origin + '/wp-json/divi5-generator/v1';
+  const localApi  = localUrl.origin  + '/wp-json/divi5-generator/v1';
 
   try {
     // 1. Export the local dev DB.
     const exp = await fetch(`${localApi}/db/export`, {
-      headers: { 'X-Divi-Tools-Key': localKey },
+      headers: { 'X-D5G-Key': localKey },
       signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });
     if (!exp.ok) return res.status(502).json({ error: `local export failed: ${exp.status}` });
@@ -1376,7 +1376,7 @@ app.post('/migrate/push', async (req, res) => {
     // 2. Import into the remote, rewriting local URL → remote URL.
     const imp = await fetch(`${remoteApi}/db/import`, {
       method: 'POST',
-      headers: { 'X-Divi-Tools-Key': remoteKey, 'Content-Type': 'application/json' },
+      headers: { 'X-D5G-Key': remoteKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ sql: dump.sql, from_url: dump.home_url, to_url: remoteUrl.origin }),
       signal: AbortSignal.timeout(MIGRATE_TIMEOUT_MS),
     });

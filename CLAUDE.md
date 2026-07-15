@@ -15,7 +15,7 @@ Divi5Generate/
 ├── commands/
 ├── docs/
 ├── app/                     # Node builder library (page generator)
-└── plugin/                  # WordPress importer plugin (PHP)
+└── plugin/                  # WordPress site connector plugin (PHP)
 ```
 
 ## Install on a new machine
@@ -26,6 +26,46 @@ claude plugin install divi5generate@divi5generate
 ```
 
 Then open Claude Code Desktop — it picks up the install automatically from `~/.claude`.
+
+## User workflow diagram
+
+```mermaid
+flowchart TD
+    A[Install Divi5Generate plugin] --> B[Open Claude Code Desktop]
+    B --> C{How do you want to start?}
+
+    C -- Browser app --> D[Run /divi5generate:launch]
+    C -- Chat prompt --> E[Ask Claude for a Divi 5 page, section, import, or review]
+
+    D --> F[Chat with the generator app]
+    F --> G[Create or select a brand profile]
+    G --> H[Approve the page proposal]
+
+    E --> I{Which skill matches the request?}
+    I -- Generate page or section --> J[divi5-page-generator]
+    I -- Extract brand/style --> K[divi5-extract-style or brand-extract]
+    I -- Import to WordPress --> L[divi5-deploy]
+    I -- Audit output --> M[design-review or divi5-style-check]
+
+    H --> J
+    K --> J
+    J --> N[Validated Divi 5 JSON + SEO files]
+    N --> L
+    L --> O[Live WordPress page preview]
+    O --> P{Accept or refine?}
+    P -- Refine --> J
+    P -- Accept --> Q[Publish or deliver final files]
+    M --> P
+```
+
+Typical prompts:
+
+- "Launch the Divi 5 generator."
+- "Create a Divi 5 landing page for a roofing company in Exeter."
+- "Extract the brand style from this Divi export, then generate a services page."
+- "Import the latest generated page into my WordPress site."
+- "Create a nav menu from my generated pages and put it in the primary location."
+- "Review this Divi export against the original brief."
 
 ## Plugin registration (settings.json)
 
@@ -44,7 +84,7 @@ Generated pages, sections, previews, tokens, SEO meta and `generate-*.js` script
 
 - `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages`.
 
-The app (`app/server.js`) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `import-to-local`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
+The app (`app/server.js`) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `divi5-deploy`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
 
 `.gitignore` keeps only a safety-net for stray root artefacts — the real fix is that nothing should be written here in the first place.
 
@@ -87,7 +127,7 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | Skill | Purpose |
 |---|---|
 | `divi5-page-generator` | Generate SEO-optimised Divi 5 page JSON (pages + sections) |
-| `import-to-local` | Import JSON into WordPress via REST API as a published page, screenshot it live, run accept/refine loop |
+| `divi5-deploy` | Deploy generated pages to WordPress (preview, import, publish, screenshot, SEO meta, draft list/delete) and create/list/auto-place navigation menus via REST API |
 | `launch-app` | Launch the Divi 5 Generator app |
 | `design-review` | Audit Divi 5 JSON for structure, SEO, spec compliance |
 | `divi5-extract-style` | Extract brand tokens from a Divi 5 export / brand guide |
@@ -105,9 +145,9 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 | `divi5-compatibility` | Divi 5 CSS validation rules, common issues/fixes, plugin conflicts, version bug-fix history, error reference (vendored, MIT — see NOTICE.md) |
 | `divi5-performance` | Critical CSS / Dynamic CSS, font loading, Core Web Vitals diagnostics for Divi 5 (vendored, MIT — see NOTICE.md) |
 
-## SEO plugin support (Divi Tools Importer ≥ 1.6.0)
+## SEO plugin support (Divi5 Generator ≥ 1.7.0)
 
-The importer (`plugin/divi-tools-importer/`) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `dti/seo/adapter_order` filter):
+The importer (`plugin/divi5-generator/`) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `d5g/seo/adapter_order` filter):
 
 | Plugin | Adapter | Detection signal |
 |---|---|---|

@@ -87,7 +87,7 @@ function match(keyword) {
 
 /**
  * Build an importable JSON object from the best-matching ET pack page.
- * The output can be written to disk and POSTed to /wp-json/divi-tools/v1/import.
+ * The output can be written to disk and POSTed to /wp-json/divi5-generator/v1/import.
  *
  * @param {string} keyword  Page type keyword, e.g. "services", "pricing", "home"
  * @returns {{ context, data, presets, global_colors, global_variables, ... } | null}

@@ -57,7 +57,7 @@ The full schema (plugin v1.6+). Only `title`/`description`/`slug` are required; 
 - `metaDescription` → `description`
 - `focusKeyword` → `keyword` (use `focusKeyword` for new sidecars; `keyword` is kept for back-compat)
 
-**Where it lands:** the Divi Tools Importer detects the active SEO plugin on the target site and writes each field to that plugin's native post-meta keys. Supported: Yoast, Rank Math, All in One SEO (AIOSEO), SEOPress, The SEO Framework. When no plugin is active, values land in neutral `_dti_seo_*` keys and a warning is returned. See `skills/import-to-local/SKILL.md` for the import flow.
+**Where it lands:** the Divi Tools Connector detects the active SEO plugin on the target site and writes each field to that plugin's native post-meta keys. Supported: Yoast, Rank Math, All in One SEO (AIOSEO), SEOPress, The SEO Framework. When no plugin is active, values land in neutral `_dti_seo_*` keys and a warning is returned. See `skills/divi5-deploy/SKILL.md` for the import flow.
 
 ### `[brand]-schema.json`
 JSON-LD for Divi > Theme Options > Integration > head:

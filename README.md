@@ -36,7 +36,7 @@ flowchart TD
     G -- CONSISTENT ✅ --> H
     G -- INCONSISTENT ❌ --> F
 
-    H --> I[import-to-local\npush to WordPress\nas draft page]
+    H --> I[divi5-deploy\npush to WordPress\nas draft page]
     I --> J[Preview in Divi\naccept or refine]
     J -- Refine --> H
     J -- Accept → Publish --> K[Export page from Divi]
@@ -62,7 +62,7 @@ flowchart TD
 | `divi5generate:divi5-extract-style` | Extract the design system from an existing Divi export OR convert brand guidelines into Divi 5 Global Variables |
 | `divi5generate:divi5-style-check` | QA gate — compare a generated page against the original designer export to verify preset, colour, and font inheritance |
 | `divi5generate:design-review` | Audit any Divi 5 export: structure, SEO, design checklist. Also spec compliance mode: compare an imported page against the original brief |
-| `divi5generate:import-to-local` | Import a generated page into any WordPress site — draft, preview, publish on accept |
+| `divi5generate:divi5-deploy` | Deploy generated pages to any WordPress site — preview, import, publish, screenshot, SEO meta, draft list/delete — and create/list/auto-place navigation menus |
 | `divi5generate:launch-app` | Start the local generator app with chat, brand management, and one-click WordPress import |
 | `divi5generate:divi5-brand-profile` | Create and manage canonical brand profiles (palette, fonts, voice, sizing) |
 | `divi5generate:brand-extract` | Extract a brand profile from a live Divi 5 WordPress site or URL |
@@ -82,7 +82,7 @@ flowchart TD
 | Command | What it does |
 |---------|-------------|
 | `/divi5generate:launch` | Start the local generator app and open it at http://localhost:3747 |
-| `/divi5generate:help` | Setup guide — install the WordPress importer plugin and get your API key |
+| `/divi5generate:help` | Setup guide — install the WordPress site connector plugin and get your API key |
 
 ---
 
@@ -124,7 +124,7 @@ divi5-page-generator →  new-page.json
          ↓
 divi5-style-check  original-export.json  new-page.json
          ↓  (must be CONSISTENT)
-import-to-local    →  live WordPress draft
+divi5-deploy        →  live WordPress draft
          ↓
 Export from Divi  →  exported-page.json
          ↓
@@ -151,7 +151,7 @@ design-review  exported-page.json  --spec brief.md
 
 3. divi5-style-check homepage-export.json about-us-page.json  (must be CONSISTENT)
 
-4. import-to-local about-us-page.json → export → design-review --spec brief.md
+4. divi5-deploy about-us-page.json → export → design-review --spec brief.md
 ```
 
 ### Brand guidelines → pages from scratch
@@ -186,12 +186,12 @@ divi5-page-generator "Landing page for Westcountry Pet Rescue,
 
 ---
 
-## WordPress Importer Plugin
+## WordPress Site Connector Plugin
 
-`import-to-local` pushes pages into WordPress via the **Divi Tools Importer** plugin.
+`divi5-deploy`, `brand-extract`, and `brand-deploy` work through the **Divi5 Generator** plugin. It handles real Divi previews, page/library imports, page exports, preset and global-variable import/export, SEO/schema persistence, managed page cleanup, navigation-menu creation/listing/auto-place, and site data transfer helpers.
 
 ```
 /divi5generate:help
 ```
 
-Builds `divi-tools-importer.zip` → install via **WP Admin → Plugins → Add New → Upload Plugin → Activate** → copy your Site URL and API key from **Settings → Divi Tools Importer**.
+Builds `divi5-generator.zip` → install via **WP Admin → Plugins → Add New → Upload Plugin → Activate** → copy your Site URL and API key from **Settings → Divi5 Generator**.
