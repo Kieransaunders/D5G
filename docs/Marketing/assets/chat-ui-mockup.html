@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divi5Generate — Chat Interface Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #fafafa;
+        }
+
+        .container {
+            display: flex;
+            width: 1600px;
+            height: 1000px;
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 24px;
+            margin-left: 32px;
+        }
+
+        .tab {
+            font-size: 14px;
+            color: #64748b;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        /* Main content */
+        .main-content {
+            display: flex;
+            margin-top: 60px;
+            width: 100%;
+            height: calc(100% - 60px);
+        }
+
+        /* Left column: Chat */
+        .chat-column {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px;
+            background: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.ai .message-bubble {
+            background: #f0f4ff;
+            color: #1e293b;
+            border: 1px solid #c7d2fe;
+        }
+
+        .message.user .message-bubble {
+            background: #6366f1;
+            color: white;
+        }
+
+        /* Proposal card */
+        .proposal-card {
+            background: #f0f4ff;
+            border: 2px solid #c7d2fe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .proposal-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6366f1;
+            margin-bottom: 8px;
+        }
+
+        .proposal-text {
+            font-size: 13px;
+            color: #1e293b;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .start-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .start-button:hover {
+            background: #4f46e5;
+        }
+
+        /* Input area */
+        .input-area {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #6366f1;
+        }
+
+        .input-field::placeholder {
+            color: #cbd5e1;
+        }
+
+        /* Right column: Preview */
+        .preview-column {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            background: #f9fafb;
+            overflow-y: auto;
+        }
+
+        .preview-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .preview-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Page mockup inside preview */
+        .page-mockup {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .page-section {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .hero-section {
+            height: 100px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .content-section {
+            background: #f0f4ff;
+            border: 1px solid #c7d2fe;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .content-line {
+            height: 4px;
+            background: #c7d2fe;
+            border-radius: 2px;
+            margin-bottom: 6px;
+        }
+
+        .content-line:last-child {
+            margin-bottom: 0;
+            width: 70%;
+        }
+
+        .cta-section {
+            display: flex;
+            gap: 12px;
+        }
+
+        .cta-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .cta-button.secondary {
+            background: white;
+            color: #6366f1;
+            border: 1px solid #c7d2fe;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1e293b;
+        }
+
+        .action-btn.approve {
+            background: #f0fdf4;
+            border-color: #10b981;
+            color: #166534;
+        }
+
+        .action-btn.approve:hover {
+            background: #dcfce7;
+        }
+
+        .action-btn.refine {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .action-btn.refine:hover {
+            background: #e2e8f0;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">Divi5Generate</div>
+                <div class="tabs">
+                    <div class="tab active">Chat</div>
+                    <div class="tab">Brand</div>
+                    <div class="tab">Designs</div>
+                    <div class="tab">Settings</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <span>Connected to site.wordpress.local</span>
+                <div class="status-dot"></div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Left: Chat -->
+            <div class="chat-column">
+                <div class="chat-messages">
+                    <!-- User message -->
+                    <div class="message user">
+                        <div class="message-bubble">
+                            Landing page for a pet rescue agency in Devon. Keyword: "adopt a rescue dog Devon". Include sections for: Hero, Why Adopt, Featured Dogs, How It Works, and CTA.
+                        </div>
+                    </div>
+
+                    <!-- AI response -->
+                    <div class="message ai">
+                        <div class="message-bubble">
+                            I'll create a beautiful landing page for Westcountry Pet Rescue with all those sections. The page will be optimized for your keyword and include a call-to-action to start an adoption inquiry.
+                        </div>
+                    </div>
+
+                    <!-- Proposal card -->
+                    <div class="proposal-card">
+                        <div class="proposal-header">✨ Generation Proposal</div>
+                        <div class="proposal-text">
+                            I'm ready to generate your page. The preview will appear on the right once you click Start. You can iterate and refine before importing to WordPress.
+                        </div>
+                        <button class="start-button">Start Generation →</button>
+                    </div>
+                </div>
+
+                <!-- Input area -->
+                <div class="input-area">
+                    <input type="text" class="input-field" placeholder="Type a message... or ask to refine the design">
+                </div>
+            </div>
+
+            <!-- Right: Preview -->
+            <div class="preview-column">
+                <div class="preview-label">Preview</div>
+
+                <div class="preview-card">
+                    <!-- Page mockup -->
+                    <div class="page-mockup">
+                        <!-- Hero section -->
+                        <div class="page-section hero-section">
+                            Westcountry Pet Rescue
+                        </div>
+
+                        <!-- Content section -->
+                        <div class="page-section content-section">
+                            <div class="content-line" style="width: 100%;"></div>
+                            <div class="content-line" style="width: 100%;"></div>
+                            <div class="content-line" style="width: 85%;"></div>
+                        </div>
+
+                        <!-- CTA section -->
+                        <div class="page-section cta-section">
+                            <button class="cta-button">Adopt Now</button>
+                            <button class="cta-button secondary">Learn More</button>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="action-buttons">
+                        <button class="action-btn approve">✓ Looks Good</button>
+                        <button class="action-btn refine">✗ Refine</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "layoutTitle": "iConnectIT Services Section",
+  "eyebrow": "What We Do",
+  "headline": "Portals, Apps, and Automation for UK SMEs",
+  "intro": "Three ways we turn scattered spreadsheets and manual admin into systems your team actually enjoys using.",
+  "services": [
+    {
+      "icon": "laptop-code",
+      "title": "Client Portals",
+      "body": "Branded Noloco portals on your live Airtable data, giving customers and staff one secure place to see exactly what matters to them."
+    },
+    {
+      "icon": "cog",
+      "title": "Automation",
+      "body": "Make.com and n8n workflows that move data, chase approvals, and file the paperwork while your team gets on with real work."
+    },
+    {
+      "icon": "rocket",
+      "title": "Custom Apps",
+      "body": "React and Convex applications with real-time updates, built for the jobs off-the-shelf tools cannot quite reach."
+    }
+  ],
+  "cta": { "text": "Book a Call", "url": "https://iconnectit.co.uk/contact" },
+  "colors": { "accent": "#F95E00", "dark": "#0D0D12", "sectionBg": "#FFFFFF" }
+}
