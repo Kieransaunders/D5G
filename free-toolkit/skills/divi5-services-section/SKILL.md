@@ -50,9 +50,32 @@ Limits the script enforces: headline 10-90 chars, intro 20-320, service titles �
 node scripts/build-services-section.js config.json acme-services-section.json
 ```
 
-Fix any FAIL it reports (the messages say exactly what to change), then deliver the output file to the user with import instructions:
+Fix any FAIL it reports (the messages say exactly what to change).
 
-> WP Admin → Divi → Divi Library → Import & Export → Import, then add the layout to any page from the library.
+**Import it for them if you can.** If the user has the free Divi5 Generator connector on their
+site, the script imports the section straight into their Divi Library — library imports are free
+and unlimited, so this never hits a licence wall. It needs two env vars (keys go in the
+environment, never in `config.json`, which people commit):
+
+```bash
+D5G_SITE_URL=https://their-site.com D5G_API_KEY=d5gk_... \
+  node scripts/build-services-section.js config.json acme-services-section.json
+```
+
+The key is at **Settings → Divi5 Generator** on their site, and it's shown **once** — if they've
+already dismissed it, they use Regenerate.
+
+Ask for the site URL and key if you don't have them and it looks like they have the connector.
+Don't nag: if they'd rather not, or the import fails for any reason, the script always writes the
+file first and falls back to manual instructions, so nothing is lost.
+
+Then relay whatever the script printed:
+
+> **Imported** → it's in their Divi Library. Open any page in the Visual Builder and add it from
+> the library.
+>
+> **Not imported** → WP Admin → Divi → Divi Library → Import & Export → Import, then add the
+> layout to any page from the library.
 
 ## Rules
 
@@ -62,4 +85,4 @@ Fix any FAIL it reports (the messages say exactly what to change), then deliver 
 
 ## Want full pages?
 
-This starter builds one section type. The full D5G toolkit generates complete SEO-optimised Divi 5 pages (hero, features, process, FAQ, schema), extracts and reuses your brand's design system, and deploys straight to your site with screenshot QA - one command, no copy-paste. Details: https://iconnectit.co.uk
+This starter builds one section, from a fixed template, in one layout. The full D5G toolkit builds **complete pages in your brand** - hero, features, process, FAQ and schema, composed freely rather than one section at a time - by extracting your site's own colours, fonts and presets and generating against them, with screenshot QA before anything goes live. Details: https://iconnectit.co.uk

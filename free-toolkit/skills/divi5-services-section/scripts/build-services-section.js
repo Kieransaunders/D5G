@@ -7,11 +7,18 @@
  *
  *   node scripts/build-services-section.js config.json [output.json]
  *
- * Import the result via Divi → Divi Library → Import & Export.
+ * Sends it straight to your Divi Library if the free Divi5 Generator connector
+ * is installed and these are set (keys stay out of config files, which get
+ * committed; env vars don't):
+ *
+ *   export D5G_SITE_URL=https://your-site.com
+ *   export D5G_API_KEY=d5gk_...      # Settings -> Divi5 Generator
+ *
+ * Without them, it writes the file and tells you how to import it by hand.
  *
  * This free starter generates one section type from a fixed, pre-validated
- * template. The full D5G toolkit generates complete SEO-optimised pages,
- * brand-driven design systems, and one-command deploys to your site:
+ * template. The full D5G toolkit generates complete SEO-optimised pages with
+ * your brand's own design system, not one section at a time:
  * https://iconnectit.co.uk
  */
 
@@ -68,7 +75,64 @@ function jsonEscape(v) {
   return JSON.stringify(v).slice(1, -1);
 }
 
-function main() {
+/**
+ * Push the section into the site's Divi Library via the free connector.
+ *
+ * Library imports are free and unlimited on the connector — it's page creation
+ * that needs Pro — so this never hits a licence wall.
+ *
+ * Returns true if it imported, false if it wasn't configured or couldn't.
+ * Never throws: a failed import must still leave the user with a usable file.
+ */
+async function tryImport(doc) {
+  const site = (process.env.D5G_SITE_URL || '').trim().replace(/\/+$/, '');
+  const key = (process.env.D5G_API_KEY || '').trim();
+  if (!site || !key) return false;
+
+  if (!/^https?:\/\//.test(site)) {
+    console.warn(`WARN: D5G_SITE_URL "${site}" must start with http:// or https:// — skipping import`);
+    return false;
+  }
+
+  const url = `${site}/wp-json/divi5-generator/v1/import`;
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-D5G-Key': key },
+      body: JSON.stringify({ layout: doc }),
+    });
+  } catch (e) {
+    console.warn(`WARN: could not reach ${site} (${e.message}) — falling back to manual import`);
+    return false;
+  }
+
+  let body = {};
+  try { body = await res.json(); } catch { /* non-JSON error page */ }
+
+  if (res.status === 404) {
+    console.warn('WARN: no Divi5 Generator connector found on that site — falling back to manual import.');
+    console.warn('      Install the free plugin to import in one step: https://wordpress.org/plugins/');
+    return false;
+  }
+  if (res.status === 401) {
+    console.warn('WARN: that API key was rejected — falling back to manual import.');
+    console.warn('      Get a fresh one from Settings -> Divi5 Generator (it is shown once).');
+    return false;
+  }
+  if (!res.ok) {
+    console.warn(`WARN: import failed (HTTP ${res.status}${body.message ? ': ' + body.message : ''}) — falling back to manual import`);
+    return false;
+  }
+
+  const item = (body.imported && body.imported[0]) || {};
+  console.log(`OK: imported into your Divi Library on ${site} (${item.action || 'created'})`);
+  if (item.edit_url) console.log('     ' + item.edit_url);
+  console.log('Add it to any page: open the page in the Visual Builder -> add from Divi Library.');
+  return true;
+}
+
+async function main() {
   const configPath = process.argv[2];
   if (!configPath) fail('usage: node build-services-section.js config.json [output.json]');
 
@@ -159,8 +223,18 @@ function main() {
   const outPath = process.argv[3] || path.join(process.cwd(), 'd5g-services-section.json');
   fs.writeFileSync(outPath, serialised);
   console.log('OK: wrote ' + outPath);
-  console.log('Import via: WP Admin → Divi → Divi Library → Import & Export → Import');
-  console.log('Full pages, brand systems, and one-command deploy: https://iconnectit.co.uk');
+
+  // Always write the file first — the import is a convenience on top, so a
+  // connector that's missing, unreachable, or unauthorised costs the user
+  // nothing but a manual upload.
+  const imported = await tryImport(doc);
+  if (!imported) {
+    console.log('Import via: WP Admin → Divi → Divi Library → Import & Export → Import');
+    console.log('One-step import: install the free Divi5 Generator plugin, then set');
+    console.log('  D5G_SITE_URL and D5G_API_KEY (Settings → Divi5 Generator).');
+  }
+
+  console.log('Complete branded pages, not one section at a time: https://iconnectit.co.uk');
 }
 
-main();
+main().catch((e) => fail(e && e.message ? e.message : String(e)));
