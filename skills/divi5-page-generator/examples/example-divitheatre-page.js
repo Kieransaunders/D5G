@@ -313,7 +313,9 @@ const footer = D.section({ adminLabel: 'Footer', preset: P.secFooter }, [
 
 // ─── 5. Assemble + write ──────────────────────────────────────────────────────
 const content = D.placeholder([hero, intro, presets, processSection, showcase, stats, cta, faq, footer]);
-const json = b.assemble({ context: 'et_builder', content, title: 'DiviTheatre - Divi 5 Animation Plugin' });
+// externalizeBrand:false — this is a committed demo/validation fixture kept as a
+// self-contained inline page; real generation externalizes the brand by default.
+const json = b.assemble({ context: 'et_builder', content, title: 'DiviTheatre - Divi 5 Animation Plugin', externalizeBrand: false });
 
 const OUT = __dirname;
 fs.writeFileSync(path.join(OUT, 'divitheatre-landing-page.json'), JSON.stringify(json));

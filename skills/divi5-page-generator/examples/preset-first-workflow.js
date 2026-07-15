@@ -108,7 +108,9 @@ async function importPresetPack() {
   }) } } } } });
 
   // Extract just the presets + global colours from assemble()
-  const assembled = b.assemble({ context: 'et_builder', content: '', title: '', slug: '' });
+  // externalizeBrand:false — this build exists only to read assembled.presets; the
+  // default page path would strip them out as part of the Pro-gating relocation.
+  const assembled = b.assemble({ context: 'et_builder', content: '', title: '', slug: '', externalizeBrand: false });
 
   const result = await api('POST', '/wp-json/divi5-generator/v1/presets/import', {
     presets: assembled.presets,
@@ -184,7 +186,9 @@ function generatePage(registry) {
     slug: 'preset-first-example',
   });
 
-  // Omit presets from layout — they're already on the site, no re-registration needed
+  // Omit presets from layout — they're already on the site, no re-registration needed.
+  // (Redundant since the Pro-gating relocation: the default page path already emits
+  // no top-level `presets`. Kept as a harmless no-op / defensive assertion.)
   delete layout.presets;
 
   console.log(`  Generated ${sections.length} sections referencing existing preset IDs`);

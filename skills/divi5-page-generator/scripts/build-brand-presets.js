@@ -59,7 +59,9 @@ function buildBrandPresets(variables, roles) {
     });
   }
 
-  const assembled = b.assemble({ context: 'et_builder', content: '', title: 'Brand Presets', slug: 'brand-presets' });
+  // externalizeBrand:false — we read assembled.presets off this empty-content build;
+  // the page-unresolved path would strip it (and write stray sidecars).
+  const assembled = b.assemble({ context: 'et_builder', content: '', title: 'Brand Presets', slug: 'brand-presets', externalizeBrand: false });
   return {
     presets: assembled.presets,
     global_colors: v.global_colors || [],

@@ -230,7 +230,9 @@ const footer = D.section({ adminLabel: 'Footer', preset: P.sectionDark }, [
 
 // ─── assemble ────────────────────────────────────────────────────────────────
 const content = D.placeholder([hero, toolsStrip, about, services, processSection, work, cta, footer]);
-const json = b.assemble({ context: 'et_builder', content, title: 'iConnectIT Homepage' });
+// externalizeBrand:false — committed demo/validation fixture kept self-contained
+// and inline; real generation externalizes the brand by default.
+const json = b.assemble({ context: 'et_builder', content, title: 'iConnectIT Homepage', externalizeBrand: false });
 
 const outFile = path.join(__dirname, 'iConnectITHomepage.json');
 fs.writeFileSync(outFile, JSON.stringify(json));
