@@ -13,6 +13,8 @@
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       divi5-generator
+ *
+ * @fs_premium_only /src/SchemaInjector.php, /src/SeoWriter.php, /src/PageImporter.php, /src/PagePreviewer.php, /src/PresetManager.php, /src/GlobalVariablesImporter.php, /src/DbExporter.php, /src/DbImporter.php, /src/MenuImporter.php
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -70,9 +72,12 @@ if ( ! function_exists( 'dg_fs' ) ) {
     do_action( 'dg_fs_loaded' );
 }
 
+// Free-tier source. Every class below is reachable with no licence — Library
+// import, /export, /pages, /ping (including SEO-plugin detection, which
+// instantiates every Seo/* adapter to answer /ping's free `seo_plugin`
+// field), Settings screen.
 require_once D5G_DIR . 'src/Auth.php';
 require_once D5G_DIR . 'src/Limits.php';
-require_once D5G_DIR . 'src/SchemaInjector.php';
 require_once D5G_DIR . 'src/Seo/Adapter.php';
 require_once D5G_DIR . 'src/Seo/AdapterBase.php';
 require_once D5G_DIR . 'src/Seo/Normaliser.php';
@@ -83,23 +88,40 @@ require_once D5G_DIR . 'src/Seo/AIOSEO.php';
 require_once D5G_DIR . 'src/Seo/SEOPress.php';
 require_once D5G_DIR . 'src/Seo/TSF.php';
 require_once D5G_DIR . 'src/Seo/Detector.php';
-require_once D5G_DIR . 'src/SeoWriter.php';
-require_once D5G_DIR . 'src/PageImporter.php';
-require_once D5G_DIR . 'src/PagePreviewer.php';
 require_once D5G_DIR . 'src/PageExporter.php';
 require_once D5G_DIR . 'src/LibraryImporter.php';
-require_once D5G_DIR . 'src/PresetManager.php';
-require_once D5G_DIR . 'src/GlobalVariablesImporter.php';
 require_once D5G_DIR . 'src/PagesLister.php';
-require_once D5G_DIR . 'src/DbExporter.php';
-require_once D5G_DIR . 'src/DbImporter.php';
-require_once D5G_DIR . 'src/MenuImporter.php';
 require_once D5G_DIR . 'src/RestApi.php';
 require_once D5G_DIR . 'admin/SettingsPage.php';
+
+// Pro-only source (F2). Every reference site is already behind pro_gate() /
+// import_gate() / preview_gate() in RestApi.php, so gating the *require* on
+// the same is__premium_only() check is redundant at runtime on this build —
+// what it actually does is tell Freemius's build processor to strip this
+// whole block (and, per the @fs_premium_only header tag above, the files
+// themselves) from the auto-generated free zip. Without this wrapper the
+// free zip would keep these require_once lines pointing at files that no
+// longer exist and fatal on activation.
+if ( dg_fs()->is__premium_only() ) {
+    require_once D5G_DIR . 'src/SchemaInjector.php';
+    require_once D5G_DIR . 'src/SeoWriter.php';
+    require_once D5G_DIR . 'src/PageImporter.php';
+    require_once D5G_DIR . 'src/PagePreviewer.php';
+    require_once D5G_DIR . 'src/PresetManager.php';
+    require_once D5G_DIR . 'src/GlobalVariablesImporter.php';
+    require_once D5G_DIR . 'src/DbExporter.php';
+    require_once D5G_DIR . 'src/DbImporter.php';
+    require_once D5G_DIR . 'src/MenuImporter.php';
+}
 
 register_activation_hook( __FILE__, array( 'D5G_Auth', 'maybe_generate_key' ) );
 
 add_action( 'rest_api_init', array( 'D5G_RestApi', 'register_routes' ) );
-add_action( 'wp_head',       array( 'D5G_SchemaInjector', 'maybe_inject' ) );
 add_action( 'admin_menu',    array( 'D5G_SettingsPage', 'register' ) );
 add_action( 'admin_init',    array( 'D5G_SettingsPage', 'handle_actions' ) );
+
+// Same reasoning as the require above — SchemaInjector doesn't exist in the
+// free build, so this hook registration must not exist there either.
+if ( dg_fs()->is__premium_only() ) {
+    add_action( 'wp_head', array( 'D5G_SchemaInjector', 'maybe_inject' ) );
+}

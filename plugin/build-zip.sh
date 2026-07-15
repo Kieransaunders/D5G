@@ -26,9 +26,18 @@ rm -f "$OUTPUT_ZIP"
 
 cp -R "$PLUGIN_DIR" "$STAGE/$PACKAGE_DIR"
 
+# Rebuild vendor/ without dev deps (PHPUnit etc.) — the source tree's vendor/
+# is for local testing, it must not ship in the distributed zip.
+if [[ -f "$STAGE/$PACKAGE_DIR/composer.json" ]] && command -v composer &>/dev/null; then
+  rm -rf "$STAGE/$PACKAGE_DIR/vendor"
+  ( cd "$STAGE/$PACKAGE_DIR" && composer install --no-dev --optimize-autoloader --quiet )
+fi
+
 ( cd "$STAGE" && zip -r "$OUTPUT_ZIP" "$PACKAGE_DIR" \
   -x "*.DS_Store" \
   -x "*.zip" \
-  -x "*/.git/*" )
+  -x "*/.git/*" \
+  -x "*/tests/*" \
+  -x "*/phpunit.xml*" )
 
 echo "Built: $OUTPUT_ZIP"

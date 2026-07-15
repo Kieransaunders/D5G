@@ -14,11 +14,11 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 
 | # | Task | Where | Est |
 |---|---|---|---|
-| <a id="k1"></a>**K1** | **Confirm the Freemius product is launch-ready** — plans, pricing, and a premium build pipeline. ~~Create the product / swap the id~~ **not needed:** `33991` / slug `divi5-generator` is this product's own id (confirmed 15/07; Airloop is a different product, id `31132`). The id and public_key stand; what's unverified is whether the product is *configured*. **Unblocks: F2, .org, the `D5G_ASSUME_PRO` decision, and every Pro test path.** | freemius.com | 15 min |
+| ~~**K1**~~ | ~~Confirm the Freemius product is launch-ready~~ **DONE 15/07** — pricing plans (Single $9.95/mo·$89.95/yr, Agency $25.99/mo·$249.99/yr, corrected from a mislabelled "1,000 Sites" tier to the intended 25), currency (USD), and plan descriptions saved and published in the Freemius dashboard. Lifetime pricing (D3) left unset — not revisited. | freemius.com | ✅ |
 | ~~**K2**~~ | ~~Render test~~ **DONE 15/07** — see [Test results](#test-results). Renders correctly on Divi 5.9.0, watermark and CTA intact. **`builderVersion: "5.9.0"` is settled** — 5.9.0 is the current Divi release, so the 5.8.0 back-compat case was dropped as out of scope (Kieran's call, 15/07). | Local | ✅ |
-| **K3** | Merge [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) — capability gate. Mergeable, CI clean. | GitHub | 5 min |
-| **K4** | Create public repo `Kieransaunders/divi5-starter`, push `free-toolkit/` contents to its root. **After K2 only.** | GitHub | 10 min |
-| **K5** | Freemius: attach the full-toolkit zip as a Pro-licensed download. Needs K1. | Freemius | 15 min |
+| ~~**K3**~~ | ~~Merge PR #29~~ **DONE 15/07** — [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) merged 05:03, plus [PR #30](https://github.com/Kieransaunders/Divi5Generate/pull/30) (preview bypass fix + free-starter import path) merged 05:57. Both on `main`. | GitHub | ✅ |
+| ~~**K4**~~ | ~~Create public repo~~ **DONE 15/07** — [Kieransaunders/divi5-starter](https://github.com/Kieransaunders/divi5-starter) live, `free-toolkit/` contents pushed to root (9 files, `.DS_Store` excluded). Credit URL still the `iconnectit.co.uk` placeholder (see K7) — deliberate call to ship now, fix the URL before wider announcement. | GitHub | ✅ |
+| **K5** | Freemius: attach the Pro zip as a Pro-licensed download. **Unblocked** — K1 done, F2 source-annotated (below). Still needs a **live** deploy run to confirm the free/pro split actually works before this is real. | Freemius | 15 min + verify |
 | **K6** | Point a URL at the landing page (`docs/Marketing/launch-2.0.0/landing-page.html`); subdomain of iconnectit.co.uk is fine. | DNS | 20 min |
 | **K7** | Swap the free-starter credit URL to the real landing URL once K6 exists — currently `https://iconnectit.co.uk` placeholder. Distributed copies can't be fixed retroactively, so **before K4**. | repo | 10 min |
 | **K8** | Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md` → `plugin/divi5-generator/.wordpress-org/` | Local + app | 20 min |
@@ -30,20 +30,20 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 
 | # | Task | Notes |
 |---|---|---|
-| **A1** | **`harden-rest-auth`** — the last security defect, now **rate-limiter only** (the plaintext-key half of the finding was wrong — see D6). Two-bucket limiter: strict per-IP on failed auth, per-key on success. Today it runs pre-auth and keys on `REMOTE_ADDR` only, so **every visitor behind a CDN shares one 30/min bucket** — the first customer on Cloudflare gets a self-rate-limiting site. Must land before .org. Needs decision D5. |
-| **A2** | Spec hygiene — sync + archive `gate-pro-rest-endpoints` (complete, all tasks `[x]`, never synced/archived); its delta spec is stale (`d5g_key`, removed in #29); the §3.2 capability gate has no spec at all. |
-| **A3** | Free-starter prep for K4: gitignore `.DS_Store`, parameterise `builderVersion`, pull the credit URL into one constant so K7 is a single edit. |
-| **A4** | **F2 — Freemius premium/free build split.** `@fs_premium_only` annotations so premium code strips from the free zip. **Source annotation is doable; verification is not** — proving premium code is absent needs a real Freemius deploy. Blocked on K1. Don't start blind. **Also fixes the activation screen** — see below. |
+| ~~**A1**~~ | ~~`harden-rest-auth` rate limiter~~ **DONE 15/07** — `D5G_Auth::client_ip()` now reads `X-Forwarded-For` only when `D5G_TRUSTED_PROXY` is explicitly set in wp-config (D5 decided: yes, assume CDN is common), never unconditionally. Falls back to `REMOTE_ADDR`. Tests green. |
+| ~~**A2**~~ | ~~Spec hygiene~~ **DONE** — `gate-pro-rest-endpoints` archived (`openspec/changes/archive/2026-07-15-gate-pro-rest-endpoints`). |
+| **A3** | Free-starter prep: gitignore `.DS_Store` (K4 already excluded it at push time, but the repo-tracked ignore rule itself isn't added), pull the credit URL (`https://iconnectit.co.uk`, ~7 places in `free-toolkit/`) into one constant so K7 is a single edit. Still open. |
+| ~~**A4**~~ | ~~F2 — Freemius premium/free build split~~ **Source annotation DONE 15/07.** `@fs_premium_only` header tag + `is__premium_only()`-wrapped requires for 9 Pro-only files (`SchemaInjector`, `SeoWriter`, `PageImporter`, `PagePreviewer`, `PresetManager`, `GlobalVariablesImporter`, `DbExporter`, `DbImporter`, `MenuImporter`) in `divi5-generator.php`. Every reference site traced and confirmed already gated; the one landmine found (`SchemaInjector`'s unconditional `wp_head` hook, which would've fataled every Free page load) is now guarded too. 77 tests pass. **Still unverified: an actual Freemius deploy producing a working free zip** — needs the GitHub Action (`.github/workflows/freemius-deploy.yml`) run with real secrets. Also fixes the activation screen — see below. |
 
 ## Decisions (yours — recommendation attached)
 
 | # | Decision | Recommendation |
 |---|---|---|
-| **D1** | `D5G_ASSUME_PRO` — keep, or strip from the free build? It's a documented licence bypass (wp-config one-liner = free Pro). | Strip from the free build via F2 annotations. Keep in the premium/dev build. Settle before K10. |
-| **D2** | Product name — "Divi5 Generator" leads with ET's trademark; .org rejects names *beginning* with one. | Rename before K10: **"D5G — AI Page Generator for Divi 5"**, slug `d5g-page-generator`. Cheaper now than with an install base. |
-| **D3** | Pricing | £89 single (1 user/1 site) / £249 agency (3 users/25 sites) + capped lifetime. See PRD §3.3. |
-| **D4** | Free starter: 1 section (Services) or 3 (Hero/Services/CTA)? | **Ship 1.** It's built and validated; Hero+CTA is your first post-launch re-engagement beat. You can't test "feels like a demo" with zero users. |
-| **D5** | Do real customers sit behind Cloudflare/CDN? | Decides whether trusted-proxy is core to A1 or a `D5G_TRUSTED_PROXY` opt-in. **Never** honour `X-Forwarded-For` unconditionally — it's caller-supplied. |
+| ~~**D1**~~ | ~~`D5G_ASSUME_PRO` — keep, or strip from the free build?~~ **DECIDED + DONE 15/07: strip from free, keep in premium.** `D5G_Limits::is_pro()`'s `D5G_ASSUME_PRO` branch is now wrapped in `is__premium_only()` — stripped from the free/.org build by Freemius's processor, still works for local dev on the premium build. |
+| **D2** | Product name — "Divi5 Generator" leads with ET's trademark; .org rejects names *beginning* with one. | Rename before K10: **"D5G — AI Page Generator for Divi 5"**, slug `d5g-page-generator`. Cheaper now than with an install base. Still open. |
+| **D3** | Pricing | **Mostly decided, live in Freemius (see K1):** Single $9.95/mo·$89.95/yr, Agency $25.99/mo·$249.99/yr (USD, not GBP as originally drafted here — re-check landing page copy, which still shows £). Lifetime tier not set up. |
+| **D4** | Free starter: 1 section (Services) or 3 (Hero/Services/CTA)? | **Ship 1.** Already shipped as-is via K4. |
+| ~~**D5**~~ | ~~Do real customers sit behind Cloudflare/CDN?~~ **DECIDED 15/07: yes, assume CDN is common.** Implemented as A1's `D5G_TRUSTED_PROXY` opt-in. |
 | ~~**D6**~~ | ~~Plaintext key: drop it or keep the admin "show my key" UI?~~ | **No decision needed — already correct.** It's show-once: `SettingsPage::render()` deletes `d5g_api_key_plain` on first view (`admin/SettingsPage.php:39-43`), with a regenerate button for later. The audit's finding overstated it. Verified live 15/07. |
 
 ## <a id="test-plan"></a>How to run the manual Free test
