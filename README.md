@@ -63,8 +63,19 @@ flowchart TD
 | `divi5generate:divi5-style-check` | QA gate — compare a generated page against the original designer export to verify preset, colour, and font inheritance |
 | `divi5generate:design-review` | Audit any Divi 5 export: structure, SEO, design checklist. Also spec compliance mode: compare an imported page against the original brief |
 | `divi5generate:divi5-deploy` | Deploy generated pages to any WordPress site — preview, import, publish, screenshot, SEO meta, draft list/delete — and create/list/auto-place navigation menus |
+| `divi5generate:launch-app` | Start the local generator app with chat, brand management, and one-click WordPress import |
+| `divi5generate:divi5-brand-profile` | Create and manage canonical brand profiles (palette, fonts, voice, sizing) |
+| `divi5generate:brand-extract` | Extract a brand profile from a live Divi 5 WordPress site or URL |
+| `divi5generate:brand-deploy` | Deploy a saved brand profile to a Divi 5 site |
+| `divi5generate:design-sync` | Bridge a brand profile ↔ Claude Design design system |
+| `divi5generate:claude-design-to-divi` | Convert Claude Design hand-off bundles into importable Divi 5 pages |
+| `divi5generate:divi5-variables-from-styleguide` | Convert brand style guides or design token tables into Divi 5 Global Variables JSON |
 | `divi5generate:divi5-plugin-dev` | Scaffold, build, and debug custom Divi 5 modules and plugins |
 | `divi5generate:divitheatre-engine` | Theatre.js motion engine reference for DiviTheatre animation presets |
+| `divi5generate:divitheatre-section` | Generate Divi 5 sections with DiviTheatre animation presets (product-reveal, stagger, marquee, aurora, etc.) |
+| `divi5generate:divi5-css-patterns` | Divi 5.6 CSS knowledge base: module selectors, specificity, design tokens, Canvas/Loop Builder patterns |
+| `divi5generate:divi5-compatibility` | Divi 5 CSS validation, common issues/fixes, plugin conflicts, version history |
+| `divi5generate:divi5-performance` | Critical CSS, Dynamic CSS, font loading, Core Web Vitals diagnostics for Divi 5 |
 
 ## Commands
 
