@@ -222,7 +222,8 @@ class D5G_SettingsPage {
 								<td><code><?php echo esc_html( $entry['slug'] ); ?></code></td>
 								<td><?php echo esc_html( $entry['action'] ); ?></td>
 								<td><?php echo esc_html( $entry['status'] ); ?></td>
-								<td><?php echo esc_html( $entry['seo_plugin'] ); ?></td>
+								<?php // Library imports write no SEO meta (page-path only, PRD §3.2), so they log no seo_plugin. ?>
+								<td><?php echo esc_html( $entry['seo_plugin'] ?? '—' ); ?></td>
 								<td>
 									<?php if ( ! empty( $entry['warnings'] ) ) : ?>
 										<ul style="margin:0">

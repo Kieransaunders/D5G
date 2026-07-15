@@ -198,6 +198,23 @@ class D5G_RestApi {
 		);
 	}
 
+	/**
+	 * /preview is page creation, not a read.
+	 *
+	 * D5G_PagePreviewer::preview() calls wp_insert_post() with post_status
+	 * 'draft' — it creates a real page the caller can simply publish. The route
+	 * is Free and handle_preview() called no gate, so a Free install could POST a
+	 * page payload to /preview and walk straight around import_gate(). Found by
+	 * end-to-end test on live Divi 5.9.0 (15/07/2026), not by the unit suite,
+	 * which only exercised import_gate() in isolation.
+	 *
+	 * Preview always takes the page path — it rejects library exports — so it
+	 * gates as a page import unconditionally.
+	 */
+	public static function preview_gate( bool $is_pro ): bool|WP_Error {
+		return self::import_gate( '', $is_pro );
+	}
+
 	public static function pro_gate( string $route, bool $is_pro ): bool|WP_Error {
 		if ( self::requires_pro( $route ) && ! $is_pro ) {
 			$upgrade_url = function_exists( 'dg_fs' ) ? dg_fs()->get_upgrade_url() : '';
@@ -238,6 +255,12 @@ class D5G_RestApi {
 
 		if ( ! is_array( $layout ) || empty( $layout ) ) {
 			return new WP_Error( 'invalid_layout', 'layout must be a non-empty JSON object.', array( 'status' => 400 ) );
+		}
+
+		// Preview creates a real draft page (PRD §3.2) — gate it as page creation.
+		$gate = self::preview_gate( D5G_Limits::is_pro() );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
 		}
 
 		try {
