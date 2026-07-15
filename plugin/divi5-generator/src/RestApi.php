@@ -147,19 +147,104 @@ class D5G_RestApi {
 		) );
 	}
 
+	/**
+	 * Routes that require a paying (Pro) licence, per PRD §3's Free/Pro split.
+	 * Everything not listed here (ping, preview, import, export, pages) stays Free.
+	 */
+	/** $layout['context'] value that routes /import to the Divi Library. */
+	const LIBRARY_CONTEXT = 'et_builder_layouts';
+
+	const PRO_ONLY_ROUTES = array(
+		'/divi5-generator/v1/presets/import',
+		'/divi5-generator/v1/presets',
+		'/divi5-generator/v1/presets/export',
+		'/divi5-generator/v1/global-variables',
+		'/divi5-generator/v1/global-variables/export',
+		'/divi5-generator/v1/db/export',
+		'/divi5-generator/v1/db/import',
+		'/divi5-generator/v1/menus',
+		'/divi5-generator/v1/menus/auto-place',
+	);
+
+	public static function requires_pro( string $route ): bool {
+		return in_array( $route, self::PRO_ONLY_ROUTES, true );
+	}
+
+	/**
+	 * PRD §3.2 — Free imports sections into the Divi Library, Pro creates pages.
+	 *
+	 * /import serves both and routes on $layout['context'], so this gate reads
+	 * the payload rather than living in PRO_ONLY_ROUTES with the other routes.
+	 * Fails closed: only the library context is free, anything else is a page.
+	 *
+	 * Deliberately not a quota. A cap expires and the user leaves; a capability
+	 * gate keeps Free useful forever and re-sells Pro every time they assemble a
+	 * page by hand. It also puts SEO/schema out of Free's reach by control flow
+	 * (both are page-path only), so there is no plan-filtered payload to get wrong.
+	 */
+	public static function import_gate( string $context, bool $is_pro ): bool|WP_Error {
+		if ( $is_pro || self::LIBRARY_CONTEXT === $context ) {
+			return true;
+		}
+
+		$upgrade_url = function_exists( 'dg_fs' ) ? dg_fs()->get_upgrade_url() : '';
+
+		return new WP_Error(
+			'pro_required',
+			trim( 'Creating pages requires Divi5 Generator Pro. On the free plan you can '
+				. 'import this layout into your Divi Library instead, then drop it onto a '
+				. 'page in the Visual Builder. Upgrade: ' . $upgrade_url ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * /preview is page creation, not a read.
+	 *
+	 * D5G_PagePreviewer::preview() calls wp_insert_post() with post_status
+	 * 'draft' — it creates a real page the caller can simply publish. The route
+	 * is Free and handle_preview() called no gate, so a Free install could POST a
+	 * page payload to /preview and walk straight around import_gate(). Found by
+	 * end-to-end test on live Divi 5.9.0 (15/07/2026), not by the unit suite,
+	 * which only exercised import_gate() in isolation.
+	 *
+	 * Preview always takes the page path — it rejects library exports — so it
+	 * gates as a page import unconditionally.
+	 */
+	public static function preview_gate( bool $is_pro ): bool|WP_Error {
+		return self::import_gate( '', $is_pro );
+	}
+
+	public static function pro_gate( string $route, bool $is_pro ): bool|WP_Error {
+		if ( self::requires_pro( $route ) && ! $is_pro ) {
+			$upgrade_url = function_exists( 'dg_fs' ) ? dg_fs()->get_upgrade_url() : '';
+			return new WP_Error(
+				'pro_required',
+				'This feature requires Divi5 Generator Pro. Upgrade: ' . $upgrade_url,
+				array( 'status' => 403 )
+			);
+		}
+
+		return true;
+	}
+
 	public static function authenticate( WP_REST_Request $request ): bool|WP_Error {
 		if ( ! D5G_Auth::check_rate_limit() ) {
 			return new WP_Error( 'rate_limited', 'Too many requests. Try again in 60 seconds.', array( 'status' => 429 ) );
 		}
 
+		// Header only. A key in the query string leaks into browser history,
+		// access logs, proxies and analytics — and openspec/specs/importer-
+		// integration mandates header-only auth regardless.
 		$key = $request->get_header( 'X-D5G-Key' );
-		if ( ! $key ) {
-			// Also accept as query param for easy browser testing.
-			$key = sanitize_text_field( $request->get_param( 'd5g_key' ) ?? '' );
-		}
 
 		if ( ! $key || ! D5G_Auth::verify( $key ) ) {
 			return new WP_Error( 'unauthorized', 'Invalid or missing API key.', array( 'status' => 401 ) );
+		}
+
+		$gate = self::pro_gate( $request->get_route(), D5G_Limits::is_pro() );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
 		}
 
 		return true;
@@ -170,6 +255,12 @@ class D5G_RestApi {
 
 		if ( ! is_array( $layout ) || empty( $layout ) ) {
 			return new WP_Error( 'invalid_layout', 'layout must be a non-empty JSON object.', array( 'status' => 400 ) );
+		}
+
+		// Preview creates a real draft page (PRD §3.2) — gate it as page creation.
+		$gate = self::preview_gate( D5G_Limits::is_pro() );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
 		}
 
 		try {
@@ -266,7 +357,29 @@ class D5G_RestApi {
 		return new WP_REST_Response( $result, 200 );
 	}
 
+	/**
+	 * Defence-in-depth on top of Pro-gating (PRD §4 gap 7): DB export/import
+	 * transfers whole prefixed tables over REST, so it stays refused even for
+	 * paying sites unless the site owner has explicitly opted in via wp-config.
+	 * Pro-gating (pro_gate()) already blocks Free installs before this runs.
+	 */
+	private static function db_transfer_allowed(): bool|WP_Error {
+		if ( ! defined( 'D5G_ALLOW_DB_TRANSFER' ) || ! D5G_ALLOW_DB_TRANSFER ) {
+			return new WP_Error(
+				'db_transfer_disabled',
+				"DB export/import is disabled by default. Add define( 'D5G_ALLOW_DB_TRANSFER', true ); to wp-config.php to enable it on this site.",
+				array( 'status' => 403 )
+			);
+		}
+		return true;
+	}
+
 	public static function handle_db_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$allowed = self::db_transfer_allowed();
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
 		try {
 			$result = D5G_DbExporter::export();
 		} catch ( RuntimeException $e ) {
@@ -276,6 +389,11 @@ class D5G_RestApi {
 	}
 
 	public static function handle_db_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$allowed = self::db_transfer_allowed();
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
 		$sql      = (string) $request->get_param( 'sql' );
 		$from_url = esc_url_raw( (string) $request->get_param( 'from_url' ) );
 		$to_url   = esc_url_raw( (string) $request->get_param( 'to_url' ) );
@@ -338,23 +456,26 @@ class D5G_RestApi {
 	}
 
 	public static function handle_ping( WP_REST_Request $request ): WP_REST_Response {
-		$usage  = D5G_Limits::get_usage();
-		$limits = array(
-			'page_imports'    => D5G_Limits::is_pro() ? -1 : D5G_Limits::PAGE_IMPORT_LIMIT,
-			'library_imports' => D5G_Limits::is_pro() ? -1 : D5G_Limits::LIBRARY_IMPORT_LIMIT,
-			'rate_per_min'    => D5G_Limits::get_rate_limit_max(),
-		);
+		$is_pro = D5G_Limits::is_pro();
 
 		return new WP_REST_Response( array(
 			'status'      => 'ok',
 			'site'        => get_bloginfo( 'name' ),
 			'url'         => home_url(),
-			'plan'        => D5G_Limits::is_pro() ? 'pro' : 'free',
-			'limits'      => $limits,
-			'usage'       => array(
-				'page_imports'    => $usage['page_imports'],
-				'library_imports' => $usage['library_imports'],
-				'period'          => gmdate( 'Y-m' ),
+			'plan'        => $is_pro ? 'pro' : 'free',
+			// PRD §3.2 — capabilities, not quotas. There is no usage to report:
+			// Free imports sections into the Library without limit and can never
+			// create a page, on any day of the month.
+			'can'         => array(
+				'import_library' => true,
+				'import_page'    => $is_pro,
+				'write_seo'      => $is_pro,
+				'menus'          => $is_pro,
+				'presets'        => $is_pro,
+				'brand'          => $is_pro,
+			),
+			'limits'      => array(
+				'rate_per_min' => D5G_Limits::get_rate_limit_max(),
 			),
 			'divi5'       => class_exists( 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset' ),
 			'seo_plugin'  => D5G_Seo_Detector::detect_id(),
@@ -418,13 +539,14 @@ class D5G_RestApi {
 
 		$context = $layout['context'] ?? '';
 
-		// Route to library importer for et_builder_layouts (sections, rows, modules).
-		if ( $context === 'et_builder_layouts' ) {
-			$check = D5G_Limits::can_import_library();
-			if ( is_wp_error( $check ) ) {
-				return $check;
-			}
+		// PRD §3.2: Library imports are free and unlimited; pages are Pro.
+		$gate = self::import_gate( $context, D5G_Limits::is_pro() );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
+		}
 
+		// Route to library importer for et_builder_layouts (sections, rows, modules).
+		if ( self::LIBRARY_CONTEXT === $context ) {
 			try {
 				$result = D5G_LibraryImporter::import( $layout );
 			} catch ( InvalidArgumentException $e ) {
@@ -432,8 +554,6 @@ class D5G_RestApi {
 			} catch ( RuntimeException $e ) {
 				return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
 			}
-
-			D5G_Limits::increment_library_import( count( $result['imported'] ) );
 
 			D5G_Auth::log_import( array(
 				'slug'     => $result['imported'][0]['title'] ?? 'library',
@@ -444,12 +564,7 @@ class D5G_RestApi {
 			return new WP_REST_Response( $result, 200 );
 		}
 
-		// Standard page import.
-		$check = D5G_Limits::can_import_page();
-		if ( is_wp_error( $check ) ) {
-			return $check;
-		}
-
+		// Standard page import — Pro only, already gated by import_gate() above.
 		try {
 			$result = D5G_PageImporter::import( $layout, $seo, $publish );
 		} catch ( InvalidArgumentException $e ) {
@@ -457,8 +572,6 @@ class D5G_RestApi {
 		} catch ( RuntimeException $e ) {
 			return new WP_Error( 'import_failed', $e->getMessage(), array( 'status' => 500 ) );
 		}
-
-		D5G_Limits::increment_page_import();
 
 		// Save schema for automatic <head> injection.
 		if ( ! empty( $schema ) && is_array( $schema ) ) {

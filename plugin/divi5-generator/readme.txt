@@ -1,14 +1,14 @@
 === Divi5 Generator ===
 Contributors: iconnectit
-Tags: divi, divi 5, ai, page generator, import, export, seo, landing page, rest api
+Tags: divi, divi 5, ai, page generator, seo
 Requires at least: 6.4
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.8.0
+Stable tag: 2.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI-powered Divi 5 page generator. Import AI-generated pages, presets, global variables, and SEO metadata into Divi 5 via REST API — no SSH or WP-CLI required.
+AI-powered Divi 5 page generator. Import pages, presets, global variables, and SEO metadata via REST API — no SSH or WP-CLI required.
 
 == Description ==
 
@@ -62,7 +62,7 @@ The importer detects the active SEO plugin on every request and writes generated
 
 == REST capabilities ==
 
-* `POST /preview` — render generated Divi JSON on a fixed preview page before full import
+* `POST /preview` — render generated Divi JSON on a real draft page before full import (Pro — it creates a page)
 * `POST /import` — import or update pages; also routes `et_builder_layouts` into the Divi Library importer
 * `GET /export` — export a page by ID or slug
 * `POST /presets/import`, `GET /presets`, `GET /presets/export` — manage Divi preset packs
@@ -77,11 +77,40 @@ The importer detects the active SEO plugin on every request and writes generated
 2. Activate via Plugins → Installed Plugins
 3. Go to Settings → Divi5 Generator to get your API key
 
+== External Services ==
+
+**Connector functionality:** the REST API this plugin exposes (preview, import, export, presets, SEO, etc.) makes no outbound calls to any third-party service — it only accepts inbound, authenticated requests from an external tool you control (e.g. a Claude Code session running the Divi5Generate toolkit), on **your own site**. No page content, brand data, or site data is ever sent anywhere by the connector itself.
+
+**Licensing (Pro only):** this plugin uses [Freemius](https://freemius.com) to handle Pro licence activation, update delivery, and (with your consent) anonymised usage analytics. On activation Freemius shows an opt-in screen; if you accept, your site URL, plugin version, and PHP/WordPress environment details are sent to Freemius's servers (https://freemius.com) to enable this. You can skip or later disable this in Settings → Divi5 Generator. See the [Freemius Privacy Policy](https://freemius.com/privacy/) and [Terms of Service](https://freemius.com/terms/).
+
+== Screenshots ==
+
+1. Chat-driven brief — describing the page you want in plain English.
+2. Proposal card — the generated page outline before any Divi JSON is built.
+3. Mockup preview — the Stage 1 HTML mockup shown for approval before build.
+4. Import card — the generated Divi 5 JSON landing in the WordPress preview/import step.
+5. Live page — the finished, published Divi 5 page on the target site.
+6. Settings → Divi5 Generator — the site URL and API key screen used to connect the toolkit.
+
 == Frequently Asked Questions ==
 
 = Is the endpoint secure? =
 
 Yes. Every request requires an `X-D5G-Key` header matching a hashed key stored in your database. The key is never stored in plain text. There is also a rate limit of 30 requests per 60 seconds per IP.
+
+= What's free vs Pro? =
+
+**Free imports sections into your Divi Library. Pro creates pages.**
+
+Free, with no monthly cap: `/ping`, `/export`, managed-page list/delete, and unlimited `/import` of sections, rows and modules into your Divi Library. Drop an imported section onto any page from the Divi Library in the Visual Builder — it's yours, permanently.
+
+Pro adds full page creation, `/preview` (which builds a real draft page for QA), SEO meta and schema writing, preset packs, global variables/colours, navigation menu creation, brand extract/deploy, and DB export/import. A Free install calling a Pro-only route gets a `403 pro_required` response with an upgrade link.
+
+There are no import quotas on either plan. Free isn't a trial that runs out — it's a smaller tool that keeps working.
+
+= Is DB export/import safe? =
+
+DB export/import transfers whole prefixed database tables over REST, so it's Pro-gated **and** off by default even on Pro sites. To use it, add `define( 'D5G_ALLOW_DB_TRANSFER', true );` to `wp-config.php` on the site you want to export from or import into.
 
 = What if I don't have Divi 5? =
 
@@ -100,6 +129,14 @@ The REST route defaults `publish` to `true`. The import skill intentionally publ
 Settings → Divi5 Generator → Regenerate Key. Your old key stops working immediately.
 
 == Changelog ==
+
+= 2.0.0 =
+* New: Licence gating — page creation, SEO/schema writing, preset packs, global variables, menu creation, brand extract/deploy and DB export/import now require Divi5 Generator Pro. Free installs get `403 { "code": "pro_required" }` with an upgrade link.
+* New: DB export/import is now refused by default even on Pro sites — opt in per site with `define( 'D5G_ALLOW_DB_TRANSFER', true );` in `wp-config.php`.
+* Changed: Free is now **unlimited section imports into the Divi Library**, with no monthly quota. Page creation is Pro. This replaces the old 2-page/2-library monthly cap — Free is a smaller tool that keeps working, not a trial that runs out.
+* Security: the API key is now accepted **only** via the `X-D5G-Key` header. The undocumented `?d5g_key=` query-string fallback is removed — it leaked keys into browser history, access logs, proxies and analytics. Update any saved `curl` snippets to use the header.
+* Tested up to WordPress 7.0.
+* 73 PHPUnit tests.
 
 = 1.8.0 =
 * New: Navigation menu creation — `POST /menus` creates a named menu (or appends to an existing one) with page-link and custom-URL items, parent-child nesting via `id`/`parent_id`, and optional assignment to a theme location.
@@ -133,6 +170,9 @@ Settings → Divi5 Generator → Regenerate Key. Your old key stops working imme
 * Initial release.
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+Free now imports unlimited sections into your Divi Library with no monthly quota (the old 2-page/2-library cap is gone); page creation, SEO writing, menus, presets and brand tools are Pro, returning a clear 403 with an upgrade link. DB export/import is off by default on every site including Pro until you opt in via `wp-config.php`. **Breaking:** the API key is header-only now (`X-D5G-Key`) — the `?d5g_key=` query fallback is removed, so update any saved curl snippets.
 
 = 1.7.0 =
 Plugin renamed to "Divi5 Generator". The REST API namespace changed to `/wp-json/divi5-generator/v1/` — update any external tools that call the old `divi-tools/v1` endpoints. Auth header is now `X-D5G-Key`. Existing API keys are invalidated; regenerate from Settings → Divi5 Generator.
