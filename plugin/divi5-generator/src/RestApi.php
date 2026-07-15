@@ -185,11 +185,10 @@ class D5G_RestApi {
 			return new WP_Error( 'rate_limited', 'Too many requests. Try again in 60 seconds.', array( 'status' => 429 ) );
 		}
 
+		// Header only. A key in the query string leaks into browser history,
+		// access logs, proxies and analytics — and openspec/specs/importer-
+		// integration mandates header-only auth regardless.
 		$key = $request->get_header( 'X-D5G-Key' );
-		if ( ! $key ) {
-			// Also accept as query param for easy browser testing.
-			$key = sanitize_text_field( $request->get_param( 'd5g_key' ) ?? '' );
-		}
 
 		if ( ! $key || ! D5G_Auth::verify( $key ) ) {
 			return new WP_Error( 'unauthorized', 'Invalid or missing API key.', array( 'status' => 401 ) );

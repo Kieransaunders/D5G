@@ -112,7 +112,7 @@ Wait for the user's verdict:
 ### 3. Ping the site
 
 ```bash
-curl -s "<site-url>/wp-json/divi5-generator/v1/ping?d5g_key=<api-key>"
+curl -s -H "X-D5G-Key: <api-key>" "<site-url>/wp-json/divi5-generator/v1/ping"
 ```
 
 Check the response:

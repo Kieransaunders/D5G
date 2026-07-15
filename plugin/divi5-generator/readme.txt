@@ -100,9 +100,13 @@ Yes. Every request requires an `X-D5G-Key` header matching a hashed key stored i
 
 = What's free vs Pro? =
 
-`/ping`, `/preview`, `/import`, `/export`, and managed-page list/delete are free forever. Preset packs, global variables/colours, navigation menu creation, and full DB export/import are Pro. A Free install calling a Pro-only route gets a `403 pro_required` response with an upgrade link.
+**Free imports sections into your Divi Library. Pro creates pages.**
 
-Free is capped at **2 page imports and 2 library-item imports per calendar month** — enough to try the product on a real page, not enough to run a client site on. The count resets on the 1st of each month. Pro is unlimited. `/ping` reports your current usage and limit.
+Free, with no monthly cap: `/ping`, `/preview`, `/export`, managed-page list/delete, and unlimited `/import` of sections, rows and modules into your Divi Library. Drop an imported section onto any page from the Divi Library in the Visual Builder — it's yours, permanently.
+
+Pro adds full page creation, SEO meta and schema writing, preset packs, global variables/colours, navigation menu creation, brand extract/deploy, and DB export/import. A Free install calling a Pro-only route gets a `403 pro_required` response with an upgrade link.
+
+There are no import quotas on either plan. Free isn't a trial that runs out — it's a smaller tool that keeps working.
 
 = Is DB export/import safe? =
 
@@ -127,9 +131,10 @@ Settings → Divi5 Generator → Regenerate Key. Your old key stops working imme
 == Changelog ==
 
 = 2.0.0 =
-* New: Licence gating — preset packs, global variables, menu creation, and DB export/import now require Divi5 Generator Pro. Free installs get `403 { "code": "pro_required" }` with an upgrade link; ping/preview/import/export/pages stay free.
+* New: Licence gating — page creation, SEO/schema writing, preset packs, global variables, menu creation, brand extract/deploy and DB export/import now require Divi5 Generator Pro. Free installs get `403 { "code": "pro_required" }` with an upgrade link.
 * New: DB export/import is now refused by default even on Pro sites — opt in per site with `define( 'D5G_ALLOW_DB_TRANSFER', true );` in `wp-config.php`.
-* Changed: Free tier import cap lowered to 2 page imports + 2 library-item imports per month (was 10/5) — Free is a taster, not a workable plan. Resets monthly; `/ping` reports usage.
+* Changed: Free is now **unlimited section imports into the Divi Library**, with no monthly quota. Page creation is Pro. This replaces the old 2-page/2-library monthly cap — Free is a smaller tool that keeps working, not a trial that runs out.
+* Security: the API key is now accepted **only** via the `X-D5G-Key` header. The undocumented `?d5g_key=` query-string fallback is removed — it leaked keys into browser history, access logs, proxies and analytics. Update any saved `curl` snippets to use the header.
 * Tested up to WordPress 7.0.
 * 73 PHPUnit tests.
 
@@ -167,7 +172,7 @@ Settings → Divi5 Generator → Regenerate Key. Your old key stops working imme
 == Upgrade Notice ==
 
 = 2.0.0 =
-Preset packs, global variables, menu creation, and DB export/import now require Divi5 Generator Pro — Free installs get a clear 403 with an upgrade link instead of silent access. DB export/import is also off by default on every site (including Pro) until you opt in via `wp-config.php`. The Free import cap is now 2 pages + 2 library items per month (was 10/5).
+Free now imports unlimited sections into your Divi Library with no monthly quota (the old 2-page/2-library cap is gone); page creation, SEO writing, menus, presets and brand tools are Pro, returning a clear 403 with an upgrade link. DB export/import is off by default on every site including Pro until you opt in via `wp-config.php`. **Breaking:** the API key is header-only now (`X-D5G-Key`) — the `?d5g_key=` query fallback is removed, so update any saved curl snippets.
 
 = 1.7.0 =
 Plugin renamed to "Divi5 Generator". The REST API namespace changed to `/wp-json/divi5-generator/v1/` — update any external tools that call the old `divi-tools/v1` endpoints. Auth header is now `X-D5G-Key`. Existing API keys are invalidated; regenerate from Settings → Divi5 Generator.
