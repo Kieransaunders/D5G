@@ -147,6 +147,39 @@ class D5G_RestApi {
 		) );
 	}
 
+	/**
+	 * Routes that require a paying (Pro) licence, per PRD §3's Free/Pro split.
+	 * Everything not listed here (ping, preview, import, export, pages) stays Free.
+	 */
+	const PRO_ONLY_ROUTES = array(
+		'/divi5-generator/v1/presets/import',
+		'/divi5-generator/v1/presets',
+		'/divi5-generator/v1/presets/export',
+		'/divi5-generator/v1/global-variables',
+		'/divi5-generator/v1/global-variables/export',
+		'/divi5-generator/v1/db/export',
+		'/divi5-generator/v1/db/import',
+		'/divi5-generator/v1/menus',
+		'/divi5-generator/v1/menus/auto-place',
+	);
+
+	public static function requires_pro( string $route ): bool {
+		return in_array( $route, self::PRO_ONLY_ROUTES, true );
+	}
+
+	public static function pro_gate( string $route, bool $is_pro ): bool|WP_Error {
+		if ( self::requires_pro( $route ) && ! $is_pro ) {
+			$upgrade_url = function_exists( 'dg_fs' ) ? dg_fs()->get_upgrade_url() : '';
+			return new WP_Error(
+				'pro_required',
+				'This feature requires Divi5 Generator Pro. Upgrade: ' . $upgrade_url,
+				array( 'status' => 403 )
+			);
+		}
+
+		return true;
+	}
+
 	public static function authenticate( WP_REST_Request $request ): bool|WP_Error {
 		if ( ! D5G_Auth::check_rate_limit() ) {
 			return new WP_Error( 'rate_limited', 'Too many requests. Try again in 60 seconds.', array( 'status' => 429 ) );
@@ -160,6 +193,11 @@ class D5G_RestApi {
 
 		if ( ! $key || ! D5G_Auth::verify( $key ) ) {
 			return new WP_Error( 'unauthorized', 'Invalid or missing API key.', array( 'status' => 401 ) );
+		}
+
+		$gate = self::pro_gate( $request->get_route(), D5G_Limits::is_pro() );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
 		}
 
 		return true;
@@ -266,7 +304,29 @@ class D5G_RestApi {
 		return new WP_REST_Response( $result, 200 );
 	}
 
+	/**
+	 * Defence-in-depth on top of Pro-gating (PRD §4 gap 7): DB export/import
+	 * transfers whole prefixed tables over REST, so it stays refused even for
+	 * paying sites unless the site owner has explicitly opted in via wp-config.
+	 * Pro-gating (pro_gate()) already blocks Free installs before this runs.
+	 */
+	private static function db_transfer_allowed(): bool|WP_Error {
+		if ( ! defined( 'D5G_ALLOW_DB_TRANSFER' ) || ! D5G_ALLOW_DB_TRANSFER ) {
+			return new WP_Error(
+				'db_transfer_disabled',
+				"DB export/import is disabled by default. Add define( 'D5G_ALLOW_DB_TRANSFER', true ); to wp-config.php to enable it on this site.",
+				array( 'status' => 403 )
+			);
+		}
+		return true;
+	}
+
 	public static function handle_db_export( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$allowed = self::db_transfer_allowed();
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
 		try {
 			$result = D5G_DbExporter::export();
 		} catch ( RuntimeException $e ) {
@@ -276,6 +336,11 @@ class D5G_RestApi {
 	}
 
 	public static function handle_db_import( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$allowed = self::db_transfer_allowed();
+		if ( is_wp_error( $allowed ) ) {
+			return $allowed;
+		}
+
 		$sql      = (string) $request->get_param( 'sql' );
 		$from_url = esc_url_raw( (string) $request->get_param( 'from_url' ) );
 		$to_url   = esc_url_raw( (string) $request->get_param( 'to_url' ) );

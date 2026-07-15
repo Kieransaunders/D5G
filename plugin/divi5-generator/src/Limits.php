@@ -6,8 +6,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class D5G_Limits {
 
-	const PAGE_IMPORT_LIMIT    = 10;
-	const LIBRARY_IMPORT_LIMIT = 5;
+	// Free tier is a taster, not a workable plan — enough to see the product
+	// generate and import a real page, not enough to run a client site on.
+	const PAGE_IMPORT_LIMIT    = 2;
+	const LIBRARY_IMPORT_LIMIT = 2;
 	const RATE_LIMIT_FREE      = 30;
 	const RATE_LIMIT_PRO       = 120;
 

@@ -1,0 +1,19 @@
+{
+  "name": "divi5-starter",
+  "version": "1.0.0",
+  "description": "Free Divi 5 services section generator for Claude Code: describe your three services and get a polished, importable Divi 5 Library JSON section - icons, headline, intro, and CTA included. A free taste of the full D5G toolkit, which generates complete SEO-optimised pages, brand design systems, and one-command deploys.",
+  "author": {
+    "name": "Kieran, iConnectIT"
+  },
+  "homepage": "https://iconnectit.co.uk",
+  "keywords": [
+    "divi",
+    "divi-5",
+    "wordpress",
+    "services-section",
+    "page-builder",
+    "json-generator",
+    "free"
+  ],
+  "license": "MIT"
+}

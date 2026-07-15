@@ -13,5 +13,12 @@
 		<testsuite name="Menu">
 			<file>tests/MenuImporterTest.php</file>
 		</testsuite>
+		<testsuite name="RestApi">
+			<file>tests/RestApiProGateTest.php</file>
+			<file>tests/DbTransferGateTest.php</file>
+		</testsuite>
+		<testsuite name="Limits">
+			<file>tests/LimitsTest.php</file>
+		</testsuite>
 	</testsuites>
 </phpunit>

@@ -4,7 +4,7 @@
  * Plugin Name:       Divi5 Generator
  * Plugin URI:        https://github.com/Kieransaunders/Divi5Generate
  * Description:       AI-powered Divi 5 page generator. Import pages, presets, global variables, and SEO metadata from any external tool into Divi 5 via REST API.
- * Version:           1.8.0
+ * Version:           2.0.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            iConnectIT
@@ -19,21 +19,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'D5G_VERSION', '1.8.0' );
+define( 'D5G_VERSION', '2.0.0' );
 define( 'D5G_FILE', __FILE__ );
 define( 'D5G_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once D5G_DIR . 'vendor/autoload.php';
+
+// DB export/import (`/db/export`, `/db/import`) transfer whole prefixed
+// tables over REST — a big attack surface for a public commercial plugin
+// (PRD §4 gap 7). They're Pro-gated (see D5G_RestApi::PRO_ONLY_ROUTES) AND
+// refused by default even on Pro sites unless explicitly opted in here:
+// define( 'D5G_ALLOW_DB_TRANSFER', true );
 
 if ( ! function_exists( 'dg_fs' ) ) {
     function dg_fs() {
         global $dg_fs;
 
         if ( ! isset( $dg_fs ) ) {
+            // TODO(Kieran, KIERAN-ONLY): 'id' and 'public_key' below are still
+            // Airloop's Freemius product (copy-pasted — PRD §4 gap 1). Licensing
+            // will activate against the WRONG product until you create a
+            // dedicated "Divi5 Generator" product in the Freemius dashboard and
+            // swap these two values for its real id + public key. premium_slug
+            // is already fixed to this product's own slug.
             $dg_fs = fs_dynamic_init( array(
                 'id'                  => '33991',
                 'slug'                => 'divi5-generator',
-                'premium_slug'        => 'Airloop-premium',
+                'premium_slug'        => 'divi5-generator-premium',
                 'type'                => 'plugin',
                 'public_key'          => 'pk_de854535213324795d60f5ef66541',
                 'is_premium'          => true,

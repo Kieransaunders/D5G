@@ -109,12 +109,15 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	class WP_Error {
 		private $code;
 		private $message;
+		private $data;
 		public function __construct( $code = '', $message = '', $data = '' ) {
 			$this->code    = $code;
 			$this->message = $message;
+			$this->data    = $data;
 		}
 		public function get_error_message() { return $this->message; }
 		public function get_error_code()    { return $this->code; }
+		public function get_error_data()    { return $this->data; }
 	}
 }
 
@@ -314,6 +317,111 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 	}
 }
 
+// --- RestApi test infrastructure ----------------------------------------------
+
+/** In-memory transient store, keyed like get_transient()/set_transient(). */
+final class TransientStore {
+	private static $store = array();
+
+	public static function get( string $key ) {
+		return self::$store[ $key ] ?? false;
+	}
+
+	public static function set( string $key, $value ): void {
+		self::$store[ $key ] = $value;
+	}
+
+	public static function reset(): void {
+		self::$store = array();
+	}
+}
+
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( $key ) {
+		return TransientStore::get( (string) $key );
+	}
+}
+
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( $key, $value, $expiration = 0 ) {
+		TransientStore::set( (string) $key, $value );
+		return true;
+	}
+}
+
+/**
+ * In-memory options store, same pattern as TransientStore above. Needed for
+ * D5G_Limits (usage counters persist via get_option/update_option) — the old
+ * get_option() stub always returned $default, so save_usage()'s state was
+ * silently discarded and no test could ever observe a limit being reached.
+ */
+final class OptionStore {
+	private static $store = array();
+
+	public static function get( string $key, $default = false ) {
+		return array_key_exists( $key, self::$store ) ? self::$store[ $key ] : $default;
+	}
+
+	public static function set( string $key, $value ): void {
+		self::$store[ $key ] = $value;
+	}
+
+	public static function delete( string $key ): void {
+		unset( self::$store[ $key ] );
+	}
+
+	public static function reset(): void {
+		self::$store = array();
+	}
+}
+
+if ( ! function_exists( 'get_option' ) ) {
+	function get_option( $key, $default = false ) {
+		return OptionStore::get( (string) $key, $default );
+	}
+}
+
+if ( ! function_exists( 'update_option' ) ) {
+	function update_option( $key, $value, $autoload = true ) {
+		OptionStore::set( (string) $key, $value );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_option' ) ) {
+	function delete_option( $key ) {
+		OptionStore::delete( (string) $key );
+		return true;
+	}
+}
+
+/** Minimal WP_REST_Request double — only what D5G_RestApi::authenticate() reads. */
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {
+		private $route;
+		private $headers;
+		private $params;
+
+		public function __construct( string $route = '', array $headers = array(), array $params = array() ) {
+			$this->route   = $route;
+			$this->headers = $headers;
+			$this->params  = $params;
+		}
+
+		public function get_route() {
+			return $this->route;
+		}
+
+		public function get_header( $name ) {
+			return $this->headers[ $name ] ?? null;
+		}
+
+		public function get_param( $name ) {
+			return $this->params[ $name ] ?? null;
+		}
+	}
+}
+
 // --- Load the system under test ----------------------------------------------
 
 $src = __DIR__ . '/../src';
@@ -329,3 +437,6 @@ require_once $src . '/Seo/TSF.php';
 require_once $src . '/Seo/Detector.php';
 require_once $src . '/SeoWriter.php';
 require_once $src . '/MenuImporter.php';
+require_once $src . '/Limits.php';
+require_once $src . '/Auth.php';
+require_once $src . '/RestApi.php';
