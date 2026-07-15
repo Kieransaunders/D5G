@@ -42,7 +42,6 @@ class D5G_PagePreviewer {
 		// 2. Divi 5 internals availability.
 		// -----------------------------------------------------------------------
 		$preset_class = 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset';
-		$data_class   = 'ET\\Builder\\Packages\\GlobalData\\GlobalData';
 		$d5_available = class_exists( $preset_class )
 			&& method_exists( $preset_class, 'process_presets_for_import' );
 
@@ -51,41 +50,16 @@ class D5G_PagePreviewer {
 		}
 
 		// -----------------------------------------------------------------------
-		// 3. Import presets so the preview renders with the correct design tokens.
+		// 3. Resolve + register brand, then compile the pointer-only content — the
+		//    same one-shot path as PageImporter, so a preview renders identically to
+		//    the eventual import. Brand may ride in $layout['brand'] /
+		//    $layout['brand_profile_id'], or (legacy) as top-level presets blocks;
+		//    otherwise the preview compiles against presets already on the site
+		//    (e.g. pre-registered by the app's /presets/import + /global-variables).
 		// -----------------------------------------------------------------------
-		if ( $d5_available && ! empty( $layout['presets'] ) && is_array( $layout['presets'] ) ) {
-			$result = $preset_class::process_presets_for_import( $layout['presets'] );
-			if ( ! empty( $result['preset_id_mappings'] ) ) {
-				foreach ( $result['preset_id_mappings'] as $old => $new ) {
-					if ( is_string( $old ) && is_string( $new ) && $old !== $new ) {
-						$content = str_replace( $old, $new, $content );
-					}
-				}
-			}
-		}
-
-		// -----------------------------------------------------------------------
-		// 4. Global colours + variables (needed for $variable(...)$ references).
-		// -----------------------------------------------------------------------
-		if ( $d5_available && ! empty( $layout['global_colors'] ) && is_array( $layout['global_colors'] ) ) {
-			if ( method_exists( $data_class, 'get_imported_global_colors' )
-				&& method_exists( $data_class, 'set_global_colors' ) ) {
-				$converted = $data_class::get_imported_global_colors( $layout['global_colors'] );
-				if ( is_array( $converted ) && ! empty( $converted ) ) {
-					$data_class::set_global_colors( $converted, true );
-				}
-			} else {
-				$warnings[] = 'GlobalData colour methods not found — global colours skipped.';
-			}
-		}
-
-		if ( $d5_available && ! empty( $layout['global_variables'] ) && is_array( $layout['global_variables'] ) ) {
-			if ( method_exists( $data_class, 'import_global_variables' ) ) {
-				$data_class::import_global_variables( $layout['global_variables'] );
-			} else {
-				$warnings[] = 'GlobalData::import_global_variables not found — variables skipped.';
-			}
-		}
+		$brand   = D5G_PageImporter::resolve_brand( $layout );
+		$reg     = D5G_PageImporter::register_brand_and_compile( $brand, $content, $d5_available, $warnings );
+		$content = $reg['content'];
 
 		// -----------------------------------------------------------------------
 		// 5. Create or overwrite the fixed preview page.

@@ -443,6 +443,8 @@ require_once $src . '/Seo/TSF.php';
 require_once $src . '/Seo/Detector.php';
 require_once $src . '/SeoWriter.php';
 require_once $src . '/MenuImporter.php';
+require_once $src . '/PageCompiler.php';
+require_once $src . '/PageImporter.php';
 require_once $src . '/Limits.php';
 require_once $src . '/Auth.php';
 require_once $src . '/RestApi.php';

@@ -9,6 +9,40 @@ class D5G_PageImporter {
 	/**
 	 * Import a Divi 5 et_builder JSON export as a WordPress page.
 	 *
+	 * ## Brand-in-one-shot payload contract (page path only)
+	 *
+	 * `$layout` MAY carry an optional top-level `brand` bundle so a single /import
+	 * call is self-contained — the connector registers the brand, then compiles the
+	 * pointer-only page content against it:
+	 *
+	 *   {
+	 *     "context": "et_builder",
+	 *     "data": { "1": "<!-- wp:divi/... -->" },
+	 *     "brand": {
+	 *       "presets":          { "module": {...}, "group": {...} },
+	 *       "global_colors":    [ [ "gcid-x", { "color": "#...", ... } ], ... ],
+	 *       "global_variables": [ { "id": "gvid-x", "value": "...", ... }, ... ]
+	 *     }
+	 *   }
+	 *
+	 * A `brand_profile_id` (string/int) MAY be supplied instead of/alongside `brand`;
+	 * it is resolved via the `d5g/import/resolve_brand_profile` filter (a host app can
+	 * hook it to return a `brand` bundle for that id). If the filter yields nothing,
+	 * the id is ignored.
+	 *
+	 * REQUIRED CALL ORDER (enforced internally by resolve_and_register_brand()):
+	 *   1. Register brand presets (rewrites `$content` on any old→new id remap).
+	 *   2. Register global colours + variables (so `$variable(gcid-…)$` refs resolve).
+	 *   3. Compile: inline each referenced preset's attrs into its block, sourcing
+	 *      attrs from the *registered* store (post-remap ids).
+	 *
+	 * FALLBACK (no `brand`/`brand_profile_id`, and no top-level `presets` block):
+	 * the page is compiled against whatever presets are already registered on the
+	 * site (today's behaviour, where the app pre-registers brand via the separate
+	 * /presets/import + /global-variables routes). A legacy fully-inlined export with
+	 * a top-level `presets` block still works unchanged — those presets register at
+	 * step 3 below and the compile is a no-op on already-inlined blocks.
+	 *
 	 * @param array $layout  Parsed et_builder export array.
 	 * @param array $seo     SEO meta (title, description, slug).
 	 * @param bool  $publish Create as published rather than draft.
@@ -47,54 +81,20 @@ class D5G_PageImporter {
 		}
 
 		// -----------------------------------------------------------------------
-		// 3. Import presets (their ID mappings rewrite the content string).
+		// 3. Resolve + register brand (presets, global colours, variables), then
+		//    compile the pointer-only page content against the registered store.
+		//
+		//    Brand sources, in order: an out-of-band `brand` bundle in the payload;
+		//    a `brand_profile_id` resolved via filter; otherwise a legacy top-level
+		//    `presets`/`global_colors`/`global_variables` block in the layout;
+		//    otherwise whatever is already registered on the site.
 		// -----------------------------------------------------------------------
-		$presets_imported = false;
-		if ( $d5_available && ! empty( $layout['presets'] ) && is_array( $layout['presets'] ) ) {
-			$result = $preset_class::process_presets_for_import( $layout['presets'] );
-			if ( ! empty( $result['preset_id_mappings'] ) ) {
-				foreach ( $result['preset_id_mappings'] as $old => $new ) {
-					if ( is_string( $old ) && is_string( $new ) && $old !== $new ) {
-						$content = str_replace( $old, $new, $content );
-					}
-				}
-			}
-			$presets_imported = true;
-			// Mirror what GlobalPreset::save_data() does: clear Divi's CSS cache so
-			// newly imported preset IDs get their CSS rules generated on next load.
-			if ( class_exists( 'ET_Core_PageResource' ) ) {
-				ET_Core_PageResource::remove_static_resources( 'all', 'all', true, 'all', true );
-			}
-		} elseif ( empty( $layout['presets'] ) ) {
-			$warnings[] = 'Export contains no presets.';
-		}
-
-		// -----------------------------------------------------------------------
-		// 4. Global colours + variables.
-		// -----------------------------------------------------------------------
-		$colors_imported = false;
-		if ( $d5_available && ! empty( $layout['global_colors'] ) && is_array( $layout['global_colors'] ) ) {
-			if ( method_exists( $data_class, 'get_imported_global_colors' )
-				&& method_exists( $data_class, 'set_global_colors' ) ) {
-				$converted = $data_class::get_imported_global_colors( $layout['global_colors'] );
-				if ( is_array( $converted ) && ! empty( $converted ) ) {
-					$data_class::set_global_colors( $converted, true );
-					$colors_imported = true;
-				}
-			} else {
-				$warnings[] = 'GlobalData colour import methods not found — global colours skipped.';
-			}
-		}
-
-		$variables_imported = false;
-		if ( $d5_available && ! empty( $layout['global_variables'] ) && is_array( $layout['global_variables'] ) ) {
-			if ( method_exists( $data_class, 'import_global_variables' ) ) {
-				$data_class::import_global_variables( $layout['global_variables'] );
-				$variables_imported = true;
-			} else {
-				$warnings[] = 'GlobalData::import_global_variables not found — global variables skipped.';
-			}
-		}
+		$brand              = self::resolve_brand( $layout );
+		$reg                = self::register_brand_and_compile( $brand, $content, $d5_available, $warnings );
+		$content            = $reg['content'];
+		$presets_imported   = $reg['presets_imported'];
+		$colors_imported    = $reg['colors_imported'];
+		$variables_imported = $reg['variables_imported'];
 
 		// -----------------------------------------------------------------------
 		// 5. Resolve title + slug.
@@ -181,6 +181,139 @@ class D5G_PageImporter {
 			'seo_plugin'         => $seo_result,
 			'warnings'           => $warnings,
 		];
+	}
+
+	/**
+	 * Resolve the brand bundle for a page import from the layout payload.
+	 *
+	 * Precedence:
+	 *   1. `$layout['brand']`  — an explicit out-of-band bundle
+	 *      { presets, global_colors, global_variables } (the .brand.json shape).
+	 *   2. `$layout['brand_profile_id']` — resolved via the
+	 *      `d5g/import/resolve_brand_profile` filter; a host app returns a bundle.
+	 *   3. Legacy top-level `presets`/`global_colors`/`global_variables` blocks in
+	 *      the layout itself (fully-inlined exports still carry these).
+	 *
+	 * @param array $layout
+	 * @return array{presets:array, global_colors:array, global_variables:array}
+	 */
+	public static function resolve_brand( array $layout ): array {
+		if ( ! empty( $layout['brand'] ) && is_array( $layout['brand'] ) ) {
+			$b = $layout['brand'];
+		} elseif ( ! empty( $layout['brand_profile_id'] ) ) {
+			$resolved = apply_filters( 'd5g/import/resolve_brand_profile', null, $layout['brand_profile_id'] );
+			$b        = is_array( $resolved ) ? $resolved : array();
+		} else {
+			// Legacy inline export: read the top-level blocks.
+			$b = array(
+				'presets'          => $layout['presets'] ?? array(),
+				'global_colors'    => $layout['global_colors'] ?? array(),
+				'global_variables' => $layout['global_variables'] ?? array(),
+			);
+		}
+
+		return array(
+			'presets'          => is_array( $b['presets'] ?? null ) ? $b['presets'] : array(),
+			'global_colors'    => is_array( $b['global_colors'] ?? null ) ? $b['global_colors'] : array(),
+			'global_variables' => is_array( $b['global_variables'] ?? null ) ? $b['global_variables'] : array(),
+		);
+	}
+
+	/**
+	 * Register a brand bundle then compile the pointer-only page content against it.
+	 *
+	 * Call order (load-bearing): register presets (rewriting $content on any old→new
+	 * id remap) → register global colours + variables → compile by inlining each
+	 * referenced preset's attrs into its block, sourcing attrs from the *registered*
+	 * store (GlobalPreset::get_data(), post-remap ids). When Divi is unavailable, the
+	 * compile falls back to the supplied bundle's own presets so CI can exercise it.
+	 *
+	 * @param array  $brand        { presets, global_colors, global_variables }.
+	 * @param string $content      The page block-comment content.
+	 * @param bool   $d5_available Divi 5 GlobalData/GlobalPreset present.
+	 * @param array  $warnings     Collected by reference.
+	 * @return array{content:string, presets_imported:bool, colors_imported:bool, variables_imported:bool}
+	 */
+	public static function register_brand_and_compile( array $brand, string $content, bool $d5_available, array &$warnings ): array {
+		$preset_class = 'ET\\Builder\\Packages\\GlobalData\\GlobalPreset';
+		$data_class   = 'ET\\Builder\\Packages\\GlobalData\\GlobalData';
+
+		$presets_imported   = false;
+		$colors_imported    = false;
+		$variables_imported = false;
+
+		// ── 1. Presets — register and remap ids in $content ─────────────────────
+		if ( $d5_available && ! empty( $brand['presets'] ) ) {
+			$result = $preset_class::process_presets_for_import( $brand['presets'] );
+			if ( ! empty( $result['preset_id_mappings'] ) ) {
+				foreach ( $result['preset_id_mappings'] as $old => $new ) {
+					if ( is_string( $old ) && is_string( $new ) && $old !== $new ) {
+						$content = str_replace( $old, $new, $content );
+					}
+				}
+			}
+			$presets_imported = true;
+			// Mirror GlobalPreset::save_data(): clear Divi's CSS cache so the newly
+			// registered preset ids get their CSS generated on next load.
+			if ( class_exists( 'ET_Core_PageResource' ) ) {
+				ET_Core_PageResource::remove_static_resources( 'all', 'all', true, 'all', true );
+			}
+		} elseif ( empty( $brand['presets'] ) ) {
+			$warnings[] = 'No brand presets supplied — page compiled against presets already registered on the site.';
+		}
+
+		// ── 2. Global colours + variables ───────────────────────────────────────
+		if ( $d5_available && ! empty( $brand['global_colors'] ) ) {
+			if ( method_exists( $data_class, 'get_imported_global_colors' )
+				&& method_exists( $data_class, 'set_global_colors' ) ) {
+				$converted = $data_class::get_imported_global_colors( $brand['global_colors'] );
+				if ( is_array( $converted ) && ! empty( $converted ) ) {
+					$data_class::set_global_colors( $converted, true );
+					$colors_imported = true;
+				}
+			} else {
+				$warnings[] = 'GlobalData colour import methods not found — global colours skipped.';
+			}
+		}
+		if ( $d5_available && ! empty( $brand['global_variables'] ) ) {
+			if ( method_exists( $data_class, 'import_global_variables' ) ) {
+				$data_class::import_global_variables( $brand['global_variables'] );
+				$variables_imported = true;
+			} else {
+				$warnings[] = 'GlobalData::import_global_variables not found — global variables skipped.';
+			}
+		}
+
+		// ── 3. Compile: inline preset attrs into every referenced block ─────────
+		// Attr source, in preference order:
+		//   (a) the supplied brand bundle's own `presets` — this is the one-shot
+		//       path and the shape verified byte-for-byte against the emitter
+		//       (module + group under presets.module / presets.group). Compiling
+		//       from it is safe regardless of the id-remap above: block attrs carry
+		//       only gcid/gvid colour refs, never preset IDs, so the str_replace
+		//       remap (which only rewrites modulePreset/presetId pointers) and the
+		//       merge are independent.
+		//   (b) otherwise the registered store GlobalPreset::get_data() — the
+		//       no-bundle fallback, where the app pre-registered brand via the
+		//       separate /presets/import + /global-variables routes. This relies on
+		//       get_data() returning the same module/group shape; unlike (a) it is
+		//       not unit-verifiable here (needs live Divi).
+		if ( ! empty( $brand['presets'] ) ) {
+			$registry = $brand['presets'];
+		} elseif ( $d5_available && method_exists( $preset_class, 'get_data' ) ) {
+			$registry = (array) $preset_class::get_data();
+		} else {
+			$registry = array();
+		}
+		list( $module_by_id, $group_by_id ) = D5G_PageCompiler::index_preset_attrs( $registry );
+		$content = D5G_PageCompiler::compile_content( $content, $module_by_id, $group_by_id );
+
+		return array(
+			'content'            => $content,
+			'presets_imported'   => $presets_imported,
+			'colors_imported'    => $colors_imported,
+			'variables_imported' => $variables_imported,
+		);
 	}
 
 	/**

@@ -84,6 +84,7 @@ require_once D5G_DIR . 'src/Seo/SEOPress.php';
 require_once D5G_DIR . 'src/Seo/TSF.php';
 require_once D5G_DIR . 'src/Seo/Detector.php';
 require_once D5G_DIR . 'src/SeoWriter.php';
+require_once D5G_DIR . 'src/PageCompiler.php';
 require_once D5G_DIR . 'src/PageImporter.php';
 require_once D5G_DIR . 'src/PagePreviewer.php';
 require_once D5G_DIR . 'src/PageExporter.php';

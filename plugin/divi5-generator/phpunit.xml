@@ -21,5 +21,8 @@
 		<testsuite name="Settings">
 			<file>tests/SettingsInstallInstructionsTest.php</file>
 		</testsuite>
+		<testsuite name="PageCompiler">
+			<file>tests/PageCompilerTest.php</file>
+		</testsuite>
 	</testsuites>
 </phpunit>
