@@ -15,7 +15,7 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 | # | Task | Where | Est |
 |---|---|---|---|
 | <a id="k1"></a>**K1** | **Confirm the Freemius product is launch-ready** — plans, pricing, and a premium build pipeline. ~~Create the product / swap the id~~ **not needed:** `33991` / slug `divi5-generator` is this product's own id (confirmed 15/07; Airloop is a different product, id `31132`). The id and public_key stand; what's unverified is whether the product is *configured*. **Unblocks: F2, .org, the `D5G_ASSUME_PRO` decision, and every Pro test path.** | freemius.com | 15 min |
-| ~~**K2**~~ | ~~Render test on Divi 5.9.0~~ **DONE 15/07** — see [Test results](#test-results). Renders correctly on 5.9.0, watermark and CTA intact. **5.8.0 half still outstanding** (that Local site wasn't running) — the risky case where migrations are skipped. | Local | 5 min |
+| ~~**K2**~~ | ~~Render test~~ **DONE 15/07** — see [Test results](#test-results). Renders correctly on Divi 5.9.0, watermark and CTA intact. **`builderVersion: "5.9.0"` is settled** — 5.9.0 is the current Divi release, so the 5.8.0 back-compat case was dropped as out of scope (Kieran's call, 15/07). | Local | ✅ |
 | **K3** | Merge [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) — capability gate. Mergeable, CI clean. | GitHub | 5 min |
 | **K4** | Create public repo `Kieransaunders/divi5-starter`, push `free-toolkit/` contents to its root. **After K2 only.** | GitHub | 10 min |
 | **K5** | Freemius: attach the full-toolkit zip as a Pro-licensed download. Needs K1. | Freemius | 15 min |
@@ -87,10 +87,10 @@ Ran the whole free loop against `divi-5-airtable-plugin` (Divi 5.9.0, WP 7.0.1) 
 | `D5G_ASSUME_PRO` | ✅ works — `plan: pro` after opcache picked up wp-config |
 | **Render on Divi 5.9.0** | ✅ **Correct.** Eyebrow, heading, intro, 3 icon columns, "Book a Call" button (exercises the `enable:'on'` toggle), watermark line all present |
 
-**Verdict on `builderVersion: "5.9.0"`:** proven correct *on a 5.9.0 site*. The claim is no
-longer unverified there. **Still unproven on 5.8.0**, which is the case that matters — content
-claiming 5.9.0 on an older site skips every migration, and a stale attr shape would fail
-silently as wrong rendering.
+**Verdict on `builderVersion: "5.9.0"`: settled ✅.** Proven correct on a live 5.9.0 site. 5.9.0
+is the current Divi release, so the 5.8.x back-compat case (content claiming a newer version
+than the site, skipping migrations) was dropped as out of scope — Kieran's call, 15/07. The
+PRD's long-running "UNVERIFIED, confirm before trusting it" flag on this string is now closed.
 
 **Site left in this state** (dev site, all reversible):
 - `divi5-generator` **2.0.0 deployed and activated** (`divi-tools-importer` 1.7.0 left active and untouched — no class conflict, different REST namespaces).
