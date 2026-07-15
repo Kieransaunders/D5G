@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Divi5 Generator
  * Plugin URI:        https://github.com/Kieransaunders/Divi5Generate
- * Description:       AI-powered Divi 5 page generator. Import pages, presets, global variables, and SEO metadata from any external tool into Divi 5 via REST API.
+ * Description:       Import AI-generated pages, sections and Divi Library layouts into Divi 5 via REST API — no SSH, no WP-CLI, no manual JSON paste.
  * Version:           2.0.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
@@ -53,7 +53,7 @@ if ( ! function_exists( 'dg_fs' ) ) {
                 'is_premium'          => true,
                 'premium_suffix'      => 'Pro',
                 'has_premium_version' => true,
-                'has_addons'          => false,
+                'has_addons'          => true,  // "Divi 5 Toolkit" add-on = licensed Claude Code plugin download (see docs/PRO-TOOLKIT-DELIVERY.md)
                 'has_paid_plans'      => true,
                 'is_org_compliant'    => true,
                 'wp_org_gatekeeper'   => 'OA7#BoRiBNqdf52FvzEf!!074aRLPs8fspif$7K1#4u4Csys1fQlCecVcUTOs2mcpeVHi#C2j9d09fOTvbC0HloPT7fFee5WdS3G',

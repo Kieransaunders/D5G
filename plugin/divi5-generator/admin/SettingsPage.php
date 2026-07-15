@@ -177,9 +177,15 @@ class D5G_SettingsPage {
 			<h2>How to use</h2>
 			<p><strong>Step 1 — install the skills into Claude Code</strong> (one-time, in a terminal on your own computer, not this server). Requires <a href="https://claude.com/claude-code" target="_blank">Claude Code</a>.</p>
 
-			<?php if ( $is_pro ) : ?>
-				<p>Your Pro licence includes the <strong>full Divi 5 toolkit</strong> — page generator, brand systems, and one-click deploy skills. Installation details are in your purchase email. Once installed, restart Claude Code (or run <code>/reload-plugins</code>) and verify with <em>"run /divi5generate:help"</em>.</p>
-				<p class="description">Haven't received it? Contact support with your licence key.</p>
+			<?php if ( $is_pro ) :
+				$addons_url = function_exists( 'dg_fs' ) ? dg_fs()->_get_admin_page_url( 'addons' ) : '';
+				?>
+				<p>Your Pro licence includes the <strong>full Divi 5 toolkit</strong> — whole-page generation, brand extract/deploy, and one-command import skills.</p>
+				<ol>
+					<li>Download <code>divi5generate-toolkit.zip</code> from the <a href="<?php echo esc_url( $addons_url ); ?>"><strong>Add-Ons</strong></a> screen (Divi5 Generator → Add-Ons) and unzip it.</li>
+					<li>In a terminal on your own computer: <code style="user-select:all">claude plugin marketplace add /path/to/divi5generate</code></li>
+					<li>Restart Claude Code (or run <code>/reload-plugins</code>), then verify with <em>"run /divi5generate:help"</em>.</li>
+				</ol>
 			<?php else : ?>
 				<p>Install the <strong>free Divi 5 Starter</strong> (a services-section generator) into Claude Code:</p>
 				<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:12px">claude plugin marketplace add Kieransaunders/divi5-starter
