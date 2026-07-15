@@ -34,18 +34,21 @@ Four shapes were on the table (product-overview.md). Recommendation: **B-first, 
 | **C. Agency-internal tool** | Already true by default — it's our own delivery advantage regardless. Not a product decision. |
 | **D. MCP / Claude marketplace** | Free distribution channel for the **free starter only** (see §3.1), not the full toolkit. It funnels to Pro. |
 
-### 3.1 Distribution pivot (15/07/2026) — toolkit is the product, not the demand driver
+### 3.1 Distribution model (SUPERSEDED 15/07/2026 — toolkit goes public, the gate moves into the connector)
 
-The original plan ("toolkit free, connector is the toll booth") had a hole Kieran spotted: Divi's **native portability accepts any valid `et_builder` JSON**, so anyone with the full toolkit can generate unlimited pages and import them manually through the Visual Builder — bypassing the connector's free-tier limits entirely. The connector's value is workflow (one-click deploy, preview/screenshot QA, SEO meta persistence, menus, brand extract/deploy), not access. Therefore:
+The earlier 15/07 pivot ("full toolkit never published publicly, ships as a paid Freemius download") is **reversed.** It bought soft, leaky friction — the toolkit is markdown + Node, any licence-holder can redistribute it, and Divi's **native portability accepts any valid `et_builder` JSON**, so a gated download never actually gated *access* — at the hard cost of killing the funnel's best asset (letting people generate real pages themselves) and getting zero organic discovery. Distribution, not conversion, is the binding constraint (§7), and a hidden toolkit gets none. Two changes fix the root problem instead of papering over it.
 
-- **The full toolkit (`divi5generate` Claude plugin) is no longer published anywhere public.** It ships as a download attached to a **paid Pro licence only** — not on free-tier signup (DECIDED 15/07/2026; earlier drafts said "free-tier signup or Pro", which contradicted the §3.2 table). Not on public GitHub, not on an open marketplace. The taster is `divi5-starter`, not the toolkit. This is friction, not DRM — one licence-holder could redistribute it — but it stops casual copying, and the GPL obligation only covers the WP plugin's PHP, not the Node/skills toolkit (MIT/proprietary at our choice).
-- **The demand drivers become output and a taster:**
-  - Sample pages as importable JSON + demo video + landing page — shows the quality, and the manual-import faff sells the connector.
-  - **`divi5-starter` — free public Claude plugin** (built 15/07/2026, lives at `free-toolkit/` in this repo, to be published as its own public GitHub repo `Kieransaunders/divi5-starter`). One skill: a 3-column **services section** generator. Fill-in template + small script only — **no divi-builder.js, no validator, no references ship with it**. Output carries a visible credit line ("Section created with the free D5G Starter for Divi 5") plus a `_d5g` provenance block; the fill script refuses to run if the credit is stripped from the template. Validated 0-errors against the private toolkit's own validator.
-  - Template regeneration is private-repo-only: `node tools/build-free-starter-template.js`.
-- **Free WP connector stays on WordPress.org** — install base and discovery; Pro workflow features remain the upsell for people importing manually at volume.
+**1. The advanced toolkit is PUBLIC.** It lives at **`https://github.com/Kieransaunders/D5G`** and installs with `claude plugin marketplace add Kieransaunders/D5G`. The free `divi5-starter` (services-section skill, `free-toolkit/`) stays public too, as the lowest-friction discoverable taster. Public distribution is the point — a marketplace/community listing is free reach to exactly the ICP.
 
-Trade-off accepted: "try full generation yourself" disappears from the funnel; the starter section is the taste-test.
+**2. The moat moves from the toolkit (unenforceable) into the Pro connector (Freemius-enforceable).** Instead of the toolkit emitting complete, render-ready Divi JSON, the page generator emits **incomplete/unresolved** page JSON (structure + content + *references* to presets and brand variables). The Pro `/import` endpoint performs the last-mile compile — resolves presets and brand variables against the target site, clears the per-page CSS cache, finalises the gated attributes — that turns it into a correct, brand-accurate page. Raw toolkit output pasted straight into the Visual Builder imports **structurally present but visually broken** (unresolved presets, stale CSS), which closes the native-portability bypass that forced the earlier pivot. Free sections→library stays fully self-contained (sections are simple; the free plugin handles them). This is **page-path only**, matching §3.2 (pages = Pro).
+  - **Relocation spec pinned (15/07/2026) → `docs/pro-gating-relocation-spec.md`** (file:line refs to builder + `PageImporter`). Confirmed the leverage is real: render-correctness currently lives in the emitter (it *inlines* every visual style into each block's attrs — `divi-builder.js:134-156`), and the connector already owns all the registration + CSS-cache machinery, with a pointer-only mode + validator "preset-first mode" already scaffolded. So this is strip-and-move, **not** a builder rewrite. Two steps: **Step 1** de-inline preset attrs on pages (cheap, ~½ day, but reversible and depends on an unresolved codebase contradiction); **Step 2** externalise the brand definitions entirely (strip `presets`/`global_colors`/`global_variables` from the page file so the styling *values are absent*; the Pro importer registers them from the app-held brand profile — ~1–1.5 days). **Ship both; Step 2 is the load-bearing one** — it breaks raw render regardless of the contradiction and is high-reverse-difficulty because the brand values simply aren't in the file.
+  - **PENDING VERIFICATION (KIERAN smoke test, spec §5):** the whole model rests on raw/unresolved JSON rendering *broken* on the live front end without Pro. Two things could sink it and must be settled empirically before any commit: (A) a genuine contradiction in the code over whether Divi generates front-end CSS from the preset *registry* or only from *inline* attrs; (B) whether Divi's VB Portability import self-registers an embedded `presets` block (if it does, Step 1 self-heals → gate fails, forcing Step 2). Objective pass criteria (buttons default blue `rgb(46,86,153)`, unresolved brand colour, 30px headings, screenshot diff) reuse the existing `e2e-render.test.js` checks. **Do not publish D5G as the funnel until this passes.**
+
+**3. Discovery is gated by the plugin; delivery is not.** The WP connector's onboarding/settings panel shows Free users the `divi5-starter` install command; when Freemius `is_pro()` is true it swaps to the `Kieransaunders/D5G` command. So the advanced repo's *existence* is advertised only to payers (light obscurity), but its real protection is #2, not the hidden URL. Honest framing: URL obscurity is a bonus; the connector compile step is the gate.
+
+**What this deletes:** the licence-checked download endpoint, gated-zip hosting, `build-pro-zip`, and the "free-signup vs Pro-only download" question — all gone. Monetisation sits entirely on the connector's Freemius licence, the only enforceable lock in the system.
+
+**Trade-off accepted (knowingly):** the "generate once, import anywhere via native Divi portability, yours forever with no dependency" story (§3.3) is deliberately given up — Pro import becomes a required compile step for a correct page. That's interop-for-lock-in, chosen on purpose, not lost by accident.
 
 ### 3.2 Free / Pro split — capability gate, not quota (DECIDED 15/07/2026)
 
@@ -67,7 +70,7 @@ The previous model capped Free at 2 page + 2 library imports/month. It was repla
 | Managed pages list/delete | ✅ | ✅ |
 | DB export/import (site transfer) | ❌ | ✅ (+ `D5G_ALLOW_DB_TRANSFER` opt-in) |
 | **Claude toolkit: services-section starter (`divi5-starter`, public)** | ✅ (credited output) | ✅ |
-| **Claude toolkit: full page generator, brand systems, deploy skills** | ❌ | ✅ (Freemius download) |
+| **Claude toolkit: advanced generator / brand / deploy (public repo `Kieransaunders/D5G`)** | ✅ installable by anyone; page output imports **unstyled** without Pro (§3.1) | ✅ Pro import resolves + compiles it to a correct page |
 
 **`/preview` is Pro, because it is page creation in disguise (found 15/07/2026 by live test).** `D5G_PagePreviewer::preview()` calls `wp_insert_post()` with `post_status => 'draft'` — it creates a **real page**. The route is Free and called no capability gate, so a Free install could POST a page payload to `/preview`, get a real draft, and hit Publish. The unit tests could not see this: they exercised `import_gate()` in isolation, never the wiring. An end-to-end test against live Divi 5.9.0 created page 3914 on a Free install within minutes of the gate shipping. **Free loses nothing real** — `/preview` refuses library exports (422), which are Free's only output, so preview was never usable on Free anyway. It is a Pro QA tool and the table now says so.
 
@@ -81,19 +84,17 @@ The previous model capped Free at 2 page + 2 library imports/month. It was repla
 
 **Rejected: "Free may create a page containing one section."** It would restore a connector-built demo page, but it cannot be enforced. A page's content arrives as a single Gutenberg block string (`PageImporter::import()` does `reset( $layout['data'] )`), so counting sections means parsing Divi block markup in PHP — fragile against the format churn in §8, and it would publish more reverse-engineered Divi internals into the GPL .org build. Fatally, a section is an unbounded container (section → row → column → module): six rows in one section is a complete page that passes a one-section check. The gate would cost real code and gate nothing.
 
-### 3.3 What a licence actually grants (DECIDED 15/07/2026)
+### 3.3 What a licence actually grants (REVISED 15/07/2026 — connector-centric)
 
-The paid asset is the **toolkit** (per-person), but pricing is denominated in **sites** (per-install). Those are different units, and conflating them left a hole: a Single customer could buy one activation and use the downloaded toolkit to generate pages for unlimited other sites via manual Visual Builder import — the same bypass that forced the §3.1 pivot. A licence therefore grants both dimensions explicitly:
+With the toolkit public and free (§3.1), the paid asset is the **Pro connector**, licensed **per site** via Freemius — a genuinely enforceable unit, because the WP activation is real. The earlier per-person toolkit seat count is moot: the toolkit is public, so there is nothing to seat-license. A licence grants Pro connector capabilities (the page compile step, SEO/schema, preset packs, brand deploy, menus, DB transfer) on N active sites:
 
 | | Pro Single | Pro Agency |
 |---|---|---|
-| Toolkit users | 1 named person or sole trader | up to 3 named people in one company |
-| Active sites receiving its output | 1 production site | 25 active client sites |
-| On expiry | updates, support and new activations stop; the installed version keeps working | same |
+| Active sites with the Pro connector | 1 production site | 25 active client sites |
+| Advanced toolkit access | free/public (`Kieransaunders/D5G`) | free/public |
+| On expiry | connector updates, support and new activations stop; the installed version keeps working | same |
 
-Output made for a licensed site remains the customer's, permanently, with no phone-home.
-
-**Both seat count and site count are contractual, not technical.** The toolkit is markdown and Node on someone's laptop — no login, no activation, no callback — so neither clause is enforceable in code, and manual import to unlicensed sites cannot be detected. This is stated plainly rather than implied away: EULA terms and update/support access are the levers, matching the "friction, not DRM" position already accepted in §3.1 and §8. The connector's Freemius activation enforces the *site* count for connector-driven workflows only.
+**The site count is now technical, not just contractual.** Freemius activation enforces it for real, and — unlike before — it *cannot* be bypassed by manual Visual Builder import, because raw toolkit output no longer compiles to a correct page without a Pro connector on the target site (§3.1). Output made for a licensed site remains the customer's, but it depends on that site's Pro connector to render correctly; that dependency **is** the gate, by design (interop traded for lock-in, §3.1).
 
 ### Pricing (DECISION — recommendation)
 
@@ -158,6 +159,8 @@ No SaaS, no hosted Claude API, no white-label, no Envato. Divi Marketplace listi
 ## 6. Ship plan — triaged punch list
 
 ### AUTOMATE — Claude does these (next 2–3 working sessions, no input needed)
+- [ ] **`is_pro()` install-instructions swap (§3.1 #3)** — connector Settings/onboarding panel renders the `Kieransaunders/divi5-starter` install command for Free and swaps to `claude plugin marketplace add Kieransaunders/D5G` when `is_pro()` is true. Single PHP branch on the existing `is_pro()` (PR #28); optionally wrap the Pro block in a Freemius `@fs_premium_only` annotation so the D5G URL is absent from the .org free zip
+- [ ] **Page-compilation relocation (§3.1 #2) — the real gate** — pin the exact attributes/steps to move from the toolkit into the Pro `PageImporter` (candidates: preset resolution, brand-variable binding, per-page CSS cache clear, one attribute finalisation) so raw toolkit output imports unstyled without Pro. Cheap version only — no full PHP builder. Requires reading `app/…/divi-builder.js` + validator + `PageImporter`, then a spec before code. **Gated on the KIERAN smoke test proving the gate holds.**
 - [x] Fix Freemius init block — `premium_slug` corrected to `divi5-generator-premium`; `id`/`public_key` still Airloop's (blocked on Kieran creating the real product — see KIERAN-ONLY)
 - [x] Implement F1 licence gating in `RestApi.php` + tests — found already built and fully tested on branch `sswa/gate-pro-rest-endpoints` (openspec change `gate-pro-rest-endpoints`); merged into main by file copy (git merge itself was blocked by a stale-lock issue on this mount — see below), re-verified 68/68 tests green in a clean sandbox
 - [x] Sync versions: readme stable tag → 2.0.0, plugin header/`D5G_VERSION` → 2.0.0, `.claude-plugin/plugin.json` + `marketplace.json` → 2.0.0, `app/server.js` `EXPECTED_D5G_VERSION` → 2.0.0 (lockstep contract test), changelog + upgrade notice added
@@ -191,12 +194,14 @@ No SaaS, no hosted Claude API, no white-label, no Envato. Divi Marketplace listi
 ### KIERAN-ONLY — needs your credentials/accounts (~2–3 hours total)
 - [ ] **Review + commit the 2.0.0 connector changes** — still uncommitted in main's working tree (`plugin/`, `app/server.js`, `.claude-plugin/*`, readme/version sync). ~~sandbox git writes are blocked~~ **that blocker was environmental and is gone (15/07)** — just `git add -A && git commit` on a branch off main. Not done for you because the diff is broad and wants your eyes (10 min)
   - [x] The *free-starter* slice of this is already committed — `a64efcc` on branch `free-starter-launch` (`free-toolkit/` + `tools/build-free-starter-template.js`). Not pushed, no PR.
-- [ ] ~~Make the GitHub repo public~~ **Superseded by §3.1:** keep THIS repo private (it now carries the licensed toolkit). Instead: create public repo `Kieransaunders/divi5-starter` and push the contents of `free-toolkit/` to its root (10 min)
-- [ ] Freemius: attach the full-toolkit zip as a licensed download (or gated download link) so buyers get the Claude plugin with their licence; decide free-signup vs Pro-only access (15 min)
-- [ ] Update README.md install instructions — the old `claude plugin marketplace add Kieransaunders/Divi5Generate` public-install path no longer applies to the full toolkit (10 min)
+- [ ] **Publish the advanced toolkit publicly at `https://github.com/Kieransaunders/D5G`** (DECIDED 15/07/2026, §3.1 — reverses the "keep this repo private" line). Push the toolkit so `claude plugin marketplace add Kieransaunders/D5G` works. Audit first for anything that shouldn't be public: client names in `/docs` (ALET etc.), internal notes, keys, the PRD itself, DB-transfer internals (15 min + audit)
+- [ ] Create public repo `Kieransaunders/divi5-starter` and push `free-toolkit/` to its root — still the low-friction taster (10 min)
+- [ ] ~~Freemius: attach the full-toolkit zip as a licensed download~~ **DELETED by §3.1** — no gated download, no licence-checked endpoint, no `build-pro-zip`. The toolkit is public; the gate is the connector compile step + `is_pro()` install-instructions swap (below)
+- [ ] Update README.md install instructions to the public `claude plugin marketplace add Kieransaunders/D5G` path (10 min)
 - [ ] Landing page: swap the free-starter credit-line URL target once the real landing URL exists (currently points at iconnectit.co.uk; set in `tools/build-free-starter-template.js` + regenerate, and in the starter's SKILL.md/README) (10 min)
 - [ ] Freemius dashboard: create the Divi5 Generator product, confirm product id + public key, set pricing — then swap the two `TODO(Kieran)`-marked values in `divi5-generator.php` (30 min)
 - [ ] On-Mac smoke tests from FOLLOW-UP.md (chat e2e, session restore) **plus**: generate one real page and confirm Divi 5.9 accepts `builderVersion: "5.9.0"` on import (the value is unverified — see Session log) (40 min)
+- [ ] **Gating-relocation smoke test (§3.1 #2)** — the load-bearing verification for the whole new model: generate a page, paste the raw/unresolved toolkit JSON straight into the Visual Builder (no Pro import), and confirm it renders **meaningfully broken** (unstyled/unresolved presets). If Divi renders it acceptably, the gate is weak and more must move server-side. Then run the same JSON through Pro `/import` and confirm it renders correctly (30 min)
 - [ ] Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md`, save to `plugin/divi5-generator/.wordpress-org/` (20 min)
 - [ ] WordPress.org: submit the free build via the developer portal once the above lands (20 min + review wait)
 - [ ] Point a URL at the landing page (artifact + `docs/Marketing/launch-2.0.0/landing-page.html`; subdomain of iconnectit.co.uk is fine) (20 min)
