@@ -30,10 +30,10 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 
 | # | Task | Notes |
 |---|---|---|
-| **A1** | **`harden-rest-auth`** — the last security defects. Two-bucket rate limiter (strict per-IP on failed auth, per-key on success); `REMOTE_ADDR`-only keying means **every visitor behind a CDN shares one 30/min bucket**; plaintext key in `d5g_api_key_plain`. Must land before .org. Needs decisions D5/D6. |
+| **A1** | **`harden-rest-auth`** — the last security defect, now **rate-limiter only** (the plaintext-key half of the finding was wrong — see D6). Two-bucket limiter: strict per-IP on failed auth, per-key on success. Today it runs pre-auth and keys on `REMOTE_ADDR` only, so **every visitor behind a CDN shares one 30/min bucket** — the first customer on Cloudflare gets a self-rate-limiting site. Must land before .org. Needs decision D5. |
 | **A2** | Spec hygiene — sync + archive `gate-pro-rest-endpoints` (complete, all tasks `[x]`, never synced/archived); its delta spec is stale (`d5g_key`, removed in #29); the §3.2 capability gate has no spec at all. |
 | **A3** | Free-starter prep for K4: gitignore `.DS_Store`, parameterise `builderVersion`, pull the credit URL into one constant so K7 is a single edit. |
-| **A4** | **F2 — Freemius premium/free build split.** `@fs_premium_only` annotations so premium code strips from the free zip. **Source annotation is doable; verification is not** — proving premium code is absent needs a real Freemius deploy. Blocked on K1. Don't start blind. |
+| **A4** | **F2 — Freemius premium/free build split.** `@fs_premium_only` annotations so premium code strips from the free zip. **Source annotation is doable; verification is not** — proving premium code is absent needs a real Freemius deploy. Blocked on K1. Don't start blind. **Also fixes the activation screen** — see below. |
 
 ## Decisions (yours — recommendation attached)
 
@@ -44,30 +44,39 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 | **D3** | Pricing | £89 single (1 user/1 site) / £249 agency (3 users/25 sites) + capped lifetime. See PRD §3.3. |
 | **D4** | Free starter: 1 section (Services) or 3 (Hero/Services/CTA)? | **Ship 1.** It's built and validated; Hero+CTA is your first post-launch re-engagement beat. You can't test "feels like a demo" with zero users. |
 | **D5** | Do real customers sit behind Cloudflare/CDN? | Decides whether trusted-proxy is core to A1 or a `D5G_TRUSTED_PROXY` opt-in. **Never** honour `X-Forwarded-For` unconditionally — it's caller-supplied. |
-| **D6** | Plaintext key: drop it (show-once at generation + regenerate button) or keep the admin "show my key" UI? | Drop it. "Hashed-key auth" is a half-truth while the plaintext sits in the same options table. |
+| ~~**D6**~~ | ~~Plaintext key: drop it or keep the admin "show my key" UI?~~ | **No decision needed — already correct.** It's show-once: `SettingsPage::render()` deletes `d5g_api_key_plain` on first view (`admin/SettingsPage.php:39-43`), with a regenerate button for later. The audit's finding overstated it. Verified live 15/07. |
 
-## <a id="test-plan"></a>Test plan (K2) — the `builderVersion` question
+## <a id="test-plan"></a>How to run the manual Free test
 
-**The PRD is out of date here.** It says *"the two Local sites run Divi 5.8.1 and 5.8.0 — there
-is no 5.9 to test against here."* Not true as of 15/07/2026:
+The site is left ready for this. `divi-5-airtable-plugin` (Divi 5.9.0, `http://localhost:10015`)
+has the 2.0.0 connector active and reports `plan: free`.
 
-| Local site | Divi | Tests |
-|---|---|---|
-| `divi-5-airtable-plugin` | **5.9.0** | the `builderVersion: "5.9.0"` claim directly — does our emitted markup render correctly on the version we claim? |
-| `equitable-private-midwifery-services` | **5.8.0** | the risky case — content claims 5.9.0 on an older site, so **every migration is skipped**. If any attr shape is stale, this is where it renders wrong. |
+1. **Load the starter as a free user would** — it isn't published yet, so point Claude Code at
+   the local copy: `claude --plugin-dir /Volumes/External/Divi5Generate/free-toolkit`.
+   That gives exactly what a free user gets: one plugin, one skill, no builder, no validator,
+   no references.
+2. **Ask for a section** — e.g. *"create a services section for a roofing company in Exeter,
+   three services, navy and orange, CTA 'Get a quote'"*. It writes a JSON file.
+3. **Import it** — WP Admin → Divi → Divi Library → Import & Export → Import.
+4. **Use it** — open any page in the Visual Builder, insert the section from the Library,
+   publish. *That hand-assembly is the Pro pitch; watch how it feels.*
+5. **Hit the wall on purpose** — try a page import or `/preview`; both should return
+   `403 pro_required` naming the Library.
 
-Why it matters: `builderVersion` is a back-compat gate, not a validity check — nothing rejects
-it at import. Claiming 5.9.0 says "my content is newer than anything you know about", so Divi
-skips every migration and legacy-compat path. That's correct *only if* our attr shapes are
-current — and they come from `divi-builder.js`, developed against `5.0.0-public-beta.9.1`.
-**A stale shape fails silently as wrong rendering, not a rejected import.**
+**Toggling plan:** `wp-config.php:77` holds a commented-out `define( 'D5G_ASSUME_PRO', true );`.
+Uncomment for Pro, re-comment for Free. Allow a few seconds for opcache.
 
-If it renders correctly on 5.9.0 but wrong on 5.8.0 → drop the emitted `builderVersion` to a
-version we've actually tested. The PRD already reasons that a lower value is the *safer*
-default: migrations gate on `has_legacy_*_attrs_tree()` and no-op on current content.
+**Getting a key:** Settings → Divi5 Generator shows it **once**, then deletes the plaintext
+(by design — see D6). Use Regenerate to get a fresh one; the old key stops working.
 
-**Note:** the connector installed on `equitable` is the old `divi-tools-importer`, pre-rename.
-Update it before testing the 2.0.0 REST paths there.
+> **Open question this surfaced, worth settling before K4:** the starter tells users to import
+> by hand via Divi's own Library UI, and it ships no deploy skill — so **the free loop never
+> touches the free connector**. Divi's native portability does all the work. That leaves the
+> .org connector with no job in the free tier, and a free user who never installs it never sees
+> the upgrade prompt, so the funnel never runs. Either give the starter a small `import`
+> command that POSTs to `/import` (making the connector the easy path and the page-import 403
+> the natural upsell moment), or accept the connector is Pro-only and its .org listing is pure
+> discovery. Recommend the former.
 
 ---
 
@@ -96,9 +105,36 @@ PRD's long-running "UNVERIFIED, confirm before trusting it" flag on this string 
 - `divi5-generator` **2.0.0 deployed and activated** (`divi-tools-importer` 1.7.0 left active and untouched — no class conflict, different REST namespaces).
 - **`define( 'D5G_ASSUME_PRO', true );` added to `wp-config.php` line 77.** Remove it to test the Free path again.
 - Test artefacts deleted (page 3914, library item 3913).
-- API key: `d5gk_edab66208ce70b67ba8a3d688b3133584d4aae9bbb44c649`
+- API key: regenerate from Settings → Divi5 Generator (the plaintext is show-once, so any key pasted into docs is already dead).
 
-**Two issues found in passing, not yet actioned:**
+### Activation screen: licence-first is a symptom of "no free build", not a config bug
+
+The activation screen demands a licence key and demotes "Activate Free Version" to a small
+link — the wrong way round now that Free is a real product, not a trial. **It resolves itself
+with F2 and needs no UI work.** Traced through `vendor/freemius/wordpress-sdk/templates/connect.php:57`:
+
+```php
+$require_license_key = $is_premium_only ||
+    ( $is_freemium && ( $is_premium_code || ! $has_release_on_freemius ) &&
+      fs_request_get_bool( 'require_license', ( $is_premium_code || $has_release_on_freemius ) ) );
+```
+
+- **Premium build** (`is_premium => true`, `divi5-generator.php:53` — the only build we have): `$is_premium_code` true → the clause is true and `require_license` defaults to true → **licence wall**. Correct behaviour: a premium zip only reaches licence holders.
+- **Free build** (`is_premium => false`): `$is_premium_code` false, and the expression collapses to **false** either way `has_release_on_freemius` goes → friendly opt-in, free as the primary action.
+
+So .org users get the right screen automatically — **but only once F2 produces a free build.**
+Shipping the current premium build to .org would put a licence wall in front of every free user.
+
+**Testing the free opt-in before F2:** append `&require_license=false` to the activation URL
+(the SDK reads exactly that param at line 57), or click the small "Activate Free Version" link
+(`skip_activation` — it works, it's just ugly).
+
+**Not set, worth a decision after F2:** `'anonymous_mode' => true` lets the plugin run with no
+opt-in screen at all. Don't touch it before F2 — F2 determines what free users see anyway.
+
+**Issues found in passing:**
+
+0. ~~**PHP warning on every library import**~~ **FIXED 15/07.** `Undefined array key "seo_plugin"` at `admin/SettingsPage.php:225` fired for every library import, because library imports correctly log no `seo_plugin` (SEO is page-path only, §3.2) while the log renderer assumed the key. Now null-coalesced to an em-dash. It was a PHP notice on the happy path and Plugin Check would have flagged it.
 1. `deploy.sh` rsyncs `vendor/` — including PHPUnit and dev dependencies — into the WP plugin dir. Fine for dev; must not reach the .org build.
 2. `CLAUDE.md` still describes the SEO adapters as implementing `DTI_Seo_Adapter`. Stale — the rename to `D5G_` is complete; the 2.0.0 source declares no `DTI_` classes.
 
