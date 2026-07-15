@@ -1,0 +1,79 @@
+# Divi5Generate 2.0.0 — Release Checklist
+
+**Owner:** Kieran · **Created:** 15/07/2026 · **Goal:** first paid sale within 60 days
+
+Split out of `docs/PRD.md` (audit finding #12 — the PRD was doing four jobs: requirements,
+strategy, status and session log, which made contradictions inevitable). The PRD keeps the
+*decisions*. This file keeps the *work*. Session narrative belongs in neither.
+
+**The critical path is one item: [K1](#k1). Everything commercial is downstream of it.**
+
+---
+
+## Blocked on Kieran (nothing ships without these)
+
+| # | Task | Where | Est |
+|---|---|---|---|
+| <a id="k1"></a>**K1** | **Create the Freemius product**, get real id + public key, set pricing. Then swap the two `TODO(Kieran)` values in `divi5-generator.php:46` — id is still Airloop's `33991`. **Unblocks: `is_pro()`, F2, .org, the `D5G_ASSUME_PRO` decision, and every Pro test path.** | freemius.com | 30 min |
+| **K2** | Render test: fill script → import → **look at it** on Divi 5.9.0 *and* 5.8.0 (see [Test plan](#test-plan)). Nothing in the starter has ever been rendered. | Local | 15 min |
+| **K3** | Merge [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) — capability gate. Mergeable, CI clean. | GitHub | 5 min |
+| **K4** | Create public repo `Kieransaunders/divi5-starter`, push `free-toolkit/` contents to its root. **After K2 only.** | GitHub | 10 min |
+| **K5** | Freemius: attach the full-toolkit zip as a Pro-licensed download. Needs K1. | Freemius | 15 min |
+| **K6** | Point a URL at the landing page (`docs/Marketing/launch-2.0.0/landing-page.html`); subdomain of iconnectit.co.uk is fine. | DNS | 20 min |
+| **K7** | Swap the free-starter credit URL to the real landing URL once K6 exists — currently `https://iconnectit.co.uk` placeholder. Distributed copies can't be fixed retroactively, so **before K4**. | repo | 10 min |
+| **K8** | Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md` → `plugin/divi5-generator/.wordpress-org/` | Local + app | 20 min |
+| **K9** | Update README install instructions — the old public `claude plugin marketplace add Kieransaunders/Divi5Generate` path no longer applies (§3.1). | repo | 10 min |
+| **K10** | Submit the free build to WordPress.org. Needs F2 + K8. | .org portal | 20 min + review wait |
+| **K11** | On-Mac smoke tests from `FOLLOW-UP.md`: chat e2e, keep-alive, session restore. | Local | 40 min |
+
+## Agent-doable (unblocked — can run while you're away)
+
+| # | Task | Notes |
+|---|---|---|
+| **A1** | **`harden-rest-auth`** — the last security defects. Two-bucket rate limiter (strict per-IP on failed auth, per-key on success); `REMOTE_ADDR`-only keying means **every visitor behind a CDN shares one 30/min bucket**; plaintext key in `d5g_api_key_plain`. Must land before .org. Needs decisions D5/D6. |
+| **A2** | Spec hygiene — sync + archive `gate-pro-rest-endpoints` (complete, all tasks `[x]`, never synced/archived); its delta spec is stale (`d5g_key`, removed in #29); the §3.2 capability gate has no spec at all. |
+| **A3** | Free-starter prep for K4: gitignore `.DS_Store`, parameterise `builderVersion`, pull the credit URL into one constant so K7 is a single edit. |
+| **A4** | **F2 — Freemius premium/free build split.** `@fs_premium_only` annotations so premium code strips from the free zip. **Source annotation is doable; verification is not** — proving premium code is absent needs a real Freemius deploy. Blocked on K1. Don't start blind. |
+
+## Decisions (yours — recommendation attached)
+
+| # | Decision | Recommendation |
+|---|---|---|
+| **D1** | `D5G_ASSUME_PRO` — keep, or strip from the free build? It's a documented licence bypass (wp-config one-liner = free Pro). | Strip from the free build via F2 annotations. Keep in the premium/dev build. Settle before K10. |
+| **D2** | Product name — "Divi5 Generator" leads with ET's trademark; .org rejects names *beginning* with one. | Rename before K10: **"D5G — AI Page Generator for Divi 5"**, slug `d5g-page-generator`. Cheaper now than with an install base. |
+| **D3** | Pricing | £89 single (1 user/1 site) / £249 agency (3 users/25 sites) + capped lifetime. See PRD §3.3. |
+| **D4** | Free starter: 1 section (Services) or 3 (Hero/Services/CTA)? | **Ship 1.** It's built and validated; Hero+CTA is your first post-launch re-engagement beat. You can't test "feels like a demo" with zero users. |
+| **D5** | Do real customers sit behind Cloudflare/CDN? | Decides whether trusted-proxy is core to A1 or a `D5G_TRUSTED_PROXY` opt-in. **Never** honour `X-Forwarded-For` unconditionally — it's caller-supplied. |
+| **D6** | Plaintext key: drop it (show-once at generation + regenerate button) or keep the admin "show my key" UI? | Drop it. "Hashed-key auth" is a half-truth while the plaintext sits in the same options table. |
+
+## <a id="test-plan"></a>Test plan (K2) — the `builderVersion` question
+
+**The PRD is out of date here.** It says *"the two Local sites run Divi 5.8.1 and 5.8.0 — there
+is no 5.9 to test against here."* Not true as of 15/07/2026:
+
+| Local site | Divi | Tests |
+|---|---|---|
+| `divi-5-airtable-plugin` | **5.9.0** | the `builderVersion: "5.9.0"` claim directly — does our emitted markup render correctly on the version we claim? |
+| `equitable-private-midwifery-services` | **5.8.0** | the risky case — content claims 5.9.0 on an older site, so **every migration is skipped**. If any attr shape is stale, this is where it renders wrong. |
+
+Why it matters: `builderVersion` is a back-compat gate, not a validity check — nothing rejects
+it at import. Claiming 5.9.0 says "my content is newer than anything you know about", so Divi
+skips every migration and legacy-compat path. That's correct *only if* our attr shapes are
+current — and they come from `divi-builder.js`, developed against `5.0.0-public-beta.9.1`.
+**A stale shape fails silently as wrong rendering, not a rejected import.**
+
+If it renders correctly on 5.9.0 but wrong on 5.8.0 → drop the emitted `builderVersion` to a
+version we've actually tested. The PRD already reasons that a lower value is the *safer*
+default: migrations gate on `has_legacy_*_attrs_tree()` and no-op on current content.
+
+**Note:** the connector installed on `equitable` is the old `divi-tools-importer`, pre-rename.
+Update it before testing the 2.0.0 REST paths there.
+
+---
+
+## Status of the code
+
+- `release/2.0.0-reconcile` → [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29), 5 commits ahead of `main`, CI clean, 75 tests green.
+- `free-starter-launch` → `a64efcc`, pushed 15/07, no PR. Feeds K4.
+- The capability gate is **code-complete, not live**: `is_pro()` resolves against Airloop's Freemius id, so it gates nothing real and over-gates in practice (403 on every page import without `D5G_ASSUME_PRO`).
+- Unverified end-to-end: nothing proves `handle_import` wires the gate correctly against live WordPress, or that the app renders `pro_required` as anything but a raw 403.

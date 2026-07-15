@@ -10,7 +10,16 @@ SKILL.md (and any importer reference it links) SHALL describe the importer that 
 - **AND** no stale `X-Divi-Tools-Key` / `divi-tools/v1` / `divi-tools-importer` import instructions remain
 
 ### Requirement: Auth is header-only, no query-param fallback
-Importer references SHALL document authentication via the `X-D5G-Key` request header only. References SHALL NOT claim a `?dti_key=` or `?d5g_key=` query-parameter fallback exists, because the plugin's `Auth::verify` path reads only the header (`RestApi.php` reads `X-D5G-Key` via `$request->get_header`).
+The plugin SHALL accept the API key via the `X-D5G-Key` request header only, and SHALL NOT read it from a query parameter. A key in the query string leaks into browser history, access logs, proxies and analytics.
+
+Importer references SHALL document the header form only, and SHALL NOT claim a `?dti_key=` or `?d5g_key=` fallback exists.
+
+> This requirement previously constrained only the documentation, and justified itself with the claim that "the plugin's `Auth::verify` path reads only the header" — which was **false**: `RestApi.php` read `$request->get_param( 'd5g_key' )` as a fallback, and `skills/divi5-deploy/SKILL.md` shipped a `?d5g_key=` curl example. A spec asserting the code's behaviour as rationale, while constraining only the docs, let all three drift apart unnoticed. Both are now bound, and the fallback was removed in PR #29 (15/07/2026).
+
+#### Scenario: The plugin ignores a query-param key
+- **GIVEN** a request carrying no `X-D5G-Key` header but a valid key in a `d5g_key` query parameter
+- **WHEN** `D5G_RestApi::authenticate()` runs
+- **THEN** the result `is_wp_error()` with code `unauthorized`
 
 #### Scenario: No query-param auth is advertised
 - **WHEN** a reader consults the site-profile reference for how to authenticate

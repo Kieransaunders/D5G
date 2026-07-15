@@ -183,7 +183,7 @@ No SaaS, no hosted Claude API, no white-label, no Envato. Divi Marketplace listi
 
   So claiming `5.9.0` means "my content is newer than anything you know about" → **every migration and legacy-compat path is skipped**. That is correct *iff* our emitted attr shapes really are current. If any shape is stale, the failure is **silent wrong rendering, not a rejected import** — the PRD's "import/preview compatibility hinges on this string" is wrong and should not drive the test plan.
   - Corollary: a *lower* value is the safer default, not a riskier one. Migrations additionally gate on `has_legacy_*_attrs_tree()`, so they no-op on current content and only act if something genuinely is stale. Claiming a version we have actually tested is more defensible than claiming one we have not.
-  - **Local reality check: the two Local sites run Divi 5.8.1 and 5.8.0 — there is no 5.9 to test against here.** Verify render correctness on 5.8.1 first; the 5.9 claim stays unproven until a 5.9 site exists.
+  - ~~**Local reality check: the two Local sites run Divi 5.8.1 and 5.8.0 — there is no 5.9 to test against here.**~~ **Wrong, corrected 15/07/2026:** `divi-5-airtable-plugin` runs **Divi 5.9.0** and `equitable-private-midwifery-services` runs **5.8.0**. Both halves are testable locally today — 5.9.0 verifies the claim directly, 5.8.0 is the risky case where migrations are skipped. See the test plan in `docs/RELEASE-CHECKLIST.md`.
 
 ### KIERAN-ONLY — needs your credentials/accounts (~2–3 hours total)
 - [ ] **Review + commit the 2.0.0 connector changes** — still uncommitted in main's working tree (`plugin/`, `app/server.js`, `.claude-plugin/*`, readme/version sync). ~~sandbox git writes are blocked~~ **that blocker was environmental and is gone (15/07)** — just `git add -A && git commit` on a branch off main. Not done for you because the diff is broad and wants your eyes (10 min)
@@ -232,4 +232,8 @@ Diagnostics: conversion strong + installs weak → the constraint is distributio
 
 ---
 
-*Lives at `docs/PRD.md`. **Note: `/docs/` is gitignored (.gitignore:74), so this file does NOT version with the code** — it exists only in your local working copy and is not backed up by git. Treat it accordingly, or drop the ignore rule if you want its history tracked. Vault overview at `01-projects/divi5generate.md` carries the one-page summary.*
+*Lives at `docs/PRD.md`, now tracked in git (the `/docs/` ignore rule was dropped 15/07/2026 — this file is the source of truth for the commercial model and had no history or backup).*
+
+*This file holds **decisions**. The **work** lives in `docs/RELEASE-CHECKLIST.md` (triaged: blocked-on-Kieran / agent-doable / decisions, plus the `builderVersion` test plan). Session narrative belongs in neither — §6's session logs are kept for now as an audit trail but should not accrete further. Splitting these was audit finding #12: one file doing requirements + strategy + status + session log makes contradictions inevitable, and it produced three of them.*
+
+*Vault overview at `02-Projects/Divi5Generate.md` carries the one-page summary — **stale as of 15/07/2026**: it still says "internal tool, not a customer-facing product" and "no urgent work", both superseded by this PRD.*
