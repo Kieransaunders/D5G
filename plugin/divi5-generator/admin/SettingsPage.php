@@ -174,7 +174,11 @@ class D5G_SettingsPage {
 
 			<hr>
 			<h2>How to use</h2>
-			<p>Give these two values to Claude Code (or paste them into the <code>import</code> skill):</p>
+			<p><strong>Step 1 — install the skills into Claude Code</strong> (one-time, in a terminal on your own computer, not this server):</p>
+			<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:12px">claude plugin marketplace add Kieransaunders/Divi5Generate
+claude plugin install divi5generate@divi5generate</pre>
+			<p class="description">Requires <a href="https://claude.com/claude-code" target="_blank">Claude Code</a>. Restart Claude Code (or run <code>/reload-plugins</code>) afterwards — the Divi 5 generate/import/review skills are then available in every session. To check it worked, ask Claude: <em>"run /divi5generate:help"</em>.</p>
+			<p><strong>Step 2 — connect it to this site.</strong> Give these two values to Claude Code (or paste them into the <code>import</code> skill):</p>
 			<ol>
 				<li><strong>Site URL:</strong> <code><?php echo esc_html( home_url() ); ?></code></li>
 				<li><strong>API Key:</strong> the key shown above (or regenerate to see it again)</li>
