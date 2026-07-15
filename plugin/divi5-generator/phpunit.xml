@@ -16,9 +16,7 @@
 		<testsuite name="RestApi">
 			<file>tests/RestApiProGateTest.php</file>
 			<file>tests/DbTransferGateTest.php</file>
-		</testsuite>
-		<testsuite name="Limits">
-			<file>tests/LimitsTest.php</file>
+			<file>tests/ImportCapabilityGateTest.php</file>
 		</testsuite>
 	</testsuites>
 </phpunit>
