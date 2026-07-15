@@ -18,6 +18,10 @@ on:
           - pending
           - beta
           - released
+      promote_tag_id:
+        description: "Existing tag id to promote (skips build/upload — just sets release_mode)"
+        required: false
+        type: string
 
 env:
   PRODUCT_ID: "33991"
@@ -26,18 +30,35 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Promote existing tag
+        if: inputs.promote_tag_id != ''
+        env:
+          TOKEN: ${{ secrets.FREEMIUS_API_TOKEN }}
+          TAG_ID: ${{ inputs.promote_tag_id }}
+          RELEASE_MODE: ${{ inputs.release_mode }}
+        run: |
+          curl -sS --fail-with-body -X PUT "https://api.freemius.com/v1/products/$PRODUCT_ID/tags/$TAG_ID.json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"release_mode\":\"$RELEASE_MODE\"}" | jq .
+          echo "Tag $TAG_ID set to $RELEASE_MODE"
+
       - uses: actions/checkout@v5
+        if: inputs.promote_tag_id == ''
 
       - name: Install Freemius SDK
+        if: inputs.promote_tag_id == ''
         # vendor/ is gitignored; Freemius rejects zips without its SDK inside
         run: composer install --no-dev --no-interaction --working-dir=plugin/divi5-generator
 
       - name: Build plugin zip
+        if: inputs.promote_tag_id == ''
         # must be absolute: build-zip.sh cd's into a temp dir before zipping,
         # so a relative output path lands in the temp dir and gets cleaned up
         run: bash plugin/build-zip.sh "$PWD"
 
       - name: Upload to Freemius
+        if: inputs.promote_tag_id == ''
         env:
           TOKEN: ${{ secrets.FREEMIUS_API_TOKEN }}
           RELEASE_MODE: ${{ inputs.release_mode }}
