@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "divi5-starter",
+  "description": "Free Divi 5 services section generator - a taste of the full D5G toolkit.",
+  "owner": {
+    "name": "Kieran, iConnectIT",
+    "email": "kieran@iconnectit.co.uk",
+    "url": "https://iconnectit.co.uk"
+  },
+  "plugins": [
+    {
+      "name": "divi5-starter",
+      "version": "1.0.0",
+      "description": "Generate a polished, importable Divi 5 services section (3 columns: icon, title, description) from a plain-English brief. Free starter from the D5G toolkit.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
