@@ -27,7 +27,7 @@ const { screenshot: takeScreenshot, resolveExecutable } = require('./lib/screens
 // /ping reports a lower deployed version, the health chip warns — e.g. an older
 // plugin defaults imports to draft (pre-1.5.4), which silently breaks live QA.
 // Bump this in lockstep with plugin/divi5-generator/divi5-generator.php D5G_VERSION.
-const EXPECTED_D5G_VERSION = '2.0.0';
+const EXPECTED_D5G_VERSION = '2.0.1';
 
 // Local/loopback hosts the QA loop is *meant* to screenshot — the user's own
 // WordPress site. Unlike brand-extract (which fetches arbitrary public URLs and
