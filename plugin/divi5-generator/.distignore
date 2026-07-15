@@ -1,0 +1,30 @@
+# .distignore — files excluded from the WordPress.org release ZIP.
+# https://developer.wordpress.org/plugins/wordpress-org/how-to-use-subversion/#what-to-export
+#
+# Vendor/ IS shipped (Freemius SDK must be bundled — wp.org reviewers require
+# dependencies present in the release). Only dev tooling and OS cruft are excluded.
+
+# Development tooling
+.git
+.gitignore
+.github
+composer.json
+composer.lock
+phpunit.xml
+phpunit.xml.dist
+tests/
+.DS_Store
+*.log
+
+# Dev helper scripts (never run on a production site)
+deploy.sh
+dev-watch.sh
+build-zip.sh
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/

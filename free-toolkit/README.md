@@ -56,3 +56,7 @@ This starter builds one section, from a fixed template, in one layout. The **ful
 ## Licence
 
 MIT - see [LICENSE](LICENSE). The bundled template and scripts may be used freely; the credit line in generated sections is required by the template's build script.
+
+---
+
+*Divi is a registered trademark of Elegant Themes, Inc. This project is not affiliated with nor endorsed by Elegant Themes.*

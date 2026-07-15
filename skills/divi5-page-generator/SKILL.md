@@ -145,3 +145,4 @@ Primary keyword is validated across h1, opening copy, and h2s (see `scripts/vali
 | [references/layout-patterns.md](references/layout-patterns.md) | Layout recipes |
 | [references/seo.md](references/seo.md) | Full SEO rules |
 | [references/module-reference.md](references/module-reference.md) | Raw attribute patterns |
+| [references/responsive-rules.md](references/responsive-rules.md) | Responsive emission rules (clamp ramp, grids, mobile backgrounds) |

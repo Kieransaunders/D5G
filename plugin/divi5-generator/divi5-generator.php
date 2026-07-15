@@ -14,7 +14,7 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       divi5-generator
  *
- * @fs_premium_only /src/SchemaInjector.php, /src/SeoWriter.php, /src/PageImporter.php, /src/PagePreviewer.php, /src/PresetManager.php, /src/GlobalVariablesImporter.php, /src/DbExporter.php, /src/DbImporter.php, /src/MenuImporter.php
+ * @fs_premium_only /src/SchemaInjector.php, /src/SeoWriter.php, /src/PageImporter.php, /src/PagePreviewer.php, /src/PresetManager.php, /src/GlobalVariablesImporter.php, /src/DbExporter.php, /src/DbImporter.php, /src/MenuImporter.php, /src/ThemeBuilderImporter.php
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -112,6 +112,7 @@ if ( dg_fs()->is__premium_only() ) {
     require_once D5G_DIR . 'src/DbExporter.php';
     require_once D5G_DIR . 'src/DbImporter.php';
     require_once D5G_DIR . 'src/MenuImporter.php';
+    require_once D5G_DIR . 'src/ThemeBuilderImporter.php';
 }
 
 register_activation_hook( __FILE__, array( 'D5G_Auth', 'maybe_generate_key' ) );
