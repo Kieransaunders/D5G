@@ -38,7 +38,7 @@ jobs:
           TOKEN: ${{ secrets.FREEMIUS_API_TOKEN }}
           RELEASE_MODE: ${{ inputs.release_mode }}
         run: |
-          resp=$(curl -sS -X POST "https://api.freemius.com/v2/products/$PRODUCT_ID/tags.json" \
+          resp=$(curl -sS -X POST "https://api.freemius.com/v1/products/$PRODUCT_ID/tags.json" \
             -H "Authorization: Bearer $TOKEN" \
             -F "file=@divi5-generator.zip")
           echo "$resp" | jq .
@@ -50,7 +50,7 @@ jobs:
           echo "Uploaded version $(echo "$resp" | jq -r '.version') as tag $tag_id (release_mode: pending)"
 
           if [ "$RELEASE_MODE" != "pending" ]; then
-            curl -sS --fail-with-body -X PUT "https://api.freemius.com/v2/products/$PRODUCT_ID/tags/$tag_id.json" \
+            curl -sS --fail-with-body -X PUT "https://api.freemius.com/v1/products/$PRODUCT_ID/tags/$tag_id.json" \
               -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/json" \
               -d "{\"release_mode\":\"$RELEASE_MODE\"}" | jq .
