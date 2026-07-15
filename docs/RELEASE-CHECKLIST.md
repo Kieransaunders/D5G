@@ -14,7 +14,7 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 
 | # | Task | Where | Est |
 |---|---|---|---|
-| <a id="k1"></a>**K1** | **Create the Freemius product**, get real id + public key, set pricing. Then swap the two `TODO(Kieran)` values in `divi5-generator.php:46` — id is still Airloop's `33991`. **Unblocks: `is_pro()`, F2, .org, the `D5G_ASSUME_PRO` decision, and every Pro test path.** | freemius.com | 30 min |
+| <a id="k1"></a>**K1** | **Confirm the Freemius product is launch-ready** — plans, pricing, and a premium build pipeline. ~~Create the product / swap the id~~ **not needed:** `33991` / slug `divi5-generator` is this product's own id (confirmed 15/07; Airloop is a different product, id `31132`). The id and public_key stand; what's unverified is whether the product is *configured*. **Unblocks: F2, .org, the `D5G_ASSUME_PRO` decision, and every Pro test path.** | freemius.com | 15 min |
 | **K2** | Render test: fill script → import → **look at it** on Divi 5.9.0 *and* 5.8.0 (see [Test plan](#test-plan)). Nothing in the starter has ever been rendered. | Local | 15 min |
 | **K3** | Merge [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) — capability gate. Mergeable, CI clean. | GitHub | 5 min |
 | **K4** | Create public repo `Kieransaunders/divi5-starter`, push `free-toolkit/` contents to its root. **After K2 only.** | GitHub | 10 min |
@@ -75,5 +75,5 @@ Update it before testing the 2.0.0 REST paths there.
 
 - `release/2.0.0-reconcile` → [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29), 5 commits ahead of `main`, CI clean, 75 tests green.
 - `free-starter-launch` → `a64efcc`, pushed 15/07, no PR. Feeds K4.
-- The capability gate is **code-complete, not live**: `is_pro()` resolves against Airloop's Freemius id, so it gates nothing real and over-gates in practice (403 on every page import without `D5G_ASSUME_PRO`).
+- The capability gate is **code-complete, live-ness unverified**: `is_pro()` resolves against Freemius product `33991`, which *is* the right product (corrected 15/07). So the gate should work once a licence is present — but no site here has one, so any install without `D5G_ASSUME_PRO` returns 403 on every page import. That is the gate behaving correctly on an unlicensed site, not a misconfiguration.
 - Unverified end-to-end: nothing proves `handle_import` wires the gate correctly against live WordPress, or that the app renders `pro_required` as anything but a raw 403.

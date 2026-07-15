@@ -64,6 +64,35 @@ refusal is the moment to say so, and the hand-assembly it implies is the Pro pit
 - **THEN** the message mentions the Divi Library
 - **AND** the message includes the Freemius upgrade URL when available
 
+### Requirement: Preview is page creation and takes the page gate
+`/preview` SHALL be refused on a Free install. `D5G_PagePreviewer::preview()` calls
+`wp_insert_post()` with `post_status` `draft` — it creates a **real page** the caller can
+publish from wp-admin. `/preview` is a Free route at the route level and originally called no
+capability gate, so a Free install could POST a page payload to `/preview` and walk straight
+around `import_gate()`.
+
+Found by end-to-end test on live Divi 5.9.0 (15/07/2026), not by the unit suite, which
+exercised `import_gate()` in isolation and could not see the wiring. A Free install created
+page 3914 (`post_type` `page`, 7181 bytes) before the fix.
+
+Preview always takes the page path — it rejects library exports with 422 — so it gates as a
+page import unconditionally, regardless of payload context.
+
+> Consequence for PRD §3.2: `/preview` moves from Free to Pro. Free loses nothing it could
+> use — preview refuses library exports, which are Free's only output, so preview was already
+> unusable on Free. It is a Pro QA tool.
+
+#### Scenario: Free install calls preview
+- **GIVEN** the install is not Pro
+- **WHEN** `D5G_RestApi::preview_gate( false )` is called
+- **THEN** the result `is_wp_error()` with code `pro_required` and status `403`
+- **AND** no post is created
+
+#### Scenario: Pro install calls preview
+- **GIVEN** the install is Pro
+- **WHEN** `D5G_RestApi::preview_gate( true )` is called
+- **THEN** the result is `true`
+
 ### Requirement: SEO and schema writing is unreachable on Free by control flow
 The system SHALL NOT provide a plan-filtered SEO payload. `$seo` and `$schema` are passed only
 to `D5G_PageImporter::import()`; the library path in `handle_import()` returns before reaching
