@@ -43,6 +43,7 @@ class D5G_SettingsPage {
 		}
 
 		$has_key     = (bool) get_option( D5G_Auth::KEY_OPTION );
+		$is_pro      = class_exists( 'D5G_Limits' ) && D5G_Limits::is_pro();
 		$endpoint    = home_url( '/wp-json/divi5-generator/v1/import' );
 		$ping_url    = home_url( '/wp-json/divi5-generator/v1/ping' );
 		$log         = D5G_Auth::get_log();
@@ -174,10 +175,18 @@ class D5G_SettingsPage {
 
 			<hr>
 			<h2>How to use</h2>
-			<p><strong>Step 1 — install the skills into Claude Code</strong> (one-time, in a terminal on your own computer, not this server):</p>
-			<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:12px">claude plugin marketplace add Kieransaunders/Divi5Generate
-claude plugin install divi5generate@divi5generate</pre>
-			<p class="description">Requires <a href="https://claude.com/claude-code" target="_blank">Claude Code</a>. Restart Claude Code (or run <code>/reload-plugins</code>) afterwards — the Divi 5 generate/import/review skills are then available in every session. To check it worked, ask Claude: <em>"run /divi5generate:help"</em>.</p>
+			<p><strong>Step 1 — install the skills into Claude Code</strong> (one-time, in a terminal on your own computer, not this server). Requires <a href="https://claude.com/claude-code" target="_blank">Claude Code</a>.</p>
+
+			<?php if ( $is_pro ) : ?>
+				<p>Your Pro licence includes the <strong>full Divi 5 toolkit</strong> — page generator, brand systems, and one-click deploy skills. Installation details are in your purchase email. Once installed, restart Claude Code (or run <code>/reload-plugins</code>) and verify with <em>"run /divi5generate:help"</em>.</p>
+				<p class="description">Haven't received it? Contact support with your licence key.</p>
+			<?php else : ?>
+				<p>Install the <strong>free Divi 5 Starter</strong> (a services-section generator) into Claude Code:</p>
+				<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:12px">claude plugin marketplace add Kieransaunders/divi5-starter
+claude plugin install divi5-starter@divi5-starter</pre>
+				<p class="description">Restart Claude Code (or run <code>/reload-plugins</code>) afterwards. The free starter generates a single credited section. <a href="https://checkout.freemius.com/plugin/33991/" target="_blank"><strong>Upgrade to Pro</strong></a> for the full toolkit: whole-page generation, brand extract/deploy, and one-click import.</p>
+			<?php endif; ?>
+
 			<p><strong>Step 2 — connect it to this site.</strong> Give these two values to Claude Code (or paste them into the <code>import</code> skill):</p>
 			<ol>
 				<li><strong>Site URL:</strong> <code><?php echo esc_html( home_url() ); ?></code></li>
