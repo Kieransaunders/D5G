@@ -53,7 +53,7 @@ if ( ! function_exists( 'dg_fs' ) ) {
                 'is_premium'          => true,
                 'premium_suffix'      => 'Pro',
                 'has_premium_version' => true,
-                'has_addons'          => true,  // "Divi 5 Toolkit" add-on = licensed Claude Code plugin download (see docs/PRO-TOOLKIT-DELIVERY.md)
+                'has_addons'          => false, // Freemius Add-Ons zip retired — D5G marketplace is the sole Pro install path (see docs/PRO-TOOLKIT-DELIVERY.md)
                 'has_paid_plans'      => true,
                 'is_org_compliant'    => true,
                 'wp_org_gatekeeper'   => 'OA7#BoRiBNqdf52FvzEf!!074aRLPs8fspif$7K1#4u4Csys1fQlCecVcUTOs2mcpeVHi#C2j9d09fOTvbC0HloPT7fFee5WdS3G',

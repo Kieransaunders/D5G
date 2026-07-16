@@ -18,7 +18,7 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 | ~~**K2**~~ | ~~Render test~~ **DONE 15/07** — see [Test results](#test-results). Renders correctly on Divi 5.9.0, watermark and CTA intact. **`builderVersion: "5.9.0"` is settled** — 5.9.0 is the current Divi release, so the 5.8.0 back-compat case was dropped as out of scope (Kieran's call, 15/07). | Local | ✅ |
 | **K3** | Merge [PR #29](https://github.com/Kieransaunders/Divi5Generate/pull/29) — capability gate. Mergeable, CI clean. | GitHub | 5 min |
 | **K4** | Create public repo `Kieransaunders/divi5-starter`, push `free-toolkit/` contents to its root. **After K2 only.** | GitHub | 10 min |
-| **K5** | Freemius: attach the full-toolkit zip as a Pro-licensed download. Needs K1. | Freemius | 15 min |
+| **K5** | ~~Freemius: attach the full-toolkit zip as a Pro-licensed download.~~ Retired — superseded by PRD §3.1 (D5G marketplace is the sole Pro install path; see `docs/PRO-TOOLKIT-DELIVERY.md`). | — | — |
 | **K6** | Point a URL at the landing page (`docs/Marketing/launch-2.0.0/landing-page.html`); subdomain of iconnectit.co.uk is fine. | DNS | 20 min |
 | **K7** | Swap the free-starter credit URL to the real landing URL once K6 exists — currently `https://iconnectit.co.uk` placeholder. Distributed copies can't be fixed retroactively, so **before K4**. | repo | 10 min |
 | **K8** | Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md` → `plugin/divi5-generator/.wordpress-org/` | Local + app | 20 min |

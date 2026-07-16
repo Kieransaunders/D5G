@@ -323,6 +323,12 @@ if ( ! function_exists( 'esc_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_html' ) ) {
+	function esc_html( $str ) {
+		return htmlspecialchars( (string) $str, ENT_QUOTES );
+	}
+}
+
 // --- RestApi test infrastructure ----------------------------------------------
 
 /** In-memory transient store, keyed like get_transient()/set_transient(). */
