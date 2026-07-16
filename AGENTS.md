@@ -55,16 +55,21 @@ and won't know to do this unless told.
   **No build step.** A reskin is in progress against the Claude Design mockup — see
   `app/REDESIGN-PLAN.md` for the phased plan and `app/redesgn /` for the mockup source.
   Each phase ships as its own SSWA change.
-- **WordPress importer (`plugin/divi5-generator/`)**: PHP, flat-file `require_once`
-  convention (no autoloader). Tests via PHPUnit ^9 (`composer test`); the test bootstrap
-  stubs WP functions so no WP load is needed.
+- **WordPress importer** — split into its own **private** repo, 16/07/2026
+  (`github.com/Kieransaunders/divi5-generator`, not in this working tree beyond a
+  gitignored local checkout at `plugin/divi5-generator/`). Reason: its Pro-gating
+  source (`PageCompiler.php`, `RestApi.php`, `Limits.php`, `DbExporter`/`DbImporter`)
+  can't sit in this now-public toolkit repo without exposing the mechanism the
+  Freemius Pro gate depends on. PHP, flat-file `require_once` convention (no
+  autoloader), PHPUnit ^9 (`composer test`) — same as before, just a different repo.
+  See `docs/PRD.md` §3.1 and the split rationale there.
 - **Skills (`skills/<name>/SKILL.md`)**: frontmatter (`name`, `description`) is mandatory —
   Claude uses `description` to decide when to invoke. After editing a skill, `git push`
   → restart Desktop or `/reload-plugins`.
 - **SEO plugin support**: the importer detects the active SEO plugin and writes native meta
   keys for Yoast, Rank Math, AIOSEO, SEOPress, TSF, or neutral `_dti_seo_*` fallback. See
   `openspec/specs/seo-meta-persistence/spec.md` (the source of truth) and
-  `plugin/divi5-generator/src/Seo/`.
+  `src/Seo/` in the plugin's own repo (`Kieransaunders/divi5-generator`, private).
 
 ## Output location (generated artefacts)
 

@@ -96,6 +96,42 @@ With the toolkit public and free (§3.1), the paid asset is the **Pro connector*
 
 **The site count is now technical, not just contractual.** Freemius activation enforces it for real, and — unlike before — it *cannot* be bypassed by manual Visual Builder import, because raw toolkit output no longer compiles to a correct page without a Pro connector on the target site (§3.1). Output made for a licensed site remains the customer's, but it depends on that site's Pro connector to render correctly; that dependency **is** the gate, by design (interop traded for lock-in, §3.1).
 
+### 3.4 Repo layout (DECIDED + EXECUTED 16/07/2026)
+
+The toolkit (§3.1) and the connector are now in **separate repos**, not folders
+of one monorepo:
+
+- **`https://github.com/Kieransaunders/D5G`** (public) — the Claude Code
+  toolkit: skills, commands, the Node builder/app. Public by design (§3.1).
+- **`https://github.com/Kieransaunders/divi5-generator`** (private) — the
+  WordPress connector plugin. Split out because its Pro-gating source
+  (`PageCompiler.php` — the actual enforcement mechanism §3.1's gate depends
+  on; `RestApi.php`/`Limits.php` — Pro-only route gates; `DbExporter.php`/
+  `DbImporter.php` — whole-table REST transfer, gap 7 below) cannot sit
+  inside a public repo without exposing exactly how to bypass the gate.
+  Licensing is unchanged (GPL-2.0-or-later throughout, see the plugin's own
+  `LICENSE`) — only the *source repo* hosting it moved, not the licence terms.
+
+D5G's own git history predating the split still contains old copies of the
+connector source (nothing was purged) — low risk today since D5G was not yet
+public when this was done, but confirm D5G's visibility before treating that
+history as safe if it's ever made public later.
+
+Fresh local checkout at `plugin/divi5-generator/` is gitignored in this repo
+(`/plugin/` in `.gitignore`) — present on disk for convenience, not tracked
+here. CI (`freemius-deploy.yml`) and build tooling (`build-zip.sh`,
+`deploy.sh`, `dev-watch.sh`) moved with it; the toolkit's own
+`.github/workflows/test.yml` no longer runs a plugin PHP job.
+
+**Still open:** `skills/divi5-deploy/scripts/build-plugin-zip.sh` (used by
+`/divi5generate:help` and the app's `/download-plugin` endpoint) still
+references the old in-repo `plugin/divi5-generator/` path and needs updating
+to point at the plugin's new repo location. `FREEMIUS_API_TOKEN` needs
+re-adding as a secret on the new repo (secrets don't migrate). Plugin header
+`Plugin URI`/`Support URI` still point at the stale `Kieransaunders/Divi5Generate`
+name (gap 3 below) — fold into the naming/landing-page decision, don't point
+it at the new *private* repo (would 404 publicly).
+
 ### Pricing (DECISION — recommendation)
 
 - **Pro Single:** £89/year — 1 user, 1 site
@@ -130,7 +166,7 @@ Each claim below was checked against the source, not assumed.
 
 1. ~~**Freemius init is copy-pasted from Airloop** — `divi5-generator.php` has `'premium_slug' => 'Airloop-premium'` and product id `33991`. If that id is Airloop's Freemius product, licensing will activate against the wrong product.~~ **MOSTLY WRONG — corrected 15/07/2026.** Only `premium_slug` was copy-pasted (now `divi5-generator-premium`). **`33991` is this product's own Freemius id** (slug `divi5-generator`), confirmed by Kieran and cross-checked against Airloop's plugin source, which is a *different* product: **id `31132`, slug `airloop`** (`Airloop-premium/src/Freemius.php:32`). The gap-1 inference was drawn from the one bad value and over-generalised to the whole block; it then propagated into the blind-spot audit, the release checklist and PR #29's description. **Still unverified:** whether the 33991 product has plans/pricing configured and a premium build pipeline (F2) — an id being correct is not the same as a product being launch-ready.
 2. ~~**Version drift:** plugin header/`D5G_VERSION` = 1.8.0; `readme.txt` stable tag = 1.7.0; `.claude-plugin/plugin.json` = 1.7.0.~~ **Closed** — all synced to 2.0.0 in `ba99aee`, with `app/server.js` `EXPECTED_D5G_VERSION` as the lockstep contract test.
-3. **GitHub repo 404s:** `github.com/Kieransaunders/Divi5Generate` is private or renamed. The README install command (`claude plugin marketplace add Kieransaunders/Divi5Generate`), Plugin URI, and support URL are all dead until it's public.
+3. **GitHub repo 404s:** `github.com/Kieransaunders/Divi5Generate` (the name in the plugin header's `Plugin URI`/`Support URI`) doesn't match either real repo — the toolkit is `Kieransaunders/D5G` (public) and the connector is `Kieransaunders/divi5-generator` (private, split 16/07/2026, see §3.4). Plugin URI/Support URI need updating to something that actually resolves publicly — not the private connector repo — once the naming decision (DECISION 2) lands.
 4. ~~**No licence enforcement in code:** every REST endpoint is available to anyone with the API key.~~ **Closed in code, blocked on Freemius** — `pro_gate()` + `requires_pro()` in `RestApi.php` return `403 pro_required`, landed via PR #28 and covered by `RestApiProGateTest.php`. `is_pro()` resolves against Freemius product `33991`, which is the correct product (gap 1's claim to the contrary was wrong). What remains unverified is whether that product is *configured* — plans, pricing, premium build — and whether the gate behaves correctly against live WordPress.
 5. **Stale beta claims:** docs and `builderVersion: "5.0.0-public-beta.9.1"` predate Divi 5 official (26/02/2026, now on 5.8/5.9). Need a compatibility pass against current Divi 5 stable.
 6. **Naming/trademark risk:** "Divi5 Generator" leads with Elegant Themes' trademark. WordPress.org rejects slugs/names that *begin* with a trademark; ET may also object. "for Divi 5" suffix form is the accepted pattern.
@@ -194,7 +230,8 @@ No SaaS, no hosted Claude API, no white-label, no Envato. Divi Marketplace listi
 ### KIERAN-ONLY — needs your credentials/accounts (~2–3 hours total)
 - [ ] **Review + commit the 2.0.0 connector changes** — still uncommitted in main's working tree (`plugin/`, `app/server.js`, `.claude-plugin/*`, readme/version sync). ~~sandbox git writes are blocked~~ **that blocker was environmental and is gone (15/07)** — just `git add -A && git commit` on a branch off main. Not done for you because the diff is broad and wants your eyes (10 min)
   - [x] The *free-starter* slice of this is already committed — `a64efcc` on branch `free-starter-launch` (`free-toolkit/` + `tools/build-free-starter-template.js`). Not pushed, no PR.
-- [ ] **Publish the advanced toolkit publicly at `https://github.com/Kieransaunders/D5G`** (DECIDED 15/07/2026, §3.1 — reverses the "keep this repo private" line). Push the toolkit so `claude plugin marketplace add Kieransaunders/D5G` works. Audit first for anything that shouldn't be public: client names in `/docs` (ALET etc.), internal notes, keys, the PRD itself, DB-transfer internals (15 min + audit)
+- [ ] **Create the private `Kieransaunders/divi5-generator` repo and push it** (§3.4 — split executed locally 16/07/2026, nothing pushed yet: `cd plugin/divi5-generator && git remote add origin <url> && git push -u origin main`). Do this — or at least confirm D5G's current visibility — *before* the toolkit-publish step below, since D5G's pre-split history still contains old connector source.
+- [ ] **Publish the advanced toolkit publicly at `https://github.com/Kieransaunders/D5G`** (DECIDED 15/07/2026, §3.1 — reverses the "keep this repo private" line). Push the toolkit so `claude plugin marketplace add Kieransaunders/D5G` works. Audit first for anything that shouldn't be public: client names in `/docs` (ALET etc.), internal notes, keys, the PRD itself. DB-transfer internals are no longer a concern here — that code moved out with the connector (§3.4) (15 min + audit)
 - [ ] Create public repo `Kieransaunders/divi5-starter` and push `free-toolkit/` to its root — still the low-friction taster (10 min)
 - [ ] ~~Freemius: attach the full-toolkit zip as a licensed download~~ **DELETED by §3.1** — no gated download, no licence-checked endpoint, no `build-pro-zip`. The toolkit is public; the gate is the connector compile step + `is_pro()` install-instructions swap (below)
 - [ ] Update README.md install instructions to the public `claude plugin marketplace add Kieransaunders/D5G` path (10 min)
@@ -202,7 +239,7 @@ No SaaS, no hosted Claude API, no white-label, no Envato. Divi Marketplace listi
 - [ ] Freemius dashboard: create the Divi5 Generator product, confirm product id + public key, set pricing — then swap the two `TODO(Kieran)`-marked values in `divi5-generator.php` (30 min)
 - [ ] On-Mac smoke tests from FOLLOW-UP.md (chat e2e, session restore) **plus**: generate one real page and confirm Divi 5.9 accepts `builderVersion: "5.9.0"` on import (the value is unverified — see Session log) (40 min)
 - [ ] **Gating-relocation smoke test (§3.1 #2)** — the load-bearing verification for the whole new model: generate a page, paste the raw/unresolved toolkit JSON straight into the Visual Builder (no Pro import), and confirm it renders **meaningfully broken** (unstyled/unresolved presets). If Divi renders it acceptably, the gate is weak and more must move server-side. Then run the same JSON through Pro `/import` and confirm it renders correctly (30 min)
-- [ ] Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md`, save to `plugin/divi5-generator/.wordpress-org/` (20 min)
+- [ ] Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md`, save to `.wordpress-org/` in the plugin's own repo (`Kieransaunders/divi5-generator`, split 16/07/2026 — §3.4) (20 min)
 - [ ] WordPress.org: submit the free build via the developer portal once the above lands (20 min + review wait)
 - [ ] Point a URL at the landing page (artifact + `docs/Marketing/launch-2.0.0/landing-page.html`; subdomain of iconnectit.co.uk is fine) (20 min)
 

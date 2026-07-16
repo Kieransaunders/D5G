@@ -21,7 +21,7 @@ strategy, status and session log, which made contradictions inevitable). The PRD
 | **K5** | ~~Freemius: attach the full-toolkit zip as a Pro-licensed download.~~ Retired — superseded by PRD §3.1 (D5G marketplace is the sole Pro install path; see `docs/PRO-TOOLKIT-DELIVERY.md`). | — | — |
 | **K6** | Point a URL at the landing page (`docs/Marketing/launch-2.0.0/landing-page.html`); subdomain of iconnectit.co.uk is fine. | DNS | 20 min |
 | **K7** | Swap the free-starter credit URL to the real landing URL once K6 exists — currently `https://iconnectit.co.uk` placeholder. Distributed copies can't be fixed retroactively, so **before K4**. | repo | 10 min |
-| **K8** | Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md` → `plugin/divi5-generator/.wordpress-org/` | Local + app | 20 min |
+| **K8** | Capture the 6 screenshots per `docs/Marketing/launch-2.0.0/screenshot-plan.md` → `.wordpress-org/` in the plugin's own repo (`Kieransaunders/divi5-generator`, split 16/07/2026) | Local + app | 20 min |
 | **K9** | Update README install instructions — the old public `claude plugin marketplace add Kieransaunders/Divi5Generate` path no longer applies (§3.1). | repo | 10 min |
 | **K10** | Submit the free build to WordPress.org. Needs F2 + K8. | .org portal | 20 min + review wait |
 | **K11** | On-Mac smoke tests from `FOLLOW-UP.md`: chat e2e, keep-alive, session restore. | Local | 40 min |

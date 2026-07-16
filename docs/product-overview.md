@@ -71,7 +71,7 @@ D.section({ preset: P.secCream, padding: { top: '90px', bottom: '90px' } }, [
 
 ---
 
-### Layer 3 — The WordPress Site Connector (`plugin/divi5-generator/`)
+### Layer 3 — The WordPress Site Connector (own private repo, `Kieransaunders/divi5-generator`, split 16/07/2026)
 
 A WordPress REST API plugin that bridges Claude/Divi5Generate to a live Divi 5 site. It previews live Divi renders, imports pages and library sections, exports site design data, moves preset packs and global variables, writes SEO/schema metadata, lists/deletes managed pages, and supports database export/import with URL rewriting.
 

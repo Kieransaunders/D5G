@@ -1,6 +1,12 @@
 # Coding-agent brief — Pro gating via page-compilation relocation
 
 **Repo:** `Divi5Generate` (this repo). Work on a branch (`chore/licensing` is fine, or `feat/pro-gating`). Do **not** commit to `main` directly.
+
+> **Historical note (16/07/2026):** written when the connector still lived in
+> this repo. It has since split into its own private repo
+> (`Kieransaunders/divi5-generator` — `docs/PRD.md` §3.4); `plugin/divi5-generator/...`
+> paths below are stale for that reason (separate from whether the gating work
+> itself was completed — it was, see PRD §6).
 **Read first:** `docs/pro-gating-relocation-spec.md` (full spec, file:line refs) and `docs/PRD.md` §3.1–3.3. This brief is the execution plan; the spec is the source of truth for *what moves*.
 
 ## Goal (one sentence)

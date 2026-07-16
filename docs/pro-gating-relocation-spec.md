@@ -1,6 +1,11 @@
 # Pro Gating — Page-Compilation Relocation Spec
 
 **Date:** 15/07/2026 · **Status:** spec, pending the live-Divi smoke test (§5) before any code
+
+> **Path note (16/07/2026):** the connector split into its own private repo
+> (`Kieransaunders/divi5-generator`) after this spec was written — file refs
+> below to `plugin/divi5-generator/src/...` now resolve to `src/...` at that
+> repo's root, not a path in this repo. See `docs/PRD.md` §3.4.
 **Feeds:** PRD §3.1 #2 (the enforceable gate). Sections→Library (Free) path is explicitly out of scope and stays self-contained.
 
 ## Goal

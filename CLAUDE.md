@@ -5,7 +5,7 @@ Standalone Claude Code plugin. This repo IS the plugin — root = plugin root.
 ## Structure
 
 ```
-Divi5Generate/
+D5G/
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin name, version, description
 │   └── marketplace.json     # advertises this repo as a single-plugin marketplace
@@ -14,14 +14,19 @@ Divi5Generate/
 │       └── SKILL.md         # frontmatter + instructions
 ├── commands/
 ├── docs/
-├── app/                     # Node builder library (page generator)
-└── plugin/                  # WordPress site connector plugin (PHP)
+└── app/                     # Node builder library (page generator)
 ```
+
+The WordPress site connector plugin (PHP) is **not** in this repo — split out
+16/07/2026 into its own private repo (`Kieransaunders/divi5-generator`), since
+it carries the Pro-gating logic that can't sit in a public repo. A gitignored
+local checkout may still exist at `plugin/divi5-generator/` on disk, but it's
+untracked here.
 
 ## Install on a new machine
 
 ```bash
-claude plugin marketplace add Kieransaunders/Divi5Generate
+claude plugin marketplace add Kieransaunders/D5G
 claude plugin install divi5generate@divi5generate
 ```
 
@@ -147,7 +152,7 @@ Run `/reload-plugins` inside the session to pick up edits without restarting.
 
 ## SEO plugin support (Divi5 Generator ≥ 1.7.0)
 
-The importer (`plugin/divi5-generator/`) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `d5g/seo/adapter_order` filter):
+The importer (in the separate private `Kieransaunders/divi5-generator` repo) detects the active SEO plugin and writes the generated SEO sidecar to its native post-meta keys. Supported plugins, in detection order (override via the `d5g/seo/adapter_order` filter):
 
 | Plugin | Adapter | Detection signal |
 |---|---|---|
