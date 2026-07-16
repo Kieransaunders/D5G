@@ -45,5 +45,5 @@ Never log or store the API key — use it only in the request header.
 | Build a page | `/divi5-tools:divi5-page-generator "<brief>"` |
 | Import/preview a page | `divi5-deploy` skill |
 | Create a nav menu from pages | `divi5-deploy` skill (menu mode) |
-| Standalone browser UI | double-click `app/launch.command` (→ http://localhost:3747) |
+| Standalone browser UI (Pro download, see `/divi5generate:launch`) | double-click `launch.command` in the installed app folder (→ http://localhost:3747) |
 | Review a Divi export | `design-review` / `divi5-style-check` skills |

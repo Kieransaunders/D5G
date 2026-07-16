@@ -51,10 +51,12 @@ and won't know to do this unless told.
 
 ## Stack & conventions
 
-- **Frontend (`app/public/`)**: vanilla HTML/CSS/JS served by `app/server.js` (Express).
-  **No build step.** A reskin is in progress against the Claude Design mockup — see
-  `app/REDESIGN-PLAN.md` for the phased plan and `app/redesgn /` for the mockup source.
-  Each phase ships as its own SSWA change.
+- **Frontend / local app** — split out 16/07/2026, same as the WordPress
+  importer below: now a Pro-only Freemius Add-Ons download, private repo
+  `Kieransaunders/wp-divi5-generator` (alongside the plugin, as `app/`). It's
+  vanilla HTML/CSS/JS served by `server.js` (Express), no build step. A
+  gitignored local checkout may exist at `plugin/divi5-generator/app/` on
+  disk here but isn't tracked in this repo.
 - **WordPress importer** — split into its own **private** repo, 16/07/2026
   (`github.com/Kieransaunders/divi5-generator`, not in this working tree beyond a
   gitignored local checkout at `plugin/divi5-generator/`). Reason: its Pro-gating
@@ -78,7 +80,7 @@ never be written into this repo**. Canonical output folder:
 
 - `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages`.
 
-`app/server.js` enforces this. `.gitignore` has a safety-net for stray root artefacts.
+The app's `server.js` (now in the separate private repo) enforces this. `.gitignore` has a safety-net for stray root artefacts.
 
 ## Deviation from SSWA agent-sync guard (intentional)
 

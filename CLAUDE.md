@@ -13,15 +13,19 @@ D5G/
 │   └── <skill-name>/
 │       └── SKILL.md         # frontmatter + instructions
 ├── commands/
-├── docs/
-└── app/                     # Node builder library (page generator)
+└── docs/
 ```
 
-The WordPress site connector plugin (PHP) is **not** in this repo — split out
-16/07/2026 into its own private repo (`Kieransaunders/divi5-generator`), since
-it carries the Pro-gating logic that can't sit in a public repo. A gitignored
-local checkout may still exist at `plugin/divi5-generator/` on disk, but it's
-untracked here.
+Two things are **not** in this repo, both split out 16/07/2026 into the same
+private repo (`Kieransaunders/wp-divi5-generator`):
+
+- The WordPress site connector plugin (PHP) — carries Pro-gating logic that
+  can't sit in a public repo.
+- The local browser app (`app/`, port 3747) — now a Pro-only Freemius
+  Add-Ons download, not bundled with the free/public toolkit install.
+
+Gitignored local checkouts may still exist at `plugin/divi5-generator/` (with
+`app/` moved inside it) on disk, but neither is tracked here.
 
 ## Install on a new machine
 
@@ -89,7 +93,7 @@ Generated pages, sections, previews, tokens, SEO meta and `generate-*.js` script
 
 - `process.env.DIVI5_OUT` if set, otherwise `~/Desktop/Divi5 Pages`.
 
-The app (`app/server.js`) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `divi5-deploy`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
+The app (`server.js`, now in the separate private app download — see Structure above) enforces this: it resolves the output dir (defaulting to `~/Desktop/Divi5 Pages/<brand>-<timestamp>`, expanding `~`) and passes it to the generator as both `cwd` and the `DIVI5_OUT` env var. The file-writing skills (`divi5-page-generator`, `divi5-deploy`, `divi5-extract-style`) read this convention and write only to that folder. When running a generator manually, resolve `OUT` the same way and `cd` into it before running the validator / preview / on-disk gate.
 
 `.gitignore` keeps only a safety-net for stray root artefacts — the real fix is that nothing should be written here in the first place.
 

@@ -55,8 +55,13 @@ skills/divi5-page-generator/__unlink_probe*
 # Pro-gating logic (RestApi.php, PageCompiler.php, DbExporter/DbImporter)
 # can't sit inside this now-public toolkit repo without giving away the
 # whole enforcement mechanism the Freemius gate depends on. Plugin source
-# + history now lives at github.com/Kieransaunders/divi5-generator (private).
+# + history now lives at github.com/Kieransaunders/wp-divi5-generator (private).
 /plugin/
+
+# Local app moved into the same private repo (16/07/2026) — it's now a Pro-only
+# Freemius Add-Ons gated download, not part of the public toolkit. Skills stay
+# here (public, discoverable per PRD §3.1); the app does not. See docs/PRD.md.
+/app/
 
 # Root vendor/ + composer files are unused cruft — the WordPress plugin under
 # plugin/divi5-generator/ carries its own vendor/. Nothing in skills/, commands/

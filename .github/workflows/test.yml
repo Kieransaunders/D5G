@@ -17,32 +17,13 @@ on:
     branches: [main]
 
 jobs:
-  app:
-    name: app (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['20', '22']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-      - run: npm ci || npm install
-      # Per-file timeout: spawn-based integration tests (server, chat-e2e)
-      # fail fast instead of hanging the runner if the Claude SDK isn't present.
-      - run: node --test --test-reporter=spec --test-timeout=15000 tests/*.test.js
+  # app (Node) job moved out — the local app is now a Pro-only Freemius
+  # Add-Ons download, split 16/07/2026 into the private
+  # github.com/Kieransaunders/wp-divi5-generator repo alongside the WP
+  # plugin (see docs/PRD.md section 3.4/3.1). Its tests run in that repo's CI.
 
-  # plugin (PHP) job moved out — WP plugin now lives in its own private
-  # repo (github.com/Kieransaunders/divi5-generator), split 16/07/2026 so its
-  # Pro-gating source (RestApi.php, PageCompiler.php, DB export/import) isn't
-  # sitting in this public toolkit repo. Its test.yml lives there now.
+  # plugin (PHP) job moved out too — same repo, same date, same reason
+  # (Pro-gating source can't sit in this public toolkit repo).
 
   skills:
     name: generator skill (pure-node tests)
