@@ -25,6 +25,30 @@ artifact format lives in `sswa-openspec-conventions`.
 Active & archived changes live under `openspec/changes/`. Specs are capabilities under
 `openspec/specs/<capability>/spec.md`.
 
+## Codebase familiarisation (do this FIRST, before Explore/grep)
+
+This repo is pre-indexed in the `codebase-memory-mcp` graph (project name:
+`Volumes-External-Divi5Generate`, ~22k nodes). Any agent — main session or
+subagent spawned via the `Agent` tool — onboarding onto this codebase must
+query that graph *before* falling back to blind `Grep`/`Read`/`Explore`
+sweeps:
+
+1. `codebase-memory-mcp__index_status` (project: `Volumes-External-Divi5Generate`)
+   — confirm the index isn't stale; if it's drifted, `index_repository` to
+   refresh before trusting it.
+2. `codebase-memory-mcp__get_architecture` — packages, services, dependency
+   clusters at a glance. Start here for "what does this repo look like".
+3. `codebase-memory-mcp__search_code` / `search_graph` / `trace_path` — find
+   symbols, call sites, and dependency paths without re-deriving them from
+   scratch via grep.
+
+Only reach for `Grep`/`Read`/the `Explore` agent for what the graph doesn't
+cover: exact current file contents, recent uncommitted changes, or anything
+the index hasn't ingested yet. When spawning a subagent (via the `Agent`
+tool) to work in this repo, its prompt must explicitly tell it to check
+`codebase-memory-mcp` first — subagents start with no memory of this file
+and won't know to do this unless told.
+
 ## Stack & conventions
 
 - **Frontend (`app/public/`)**: vanilla HTML/CSS/JS served by `app/server.js` (Express).
