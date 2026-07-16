@@ -479,4 +479,31 @@ class D5G_SettingsPage {
 		</script>
 		<?php
 	}
+
+	/**
+	 * Step-1 install instructions, branched on licence tier.
+	 *
+	 * Free installs get the public divi5-starter (a single credited section)
+	 * plus an upgrade CTA; Pro installs get the full divi5generate toolkit from
+	 * the public D5G marketplace, with the licensed Add-Ons download kept as an
+	 * offline alternative. Returned as a string (not echoed) so both branches
+	 * are unit-testable without toggling D5G_Limits::is_pro().
+	 */
+	public static function install_instructions_html( bool $is_pro ): string {
+		ob_start();
+		if ( $is_pro ) :
+			$addons_url = function_exists( 'dg_fs' ) ? dg_fs()->_get_admin_page_url( 'addons' ) : '';
+			?>
+			<p>Your Pro licence includes the <strong>full Divi 5 toolkit</strong> — whole-page generation, brand extract/deploy, and one-command import skills. Install it into Claude Code:</p>
+			<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:12px">claude plugin marketplace add Kieransaunders/D5G</pre>
+			<p class="description">Restart Claude Code (or run <code>/reload-plugins</code>) afterwards, then verify with <em>"run /divi5generate:help"</em>.</p>
+			<p class="description">Prefer an offline install? Download <code>divi5generate-toolkit.zip</code> from the <a href="<?php echo esc_url( $addons_url ); ?>"><strong>Add-Ons</strong></a> screen (Divi5 Generator → Add-Ons), unzip it, and run <code style="user-select:all">claude plugin marketplace add /path/to/divi5generate</code>.</p>
+		<?php else : ?>
+			<p>Install the <strong>free Divi 5 Starter</strong> (a services-section generator) into Claude Code:</p>
+			<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:12px">claude plugin marketplace add Kieransaunders/divi5-starter
+claude plugin install divi5-starter@divi5-starter</pre>
+			<p class="description">Restart Claude Code (or run <code>/reload-plugins</code>) afterwards. The free starter generates a single credited section. <a href="https://checkout.freemius.com/plugin/33991/" target="_blank"><strong>Upgrade to Pro</strong></a> for the full toolkit: whole-page generation, brand extract/deploy, and one-click import.</p>
+		<?php endif;
+		return (string) ob_get_clean();
+	}
 }

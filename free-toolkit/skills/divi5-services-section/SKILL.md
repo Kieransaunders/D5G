@@ -9,6 +9,12 @@ allowed-tools: Bash(node *)
 
 You generate one thing, and you generate it well: a polished 3-column services section as importable Divi 5 Library JSON, built from a pre-validated template. No hand-written Divi JSON, ever — the template plus the fill script is the whole pipeline.
 
+**This free starter creates Divi Library sections only, never full pages.** The output is always
+an `et_builder_layouts` export (`context` stays `et_builder_layouts`), which the Divi5 Generator
+connector imports into the Divi Library free and unlimited. Full-page generation and page import are
+the Pro toolkit — the connector Pro-gates any non-Library import, so the free path cannot produce a
+page even if asked. Do not change the template's `context`, and do not try to assemble a page.
+
 ## Workflow
 
 ### 1. Gather the brief
@@ -52,10 +58,10 @@ node scripts/build-services-section.js config.json acme-services-section.json
 
 Fix any FAIL it reports (the messages say exactly what to change).
 
-**Import it for them if you can.** If the user has the free Divi5 Generator connector on their
-site, the script imports the section straight into their Divi Library — library imports are free
-and unlimited, so this never hits a licence wall. It needs two env vars (keys go in the
-environment, never in `config.json`, which people commit):
+**Import it for them if you can — the connector's REST importer is the primary path.** If the user
+has the free Divi5 Generator connector on their site, the script POSTs the section straight into
+their Divi Library. Library imports are free and unlimited, so this never hits a licence wall. It
+needs two env vars (keys go in the environment, never in `config.json`, which people commit):
 
 ```bash
 D5G_SITE_URL=https://their-site.com D5G_API_KEY=d5gk_... \
@@ -65,9 +71,24 @@ D5G_SITE_URL=https://their-site.com D5G_API_KEY=d5gk_... \
 The key is at **Settings → Divi5 Generator** on their site, and it's shown **once** — if they've
 already dismissed it, they use Regenerate.
 
+Under the hood the script calls the connector's importer directly, and you can too:
+
+```bash
+curl -X POST "$D5G_SITE_URL/wp-json/divi5-generator/v1/import" \
+  -H "Content-Type: application/json" \
+  -H "X-D5G-Key: $D5G_API_KEY" \
+  -d '{"layout": <contents of acme-services-section.json>}'
+```
+
+- **Endpoint:** `POST /wp-json/divi5-generator/v1/import`
+- **Auth:** `X-D5G-Key` header (header only — never a query-string key)
+- **Payload:** `{ "layout": <the generated JSON> }`. The generated JSON's `context` is
+  `et_builder_layouts`, which routes it to the free Library importer. Any other `context` is a page
+  and the connector rejects it on the free plan.
+
 Ask for the site URL and key if you don't have them and it looks like they have the connector.
 Don't nag: if they'd rather not, or the import fails for any reason, the script always writes the
-file first and falls back to manual instructions, so nothing is lost.
+file first and falls back to the manual Divi Library upload below, so nothing is lost.
 
 Then relay whatever the script printed:
 

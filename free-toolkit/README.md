@@ -4,6 +4,8 @@ Generate a polished, importable **Divi 5 services section** from a plain-English
 
 Describe your three services, your colours, and your call to action - the starter writes the copy into a pre-validated Divi 5 template and hands you a JSON file that imports straight into the Divi Library.
 
+This starter creates Divi **Library sections** only, never full pages. The output is always an `et_builder_layouts` export, which the Divi5 Generator connector imports free and unlimited. Full-page generation and page import are the Pro toolkit.
+
 ## Install
 
 ```bash
@@ -17,11 +19,11 @@ In Claude Code, just ask:
 
 > Build me a services section for my plumbing business - emergency callouts, boiler servicing, bathroom installs. Brand colour #0B6E4F.
 
-You'll get a `*-services-section.json` file. Import it via **WP Admin → Divi → Divi Library → Import & Export → Import**, then add the layout to any page from the library.
+You'll get a `*-services-section.json` file.
 
-### Skip the upload
+### One-step import (recommended)
 
-Install the free [Divi5 Generator](https://wordpress.org/plugins/) connector and the starter puts
+Install the free [Divi5 Generator](https://wordpress.org/plugins/) connector and the starter POSTs
 the section straight into your Divi Library — no file shuffling. Grab your key from
 **Settings → Divi5 Generator** (it's shown once), then:
 
@@ -30,9 +32,15 @@ export D5G_SITE_URL=https://your-site.com
 export D5G_API_KEY=d5gk_...
 ```
 
-Library imports are free and unlimited. Keys live in your environment, not in a config file.
-If the connector isn't there or the key is wrong, you still get the JSON file and the manual
-instructions above — nothing is lost.
+It calls `POST /wp-json/divi5-generator/v1/import` with an `X-D5G-Key` header and a
+`{ "layout": <the generated JSON> }` body. Library imports (`context: et_builder_layouts`) are free
+and unlimited. Keys live in your environment, not in a config file.
+
+### Manual upload (fallback)
+
+If the connector isn't there or the key is wrong, you still get the JSON file — import it via
+**WP Admin → Divi → Divi Library → Import & Export → Import**, then add the layout to any page from
+the library. Nothing is lost either way.
 
 ## What's in the section
 

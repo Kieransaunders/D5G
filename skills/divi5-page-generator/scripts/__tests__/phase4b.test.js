@@ -76,7 +76,10 @@ function baseline() {
       ]),
     ]),
   ]);
-  return b.assemble({ context: 'et_builder', content, title: 'Test' });
+  // externalizeBrand:false — this fixture's concern is validator behaviour on a
+  // self-contained inline page, not the Pro-gating unresolved shape (which has its
+  // own coverage in de-inline.test.js). Keep the presets bundled in the page.
+  return b.assemble({ context: 'et_builder', content, title: 'Test', externalizeBrand: false });
 }
 
 // ─── Baseline ────────────────────────────────────────────────────────────────

@@ -21,19 +21,31 @@
 const IMPORT_PARAMS = Object.freeze(['layout', 'seo', 'schema', 'publish']);
 
 /**
+ * The optional one-shot `brand` bundle rides INSIDE `layout`, not as a fifth
+ * top-level payload key — the plugin's /import contract reads `$layout['brand']`
+ * (see PageImporter.php "Brand-in-one-shot payload contract"). Since pages now
+ * emit pointer-only blocks with the brand externalised to a `<slug>.brand.json`
+ * sidecar, passing that bundle here lets a single /import call register the
+ * brand and compile the page in one shot. IMPORT_PARAMS stays four keys.
+ *
  * @param {object}  opts
  * @param {object}  opts.layout   Divi layout JSON (required).
  * @param {object?} opts.seo      SEO meta object, or null/undefined.
  * @param {object?} opts.schema   Schema.org object, or null/undefined.
  * @param {boolean} [opts.publish=true]  Publish immediately (default) vs draft.
+ * @param {object?} opts.brand    { presets, global_colors, global_variables } from
+ *                                the page's `.brand.json` sidecar, or null/undefined.
  * @returns {{layout: object, seo: object, schema: object, publish: boolean}}
  */
-function buildImportPayload({ layout, seo, schema, publish = true } = {}) {
+function buildImportPayload({ layout, seo, schema, publish = true, brand } = {}) {
   if (layout == null || typeof layout !== 'object') {
     throw new Error('buildImportPayload: layout is required and must be an object');
   }
+  const outLayout = brand && typeof brand === 'object'
+    ? { ...layout, brand }
+    : layout;
   return {
-    layout,
+    layout: outLayout,
     seo: seo || {},
     schema: schema || {},
     publish: Boolean(publish),

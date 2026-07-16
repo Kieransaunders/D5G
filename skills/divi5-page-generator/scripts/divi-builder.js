@@ -36,6 +36,7 @@ const fs = require('fs');
 const os = require('os');
 const { DEFAULT_GLYPH_SOURCE: SHARED_GLYPH_SOURCE } = require('./glyphs');
 const TYPE_SCALE = require(path.join(__dirname, '../references/type-scale'));
+const { deInlineContent, writeBrandSidecars } = require('./de-inline');
 
 // ─── creative gate (the forcing function against slop) ──────────────────────
 // assemble() refuses to emit JSON unless both page-scoped stamps exist on disk:
@@ -1162,18 +1163,53 @@ function createBuilder(opts) {
     },
 
     /**
-     * assemble({ context, content, title, slug })
+     * assemble({ context, content, title, slug, externalizeBrand, outDir })
      * context: 'et_builder' (page) | 'et_builder_layouts' (library)
      * content: full placeholder-wrapped string
+     *
+     * PAGE builds (et_builder) are, by default, emitted UNRESOLVED (Pro-gating
+     * relocation — docs/pro-gating-relocation-spec.md §4): preset-derived inline
+     * style attrs are stripped back to pointer-only, and the brand definitions
+     * (presets / global_colors / global_variables) are removed from the page JSON
+     * and written out-of-band as sidecars next to the page:
+     *     <slug>.presets.json    — validator-discoverable preset registry
+     *     <slug>.variables.json  — global_colors (for preset-first gcid checks)
+     *     <slug>.brand.json      — { presets, global_colors, global_variables }
+     *                              the single bundle the Pro importer consumes
+     * The raw page therefore renders visually broken without the Pro connector,
+     * which re-inlines the brand at import time. This is the enforceable gate.
+     *
+     * Pass { externalizeBrand: false } to get the old fully-inlined, self-contained
+     * page shape (used by the preset-EXTRACTION callers that read `assembled.presets`
+     * off an empty-content assemble — build-brand-presets.js, preset-first-workflow.js
+     * step 1). outDir overrides where sidecars are written (defaults to the standard
+     * output folder, _resolveOut()); the page file itself is written by the caller.
+     *
+     * SECTIONS (et_builder_layouts) are never de-inlined — the free Library path
+     * stays fully inlined and self-contained.
      */
     assemble(opts) {
       const { context, content, title, slug } = opts;
+      const externalizeBrand = opts.externalizeBrand !== false; // default on for pages
       _enforceCreativeGate(slug, title);
       const presetsOut = { module: presets };
       if (Object.keys(groupPresetsStore).length) presetsOut.group = groupPresetsStore;
       const base = { presets: presetsOut, global_colors: globalColors, global_variables: globalVariables, images: {}, thumbnails: [] };
       if (context === 'et_builder') {
-        return { context, data: { 1: content }, canvases: {}, ...base };
+        if (!externalizeBrand) {
+          // Legacy self-contained page (used by preset-extraction callers).
+          return { context, data: { 1: content }, canvases: {}, ...base };
+        }
+        // ── Pro-gating: emit UNRESOLVED page + out-of-band brand sidecars ──
+        const deInlined = deInlineContent(content, presetsOut);
+        const brand = {
+          presets: presetsOut,
+          global_colors: globalColors,
+          global_variables: globalVariables,
+        };
+        writeBrandSidecars(opts.outDir || _resolveOut(), slug || title, brand);
+        // presets / global_colors / global_variables OMITTED — they travel to Pro.
+        return { context, data: { 1: deInlined }, canvases: {}, images: {}, thumbnails: [] };
       }
       const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
       return {

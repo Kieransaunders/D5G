@@ -27,7 +27,7 @@ const { screenshot: takeScreenshot, resolveExecutable } = require('./lib/screens
 // /ping reports a lower deployed version, the health chip warns — e.g. an older
 // plugin defaults imports to draft (pre-1.5.4), which silently breaks live QA.
 // Bump this in lockstep with plugin/divi5-generator/divi5-generator.php D5G_VERSION.
-const EXPECTED_D5G_VERSION = '2.0.1';
+const EXPECTED_D5G_VERSION = '2.1.0';
 
 // Local/loopback hosts the QA loop is *meant* to screenshot — the user's own
 // WordPress site. Unlike brand-extract (which fetches arbitrary public URLs and
@@ -834,6 +834,14 @@ app.post('/import/:id', async (req, res) => {
     const seo    = seoFile   && fs.existsSync(seoFile.filepath)   ? JSON.parse(fs.readFileSync(seoFile.filepath,   'utf8')) : null;
     const schema = schemaFile&& fs.existsSync(schemaFile.filepath) ? JSON.parse(fs.readFileSync(schemaFile.filepath,'utf8')) : null;
 
+    // Unresolved page builds (Pro-gating relocation) externalise the brand to a
+    // `<slug>.brand.json` sidecar next to the page file. The sidecar slug is
+    // derived from the page title, not the page filename, so match by directory
+    // rather than basename — an output dir holds one generation's files, so a
+    // single `*.brand.json` there is unambiguous. Passing it lets /import
+    // register the brand and compile the page in one call.
+    const brand = loadBrandSidecar(pageFile.filepath);
+
     // Plugin ≥ 1.5.4 (and buildImportPayload) default to publish=true so the
     // imported page is LIVE and screenshot-readable. Allow an explicit
     // publish:false override to force a draft.
@@ -851,7 +859,7 @@ app.post('/import/:id', async (req, res) => {
           'Content-Type': 'application/json',
           'X-D5G-Key': apiKey,
         },
-        body: JSON.stringify(buildImportPayload({ layout, seo, schema, publish })),
+        body: JSON.stringify(buildImportPayload({ layout, seo, schema, publish, brand })),
         signal: controller.signal,
       });
     } finally {
@@ -881,6 +889,23 @@ app.post('/import/:id', async (req, res) => {
     res.json({ ok: false, error: err.name === 'AbortError' ? 'WordPress import timed out' : err.message });
   }
 });
+
+// Load the `<slug>.brand.json` sidecar for an unresolved page build. It lives in
+// the same output dir as the page file but is keyed by the page's slug, not the
+// page filename, so we glob the directory for the single `*.brand.json` present.
+// Returns the parsed { presets, global_colors, global_variables } bundle, or null
+// for legacy self-contained pages (no sidecar) — those still import unchanged.
+function loadBrandSidecar(pageFilePath) {
+  try {
+    const dir = path.dirname(pageFilePath);
+    const hit = fs.readdirSync(dir).find(f => f.endsWith('.brand.json'));
+    if (!hit) return null;
+    const parsed = JSON.parse(fs.readFileSync(path.join(dir, hit), 'utf8'));
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
 
 // Map WordPress/D5G HTTP errors to actionable user messages instead of raw
 // `${status}: ${text}`. Keep the underlying detail for the curious.

@@ -75,6 +75,8 @@ Ask (or extract from prompt): brand + offer, primary SEO keyword (+ secondaries/
 
 Run `node scripts/spec/spec-to-divi.js page-spec.json` → `[slug]-landing-page.json` + seo-meta + schema in `$DIVI5_OUT`. **Legacy fallback (`--legacy`, one release):** hand-write `generate-[brand].js` per [examples/example-page.js](examples/example-page.js) — `node --check` it before executing. Either path, then run:
 
+> **Pro-gating (page builds):** `assemble()` now emits page (`et_builder`) JSON **unresolved** by default — preset styles are pointer-only and the brand travels out-of-band as three sidecars written next to the page: `<slug>.presets.json`, `<slug>.variables.json`, `<slug>.brand.json`. The raw page renders correctly only through the Pro connector's `/import` (which re-inlines the brand); the sidecars also drive the validator's preset-first mode. Pass `assemble({ …, externalizeBrand: false })` for the old self-contained inline page. Sections (`et_builder_layouts`) are always fully inlined — no sidecars. See `docs/pro-gating-relocation-spec.md`.
+
 ```bash
 node scripts/validate.js [brand]-landing-page.json --keyword "<primary keyword>" --meta [brand]-seo-meta.json
 node scripts/taste-check.js [brand]-landing-page.json
@@ -86,8 +88,7 @@ Fix every FAIL. WARNs should be resolved unless there's a stated reason.
 
 - Read the local repo skill instructions before doing anything else; use the repo's own `divi5-page-generator` skill and gates, not a generic or unrelated landing-page skill.
 - Decide the concept and any DiviTheatre presets in the creative gate, before the page exists; motion goes in the spec's `theatre` field (or the `theatre:` helper shortcut in legacy scripts) — never hand-write `data-theatre` attributes.
-- Keep generated artefacts (`page-spec.json`, compiled outputs) in the output folder so reruns and refinements stay trivial.
-- Treat `validate.js`'s `ANIMATION: no entrance animations found` warning as expected on pages that rely only on DiviTheatre `data-theatre` attributes.
+- Keep generated artefacts (`page-spec.json`, compiled outputs) in the output folder so reruns stay trivial; treat `validate.js`'s `ANIMATION: no entrance animations found` warning as expected on pages relying only on DiviTheatre `data-theatre` attributes.
 - For Divi attributes, write to `module.decoration.attributes`, not `module.advanced.attributes`.
 
 ### Stage 3.5 — Fidelity gate (mandatory, blocks delivery)

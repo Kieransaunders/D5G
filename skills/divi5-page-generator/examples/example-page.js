@@ -196,7 +196,9 @@ const faq = D.section({ adminLabel: 'FAQ', preset: P.sectionWhite }, [
 ]);
 
 const content = D.placeholder([darkHero, hero, features, process, faq]);
-const json = b.assemble({ context: 'et_builder', content, title: 'Example Landing Page' });
+// externalizeBrand:false — committed demo/validation fixture kept self-contained
+// and inline; real generation externalizes the brand by default.
+const json = b.assemble({ context: 'et_builder', content, title: 'Example Landing Page', externalizeBrand: false });
 fs.writeFileSync(path.join(__dirname, 'example-landing-page.json'), JSON.stringify(json));
 
 fs.writeFileSync(path.join(__dirname, 'example-seo-meta.json'), JSON.stringify({

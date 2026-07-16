@@ -4,7 +4,7 @@ Tags: divi, divi 5, ai page generator, json import, divi library
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 2.0.1
+Stable tag: 2.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,6 +129,11 @@ The REST route defaults `publish` to `true`. The import skill intentionally publ
 Settings → Divi5 Generator → Regenerate Key. Your old key stops working immediately.
 
 == Changelog ==
+
+= 2.1.0 =
+* Changed: generated **pages** now import via a Pro compile step. The Claude toolkit emits pointer-only page JSON (preset references, not inlined styles) plus an out-of-band brand bundle; the Pro `/import` endpoint registers the brand and inlines the preset attributes into each block before saving. Raw page JSON imported without Pro renders visually broken by design — the connector is the enforceable gate.
+* New: one-shot brand payload — `/import` accepts an optional `brand` bundle ( `presets`, `global_colors`, `global_variables` ) inside the layout, or a `brand_profile_id` resolved via the `d5g/import/resolve_brand_profile` filter, so a single call registers the brand and compiles the page. Legacy fully-inlined page exports still import unchanged.
+* Unchanged: the **free section path** (Divi Library layout imports) stays fully self-contained and inlined — sections are never de-inlined and need no Pro compile.
 
 = 2.0.1 =
 * New: Settings page now shows how to install the Claude Code skills — Free installs get the public divi5-starter with an upgrade link; Pro installs get the licensed full toolkit from the Add-Ons screen.

@@ -20,6 +20,17 @@
  *   E3  Playwright: hero h1 is visible
  *   E4  Playwright: no default-blue buttons (Divi fallback = rgb(46,86,153))
  *   E5  Screenshot diff vs golden (pixel threshold)
+ *   E6  Pro-gating gate (negative): a page imported WITHOUT its brand bundle
+ *       renders the button NOT in the brand colour — the compile step has no preset
+ *       to resolve (logs whether it fell back to Divi default blue). Honest
+ *       limitation: this exercises the connector's own compile
+ *       being a no-op against an empty brand, not a true connector bypass the way
+ *       a raw VB-Portability paste would be. Same broken outcome, Pro path with an
+ *       empty brand rather than skipped.
+ *   E7  Pro-gating gate (positive): the SAME page imported WITH the brand bundle
+ *       (one-shot `brand` payload) compiles to the brand button colour.
+ *   E6/E7 use nonce-suffixed preset ids per run so the persistent registration in
+ *   E7 can't make a later E6 run resolve (there is no unregister API).
  */
 
 'use strict';
@@ -98,6 +109,96 @@ function post(url, apiKey, body) {
     req.write(data);
     req.end();
   });
+}
+
+// ─── Gate fixture: an unresolved page + its out-of-band brand bundle ──────────
+//
+// The Pro-gating gate: a page whose button colour lives ONLY in a preset that
+// travels out-of-band. Import the raw (brand-absent) page and the connector's
+// compile step has nothing to resolve → the button falls back to Divi default
+// blue rgb(46,86,153). Import the SAME page WITH the brand bundle and the
+// connector registers the preset, inlines its attrs, and the button renders the
+// brand colour. This proves the gate discriminates on brand presence, not on
+// which endpoint is hit (/import and /preview share the compile path).
+//
+// Run-independence: preset ids are nonce-suffixed per run so the "brand present"
+// case (which registers presets PERSISTENTLY, with no unregister API) can never
+// leave state that makes a later "brand absent" run resolve → the negative case
+// would then wrongly render correct. Fresh ids each run = each case is honest.
+
+const BRAND_BUTTON_HEX = '#c8102e';               // distinctive brand red
+const BRAND_BUTTON_RGB = 'rgb(200, 16, 46)';      // its computed form
+const DEFAULT_BLUE     = ['rgb(46, 86, 153)', 'rgb(38, 74, 135)']; // Divi button fallback
+
+function buildGateFixture() {
+  // de-inline.js lives one dir up (scripts/), shared with divi-builder.js so the
+  // emitted unresolved shape here can't drift from production. Required lazily so
+  // the module load (and thus the clean skip-when-no-site path) never depends on it.
+  const { deInlineContent } = require('../de-inline');
+  const nonce = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const btnPresetId = 'gatebtn' + nonce;
+  const slug = 'd5g-gate-' + nonce;
+
+  // The button's brand colour lives ONLY in the preset attrs (button custom
+  // styles enabled + background colour). The block carries pointer + structural
+  // content only. This mirrors button() in divi-builder.js.
+  const btnPresetAttrs = {
+    button: {
+      decoration: {
+        button: { desktop: { value: { enable: 'on' } } },
+        background: { desktop: { value: { color: BRAND_BUTTON_HEX } } },
+      },
+    },
+  };
+  // Inlined block (preset attrs merged in) — de-inlining strips them back out,
+  // exactly as the builder emits for a page.
+  const inlinedBtn = {
+    button: {
+      innerContent: { desktop: { value: { text: 'Get Started', linkUrl: '#' } } },
+      decoration: {
+        button: { desktop: { value: { enable: 'on' } } },
+        background: { desktop: { value: { color: BRAND_BUTTON_HEX } } },
+      },
+    },
+    meta: { adminLabel: { desktop: { value: 'CTA' } } },
+    modulePreset: [btnPresetId],
+    builderVersion: '5.0.0',
+  };
+  const headingAttrs = {
+    title: {
+      innerContent: { desktop: { value: 'Gate Test Page' } },
+      decoration: { font: { font: { desktop: { value: { headingLevel: 'h1' } } } } },
+    },
+    builderVersion: '5.0.0',
+  };
+  const b = (name, attrs) => `<!-- wp:divi/${name} ${JSON.stringify(attrs)} -->`;
+  const CRLF = '\r\n';
+  const inlinedContent = [
+    '<!-- wp:divi/placeholder -->',
+    '<!-- wp:divi/section -->',
+    b('heading', headingAttrs),
+    b('button', inlinedBtn),
+    '<!-- /wp:divi/section -->',
+    '<!-- /wp:divi/placeholder -->',
+  ].join(CRLF);
+
+  const presets = {
+    module: {
+      'divi/button': {
+        default: btnPresetId,
+        items: { [btnPresetId]: {
+          id: btnPresetId, name: 'Gate CTA', moduleName: 'divi/button',
+          version: '5.0.0', type: 'module', attrs: btnPresetAttrs,
+        } },
+      },
+    },
+  };
+  // De-inline so the button block carries the pointer but NOT the brand colour.
+  const content = deInlineContent(inlinedContent, presets);
+
+  const layout = { context: 'et_builder', data: { 1: content }, canvases: {}, images: {}, thumbnails: [] };
+  const brand  = { presets, global_colors: [], global_variables: [] };
+  return { slug, layout, brand };
 }
 
 // ─── Main (async) ─────────────────────────────────────────────────────────────
@@ -239,6 +340,10 @@ function post(url, apiKey, body) {
       }
     }
 
+    // ── E6/E7: Pro-gating gate — brand-absent renders broken, brand-present correct ──
+    // Same page object both ways (one built per run with nonce'd preset ids).
+    await runGateChecks(page);
+
   } catch (e) {
     ok('Playwright run completed without crash', false, e.message);
   } finally {
@@ -247,6 +352,80 @@ function post(url, apiKey, body) {
 
   report();
 })();
+
+// Import a page via the Pro /import endpoint, publishing it, and return its live
+// front-end URL (siteUrl/<slug>/). `layout` may carry a top-level `brand` bundle.
+async function importPage(layout, slug) {
+  const res = await post(
+    `${creds.siteUrl}/wp-json/divi5-generator/v1/import`,
+    creds.apiKey,
+    { layout, seo: { slug, titleTag: 'Gate Test Page' }, publish: true }
+  );
+  if (res.status !== 200) {
+    throw new Error(`/import HTTP ${res.status}: ${res.body.slice(0, 160)}`);
+  }
+  const json = JSON.parse(res.body);
+  const outSlug = json.slug || slug;
+  return new URL(`${outSlug}/`, creds.siteUrl + '/').href;
+}
+
+// Read the computed background colour of the first CTA button on the current page.
+async function buttonBg(page) {
+  return page.evaluate(() => {
+    const btn = document.querySelector('.et_pb_button, a.et_pb_button, [class*="divi-button"]');
+    return btn ? window.getComputedStyle(btn).backgroundColor : null;
+  });
+}
+
+// E6 (negative) + E7 (positive): the Pro-gating gate on a live site.
+async function runGateChecks(page) {
+  let fixture;
+  try {
+    fixture = buildGateFixture();
+  } catch (e) {
+    ok('E6/E7: gate fixture built', false, e.message);
+    return;
+  }
+
+  // ── E6: brand ABSENT → button is NOT the brand colour (broken) ──
+  // Assert the robust gate semantic — "not brand-coloured" — rather than an exact
+  // fallback value. After de-inlining, the raw button also loses its
+  // custom-styles-enabled flag, so its unresolved colour may be Divi default blue
+  // OR transparent OR a theme colour; the load-bearing fact is only that it is not
+  // the brand red. The default-blue observation is logged for the report, not asserted.
+  try {
+    const rawLayout = { ...fixture.layout }; // no `brand` key → nothing to resolve
+    const url = await importPage(rawLayout, fixture.slug);
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    const bg = await buttonBg(page);
+    ok('E6: raw (brand-absent) button is NOT the brand colour',
+      bg !== BRAND_BUTTON_RGB,
+      `button resolved to the brand colour ${BRAND_BUTTON_RGB} without a brand bundle`);
+    if (bg != null && DEFAULT_BLUE.includes(bg)) {
+      console.log(`  INFO  E6: raw button fell back to Divi default blue (${bg})`);
+    } else {
+      console.log(`  INFO  E6: raw button colour = ${bg} (unresolved, not brand red)`);
+    }
+  } catch (e) {
+    ok('E6: raw import + render', false, e.message);
+  }
+
+  // ── E7: brand PRESENT → same page compiles to the brand button colour ──
+  try {
+    const brandLayout = { ...fixture.layout, brand: fixture.brand };
+    const url = await importPage(brandLayout, fixture.slug);
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    const bg = await buttonBg(page);
+    ok('E7: Pro-compiled (brand-present) button is the brand colour',
+      bg === BRAND_BUTTON_RGB,
+      `expected ${BRAND_BUTTON_RGB}, got ${bg}`);
+    ok('E7: Pro-compiled button is NOT default blue',
+      bg != null && !DEFAULT_BLUE.includes(bg),
+      `button still default blue: ${bg}`);
+  } catch (e) {
+    ok('E7: brand import + render', false, e.message);
+  }
+}
 
 function report() {
   console.log(`\n── E2E render test results ──`);

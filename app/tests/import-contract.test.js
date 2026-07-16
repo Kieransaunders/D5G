@@ -64,3 +64,19 @@ test('seo and schema default to empty objects, never null', () => {
 test('buildImportPayload rejects a missing layout', () => {
   assert.throws(() => buildImportPayload({}), /layout is required/);
 });
+
+test('brand bundle rides inside layout, not as a 5th top-level payload key', () => {
+  const brand = { presets: { module: {} }, global_colors: [], global_variables: [] };
+  const p = buildImportPayload({ layout: { context: 'et_builder' }, brand });
+  // The plugin reads $layout['brand'] — so brand must be nested, and the payload
+  // must still expose only the four declared IMPORT_PARAMS.
+  assert.deepEqual(p.layout.brand, brand, 'brand not merged into layout');
+  assert.equal('brand' in p, false, 'brand leaked to the top level of the payload');
+  assert.deepEqual(Object.keys(p).sort(), [...IMPORT_PARAMS].sort());
+});
+
+test('no brand bundle leaves the layout untouched', () => {
+  const layout = { context: 'et_builder', data: { 1: 'x' } };
+  const p = buildImportPayload({ layout });
+  assert.equal('brand' in p.layout, false);
+});

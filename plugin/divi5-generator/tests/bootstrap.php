@@ -317,6 +317,12 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( $url ) {
+		return htmlspecialchars( (string) $url, ENT_QUOTES );
+	}
+}
+
 // --- RestApi test infrastructure ----------------------------------------------
 
 /** In-memory transient store, keyed like get_transient()/set_transient(). */
@@ -437,6 +443,9 @@ require_once $src . '/Seo/TSF.php';
 require_once $src . '/Seo/Detector.php';
 require_once $src . '/SeoWriter.php';
 require_once $src . '/MenuImporter.php';
+require_once $src . '/PageCompiler.php';
+require_once $src . '/PageImporter.php';
 require_once $src . '/Limits.php';
 require_once $src . '/Auth.php';
 require_once $src . '/RestApi.php';
+require_once __DIR__ . '/../admin/SettingsPage.php';

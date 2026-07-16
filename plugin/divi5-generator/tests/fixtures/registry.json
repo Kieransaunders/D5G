@@ -1,0 +1,246 @@
+{
+  "module": {
+    "divi/all": {
+      "default": "",
+      "items": {
+        "gg0z3dipdg": {
+          "id": "gg0z3dipdg",
+          "name": "Section - Dark",
+          "moduleName": "divi/section",
+          "version": "5.0.0-public-beta.9.1",
+          "type": "module",
+          "created": 1782902921210,
+          "updated": 1782902921210,
+          "attrs": {
+            "module": {
+              "decoration": {
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-dark\",\"settings\":{}}})$"
+                    }
+                  }
+                },
+                "spacing": {
+                  "desktop": {
+                    "value": {
+                      "padding": {
+                        "top": "6em",
+                        "bottom": "6em",
+                        "syncVertical": "on",
+                        "syncHorizontal": "off"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "a5m3zyvcwv": {
+          "id": "a5m3zyvcwv",
+          "name": "Body - on dark",
+          "moduleName": "divi/text",
+          "version": "5.0.0-public-beta.9.1",
+          "type": "module",
+          "created": 1782902921210,
+          "updated": 1782902921210,
+          "attrs": {
+            "content": {
+              "decoration": {
+                "bodyFont": {
+                  "body": {
+                    "font": {
+                      "desktop": {
+                        "value": {
+                          "family": "Source Sans 3",
+                          "size": "17px",
+                          "lineHeight": "1.8em",
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-body-dark\",\"settings\":{}}})$",
+                          "textAlign": "left"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "group": {
+    "divi/all": {
+      "default": "",
+      "items": {
+        "ck7ubnjx0a": {
+          "type": "group",
+          "id": "ck7ubnjx0a",
+          "name": "h1",
+          "version": "5.0.0-public-beta.9.1",
+          "created": 1782902921210,
+          "updated": 1782902921210,
+          "groupName": "divi/font",
+          "moduleName": "divi/heading",
+          "groupId": "designTitleText",
+          "attrs": {
+            "title": {
+              "decoration": {
+                "font": {
+                  "font": {
+                    "desktop": {
+                      "value": {
+                        "weight": "600",
+                        "size": "clamp(2.25rem, 2rem + 1vw, 3rem)",
+                        "lineHeight": "1.1em",
+                        "headingLevel": "h1"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "styleAttrs": {
+            "title": {
+              "decoration": {
+                "font": {
+                  "font": {
+                    "desktop": {
+                      "value": {
+                        "weight": "600",
+                        "size": "clamp(2.25rem, 2rem + 1vw, 3rem)",
+                        "lineHeight": "1.1em",
+                        "headingLevel": "h1"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "hws463o8lj": {
+          "type": "group",
+          "id": "hws463o8lj",
+          "name": "Button Primary",
+          "version": "5.0.0-public-beta.9.1",
+          "created": 1782902921210,
+          "updated": 1782902921210,
+          "groupName": "divi/button",
+          "moduleName": "divi/button",
+          "groupId": "button",
+          "attrs": {
+            "button": {
+              "decoration": {
+                "button": {
+                  "desktop": {
+                    "value": {
+                      "enable": "on",
+                      "icon": {
+                        "enable": "off"
+                      }
+                    }
+                  }
+                },
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-primary-color\",\"settings\":{}}})$"
+                    }
+                  },
+                  "hover": {
+                    "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-dmtl913igj\",\"settings\":{}}})$"
+                  }
+                },
+                "border": {
+                  "desktop": {
+                    "value": {
+                      "styles": {
+                        "all": {
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-primary-color\",\"settings\":{}}})$"
+                        }
+                      }
+                    }
+                  },
+                  "hover": {
+                    "styles": {
+                      "all": {
+                        "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-dmtl913igj\",\"settings\":{}}})$"
+                      }
+                    }
+                  }
+                },
+                "font": {
+                  "font": {
+                    "desktop": {
+                      "value": {
+                        "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-y43rzvjcdl\",\"settings\":{}}})$",
+                        "size": "1rem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "styleAttrs": {
+            "button": {
+              "decoration": {
+                "button": {
+                  "desktop": {
+                    "value": {
+                      "enable": "on",
+                      "icon": {
+                        "enable": "off"
+                      }
+                    }
+                  }
+                },
+                "background": {
+                  "desktop": {
+                    "value": {
+                      "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-primary-color\",\"settings\":{}}})$"
+                    }
+                  },
+                  "hover": {
+                    "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-dmtl913igj\",\"settings\":{}}})$"
+                  }
+                },
+                "border": {
+                  "desktop": {
+                    "value": {
+                      "styles": {
+                        "all": {
+                          "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-primary-color\",\"settings\":{}}})$"
+                        }
+                      }
+                    }
+                  },
+                  "hover": {
+                    "styles": {
+                      "all": {
+                        "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-dmtl913igj\",\"settings\":{}}})$"
+                      }
+                    }
+                  }
+                },
+                "font": {
+                  "font": {
+                    "desktop": {
+                      "value": {
+                        "color": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-y43rzvjcdl\",\"settings\":{}}})$",
+                        "size": "1rem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
