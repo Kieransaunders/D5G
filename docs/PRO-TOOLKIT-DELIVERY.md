@@ -1,5 +1,12 @@
 # Pro toolkit delivery
 
+> **Update 16/07/2026:** the Freemius Add-Ons zip mechanism this doc describes
+> was resurrected the same day it was retired — but scoped to the desktop
+> **app only**, not the whole toolkit. See `docs/PRD.md` §3.5. The reasoning
+> below (why a raw gated zip of the *whole toolkit* is leaky and kills
+> discovery) still stands and is exactly why the app-only version is scoped
+> the way it is; don't read this update as reversing that reasoning.
+>
 > **DEAD — SUPERSEDED 15/07/2026 by PRD §3.1.** Everything below describes the
 > gated-zip model, which is reversed. The toolkit is **public** at
 > `github.com/Kieransaunders/D5G`; the gate is the Pro connector's last-mile
