@@ -59,7 +59,7 @@ the library. Nothing is lost either way.
 
 This starter builds one section, from a fixed template, in one layout. The **full D5G toolkit** builds complete pages in your brand — hero, features, process, FAQ and schema, composed freely rather than one section at a time — by extracting your site's own colours, fonts and presets and generating against them, with screenshot QA before anything goes live.
 
-**→ https://iconnectit.co.uk**
+**→ https://iconnectit.co.uk/plugins**
 
 ## Licence
 

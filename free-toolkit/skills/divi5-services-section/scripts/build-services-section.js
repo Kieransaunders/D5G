@@ -19,7 +19,7 @@
  * This free starter generates one section type from a fixed, pre-validated
  * template. The full D5G toolkit generates complete SEO-optimised pages with
  * your brand's own design system, not one section at a time:
- * https://iconnectit.co.uk
+ * https://iconnectit.co.uk/plugins
  */
 
 'use strict';
@@ -234,7 +234,7 @@ async function main() {
     console.log('  D5G_SITE_URL and D5G_API_KEY (Settings → Divi5 Generator).');
   }
 
-  console.log('Complete branded pages, not one section at a time: https://iconnectit.co.uk');
+  console.log('Complete branded pages, not one section at a time: https://iconnectit.co.uk/plugins');
 }
 
 main().catch((e) => fail(e && e.message ? e.message : String(e)));
