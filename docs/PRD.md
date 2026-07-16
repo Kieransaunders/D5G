@@ -11,7 +11,7 @@
 
 Divi5Generate is an AI page-generation system for Divi 5 WordPress sites, sold as two coupled components:
 
-1. **The toolkit (Claude Code plugin `divi5generate`)** — skills, a builder library (~784-line Node module that emits valid Divi 5 block JSON), a 418-line validator. Public/free-discoverable (§3.1). A local browser app (chat-primary, port 3747) with brand profiles, design projects, one-click import, and screenshot QA sits alongside it as a **separate Freemius Add-Ons download** (§3.5, 16/07/2026) — not bundled into the free/public install. Runs on the customer's own Claude subscription — **we carry zero AI inference cost**.
+1. **The toolkit (Claude Code plugin `divi5generate`)** — skills, a builder library (~784-line Node module that emits valid Divi 5 block JSON), a 418-line validator. Public/free-discoverable (§3.1). A local browser app (chat-primary, port 3747) with brand profiles, design projects, one-click import, and screenshot QA sits alongside it as a **separate `is_pro()`-gated download** (§3.5, 16/07/2026) — not bundled into the free/public install, not a Freemius Add-Ons purchase. Runs on the customer's own Claude subscription — **we carry zero AI inference cost**.
 2. **The connector (WordPress plugin "Divi5 Generator" v1.8.0)** — a secure REST API on the customer's Divi 5 site: preview, import/export pages, preset packs, global variables, SEO meta written natively to 5 SEO plugins, JSON-LD schema, menu creation/auto-place, managed page cleanup, DB transfer. 59 PHPUnit tests. Freemius SDK already embedded.
 
 The moat is the reverse-engineered knowledge of Divi 5 internals (preset-first workflow, per-page CSS cache clearing, the `enable:'on'` button toggle, raw-hex-in-preset-backgrounds, `wp_kses_post` bypass). A competitor starting today repeats weeks of debugging we've already banked as code.
@@ -132,42 +132,71 @@ re-adding as a secret on the new repo (secrets don't migrate). Plugin header
 name (gap 3 below) — fold into the naming/landing-page decision, don't point
 it at the new *private* repo (would 404 publicly).
 
-### 3.5 App gating (DECIDED + EXECUTED 16/07/2026)
+### 3.5 App gating (DECIDED + EXECUTED 16/07/2026, mechanism revised same day)
 
 The desktop app (`app/` — chat UI, brand profiles, design projects,
 one-click import, screenshot QA) moved into the same private repo as the
-connector (`Kieransaunders/wp-divi5-generator`, §3.4) and is now a licensed
-**Freemius Add-Ons download**, gated separately from the skills toolkit.
+connector (`Kieransaunders/wp-divi5-generator`, §3.4). Gating went through
+two mechanisms the same day before landing on the one actually shipped:
 
-This resurrects the exact mechanism retired hours earlier the same day
-(commits `3399d44`/`d669ea2`, "Retire Freemius Add-Ons zip; D5G marketplace
-is the sole Pro install path") — but scoped narrowly this time. What was
-retired gated the **whole toolkit** (skills + app) behind a raw downloadable
-zip, which killed the public discovery funnel §3.1 depends on and was leaky
-besides (a downloaded zip has no ongoing licence check — Freemius validates
-at download time only, not at runtime, since their SDK covers WP plugins,
-not standalone Node apps). Gating only `app/` keeps the funnel intact
-(skills stay on the public `Kieransaunders/D5G` marketplace, installable
-and runnable by anyone) while putting the highest-polish convenience layer
-behind a paywall. The same leakiness caveat still applies to the app zip
-itself — accepted knowingly, matching the trade-off already accepted for
-DB-transfer endpoints (§4 gap 7): real but partial friction, not
-cryptographic enforcement.
+**Attempt 1 (retired within hours): Freemius Add-Ons.** `has_addons` was
+flipped to `true` and the download pointed at Freemius's own Add-Ons
+marketplace screen. Confirmed via Freemius's docs and a live crash
+(`Object.keys(undefined)` on the embedded pricing widget, because the app
+add-on had no published plan/price) that this doesn't do what was needed:
+Add-Ons are independent priced products — Freemius's SDK has no method to
+check "does this licence also cover add-on X", so a Free-tier connector user
+would see and could buy the app add-on too, same as a paying one. The only
+native mechanism where one purchase covers both is a Bundle & Membership
+product, which means restructuring checkout entirely — too much for what
+was actually needed ("Pro users can download the app").
 
-- `has_addons` flipped back to `true` in `divi5-generator.php`.
-- `SettingsPage.php`'s Pro branch shows an Add-Ons download link alongside
-  the marketplace command, pointing users to unzip into
-  `~/Library/Application Support/Divi5Generator/`.
-- `build-app-zip.sh` (new, in the private repo) `git archive`s the `app/`
-  subtree — only committed files ship, no `node_modules`, no local SQLite db.
-- The public D5G repo's `/divi5generate:launch` command now looks for the
-  app at that install path instead of inside the Claude plugin cache, and
-  fails gracefully with a pointer to the Add-Ons screen if it's missing.
-- 98/98 plugin tests green (2 new, covering the Add-Ons link).
+**Attempt 2 (shipped): direct `is_pro()`-gated download, commit `30ebef0`.**
+`D5G_AppDownload` (`src/AppDownload.php` in the private repo) is a thin
+authenticated proxy: `admin-post.php?action=d5g_download_app`, gated by the
+exact same `D5G_Limits::is_pro()` check used everywhere else in this plugin
+(nonce + `manage_options` + `is_pro()`), fetching the current release asset
+from the private repo's GitHub Releases via a read-only, repo-scoped PAT
+(`D5G_GITHUB_APP_PAT`, set in `wp-config.php`) and streaming it to the
+browser. `SettingsPage.php`'s Pro branch links directly to this endpoint —
+no Freemius Add-Ons screen involved. `has_addons` stays `false`; the
+"Divi5 Generator App" add-on product (id `34691`) created on the Freemius
+dashboard during Attempt 1 is dead weight, safe to leave unreleased/unused
+or delete.
 
-**Still open:** actually creating the "Divi5 Generator App" add-on product
-in the Freemius dashboard and uploading the first zip — KIERAN-ONLY, not
-done yet.
+This is a download-time gate only — deliberately not a runtime licence
+check inside the app itself (Kieran's call). The same leakiness caveat
+already accepted for DB-transfer endpoints (§4 gap 7) applies here too:
+real but partial friction, not cryptographic enforcement. Also fixed in the
+same commit: `build-zip.sh` was copying the whole `app/` source tree into
+the connector plugin's own distribution zip — meaning every installer,
+free or paying, got the "gated" app's full source just by unzipping the
+free connector. That bug predates and would have defeated *either* gating
+mechanism; `app/` is now explicitly excluded from that zip.
+
+- `build-app-zip.sh` (private repo) still `git archive`s the `app/`
+  subtree for local testing — only committed files ship, no
+  `node_modules`, no local SQLite db.
+- The public D5G repo's `/divi5generate:launch` command looks for the app
+  at `~/Library/Application Support/Divi5Generator/app/` and fails
+  gracefully with a pointer to Settings → the download link if missing.
+- 103/103 plugin tests green (5 new: `AppDownloadGateTest`; 2 rewritten in
+  `SettingsInstallInstructionsTest` for the new download link).
+
+**Still open — KIERAN-ONLY:**
+1. Create a fine-grained GitHub PAT scoped to just
+   `Kieransaunders/wp-divi5-generator`, read-only "Contents" access.
+2. Cut a GitHub Release on that repo (e.g. tag `v0.1.0`) with the built
+   app zip (`bash build-app-zip.sh`) attached as a release asset.
+3. Set `define( 'D5G_GITHUB_APP_PAT', '...' );` in the test/production
+   `wp-config.php`.
+4. `git push origin main` on the private repo — 4 local commits are
+   sitting unpushed (`30ebef0` plus 3 earlier ones from the app move),
+   pushed from the cloud sandbox is blocked by outbound SSH being
+   firewalled there.
+5. Optional cleanup: the "Divi5 Generator App" Freemius add-on (id
+   `34691`) is superseded — leave unreleased, or delete it to avoid
+   confusion later.
 
 ### Pricing (DECISION — recommendation)
 
@@ -268,7 +297,8 @@ No SaaS, no hosted Claude API, no white-label, no Envato. Divi Marketplace listi
 - [ ] **Review + commit the 2.0.0 connector changes** — still uncommitted in main's working tree (`plugin/`, `app/server.js`, `.claude-plugin/*`, readme/version sync). ~~sandbox git writes are blocked~~ **that blocker was environmental and is gone (15/07)** — just `git add -A && git commit` on a branch off main. Not done for you because the diff is broad and wants your eyes (10 min)
   - [x] The *free-starter* slice of this is already committed — `a64efcc` on branch `free-starter-launch` (`free-toolkit/` + `tools/build-free-starter-template.js`). Not pushed, no PR.
 - [ ] **Create the private `Kieransaunders/divi5-generator` repo and push it** (§3.4 — split executed locally 16/07/2026, nothing pushed yet: `cd plugin/divi5-generator && git remote add origin <url> && git push -u origin main`). Do this — or at least confirm D5G's current visibility — *before* the toolkit-publish step below, since D5G's pre-split history still contains old connector source.
-- [ ] **Freemius dashboard: create the "Divi5 Generator App" add-on product and upload the first `divi5generator-app.zip`** (§3.5 — build with `build-app-zip.sh` in the private repo). Needed before the Add-Ons link in Settings actually resolves to anything (10 min + build)
+- [x] ~~Freemius dashboard: create the "Divi5 Generator App" add-on product and upload the first `divi5generator-app.zip`"~~ — done (product id `34691`), then superseded same day: the app download no longer goes through Freemius Add-Ons at all (§3.5 revised mechanism). Add-on can stay unreleased.
+- [ ] **App download: create a GitHub PAT + cut a GitHub Release with the app zip attached, set `D5G_GITHUB_APP_PAT` in wp-config.php, push the private repo's 4 pending commits** (§3.5 — the actual remaining setup for the download link in Settings to resolve to anything) (15 min)
 - [ ] **Publish the advanced toolkit publicly at `https://github.com/Kieransaunders/D5G`** (DECIDED 15/07/2026, §3.1 — reverses the "keep this repo private" line). Push the toolkit so `claude plugin marketplace add Kieransaunders/D5G` works. Audit first for anything that shouldn't be public: client names in `/docs` (ALET etc.), internal notes, keys, the PRD itself. DB-transfer internals are no longer a concern here — that code moved out with the connector (§3.4) (15 min + audit)
 - [ ] Create public repo `Kieransaunders/divi5-starter` and push `free-toolkit/` to its root — still the low-friction taster (10 min)
 - [ ] ~~Freemius: attach the full-toolkit zip as a licensed download~~ **DELETED by §3.1** — no gated download, no licence-checked endpoint, no `build-pro-zip`. The toolkit is public; the gate is the connector compile step + `is_pro()` install-instructions swap (below)
