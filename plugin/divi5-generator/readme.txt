@@ -4,7 +4,7 @@ Tags: divi, divi 5, ai page generator, json import, divi library
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,6 +129,9 @@ The REST route defaults `publish` to `true`. The import skill intentionally publ
 Settings → Divi5 Generator → Regenerate Key. Your old key stops working immediately.
 
 == Changelog ==
+
+= 2.1.1 =
+* Changed: Pro install is now the D5G marketplace command only (`claude plugin marketplace add Kieransaunders/D5G`) — the Freemius Add-Ons zip offline-install alternative is retired.
 
 = 2.1.0 =
 * Changed: generated **pages** now import via a Pro compile step. The Claude toolkit emits pointer-only page JSON (preset references, not inlined styles) plus an out-of-band brand bundle; the Pro `/import` endpoint registers the brand and inlines the preset attributes into each block before saving. Raw page JSON imported without Pro renders visually broken by design — the connector is the enforceable gate.

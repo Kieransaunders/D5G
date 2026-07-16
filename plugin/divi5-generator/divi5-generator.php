@@ -4,7 +4,7 @@
  * Plugin Name:       Divi5 Generator
  * Plugin URI:        https://github.com/Kieransaunders/Divi5Generate
  * Description:       Import AI-generated pages, sections and Divi Library layouts into Divi 5 via REST API — no SSH, no WP-CLI, no manual JSON paste.
- * Version:           2.1.0
+ * Version:           2.1.1
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            iConnectIT
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'D5G_VERSION', '2.1.0' );
+define( 'D5G_VERSION', '2.1.1' );
 define( 'D5G_FILE', __FILE__ );
 define( 'D5G_DIR', plugin_dir_path( __FILE__ ) );
 
