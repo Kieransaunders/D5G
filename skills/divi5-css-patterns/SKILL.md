@@ -2,6 +2,7 @@
 name: Divi 5 CSS Patterns
 description: Use this skill when writing CSS for Divi 5 / Divi 5.6, styling Divi modules (buttons, sections, rows, blurbs, toggles, forms including the 5.3 Contact Form 7 Styler), the five 5.6 modules (Timeline, Breadcrumbs, SVG, Table of Contents, Instagram Feed), working with Free-Form CSS and the `selector` keyword, overriding `.et_pb_*` classes, setting up design tokens or dark mode, using the 5.4 Sizing Variable Generator or Relative Colorscheme Generator, applying the 5.5 Aspect Ratio / Framing settings, adding animations with reduced-motion, styling WooCommerce with Divi, the 5.3 pseudo-class editing modes (:checked, :focus, :active), Nested Option Presets, building accessible layouts, or developing a Divi child theme. Provides CSS patterns, class naming conventions, selector specificity guidance, Composable Settings alternatives, Canvas and Loop Builder patterns, and full example files for buttons, design tokens, animations, dark mode, WooCommerce, accessibility, forms, Loop Builder, and the 5.6 new modules.
 user-invocable: false
+license: MIT
 ---
 
 # Divi 5 CSS Development Patterns

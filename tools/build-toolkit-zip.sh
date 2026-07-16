@@ -27,7 +27,7 @@ fi
 
 rm -f "$OUTPUT_ZIP"
 git archive --format=zip --prefix=divi5generate/ HEAD \
-  .claude-plugin skills commands \
+  .claude-plugin skills commands LICENSE \
   -o "$OUTPUT_ZIP"
 
 echo "Built: $OUTPUT_ZIP"

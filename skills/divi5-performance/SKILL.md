@@ -2,6 +2,7 @@
 name: Divi 5 Performance
 description: Use this skill when optimizing Divi 5 site performance, improving Core Web Vitals (LCP, INP, CLS), reducing render-blocking CSS, working with Divi's Critical CSS / Dynamic CSS / Inline Stylesheet system, configuring font loading (WOFF2, preload, font-display), lazy-loading background images, preloading above-the-fold images, debugging slow Divi pages, or auditing cache-plugin interactions (WP Rocket RUCSS, LiteSpeed, Autoptimize, Perfmatters). Covers Divi 5.6's per-page component CSS, Section 5.5 Aspect Ratio for CLS prevention, and the per-module helper class pattern for lazy-loading.
 user-invocable: false
+license: MIT
 ---
 
 # Divi 5 Performance Optimization

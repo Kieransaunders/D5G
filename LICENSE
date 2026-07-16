@@ -1,0 +1,60 @@
+Divi5 Generator Toolkit — Commercial License
+SPDX-License-Identifier: LicenseRef-Divi5Generate-Commercial
+Copyright (c) 2026 iConnectIT (Kieran Saunders). All rights reserved.
+
+NOTE: This is a plain-language commercial licence drafted for the product, not
+legal advice. Have it reviewed by a solicitor before relying on it.
+
+This licence covers the Divi5 Generator Toolkit — the Claude Code plugin in this
+repository: the skills, scripts, builder library, references and commands under
+`.claude-plugin/`, `skills/` and `commands/` (the "Toolkit"). It does NOT cover:
+
+  - The WordPress connector plugin under `plugin/divi5-generator/`, which is
+    licensed separately under GPL-2.0-or-later (see plugin/divi5-generator/LICENSE).
+  - Third-party components bundled in the Toolkit that carry their own licence.
+    These remain under their original terms and are not restricted by this
+    licence. Where a skill is vendored from a third party, its own LICENSE /
+    NOTICE.md file governs it (e.g. the MIT-licensed skills noted in NOTICE.md).
+
+GRANT
+The Toolkit is proprietary and is licensed, not sold. Subject to a valid,
+current purchase (a "Licence") and to these terms, iConnectIT grants you a
+non-exclusive, non-transferable, revocable licence to install and use the
+Toolkit to generate work for the number of users and production sites your
+purchased plan permits.
+
+  - Pro Single: 1 user, output deployed to 1 production site.
+  - Pro Agency: 3 users, output deployed to up to 25 active client sites.
+
+(Seat and site counts are the counts stated at purchase; the above reflect the
+current plans and may change for new purchases.)
+
+PERMITTED
+  - Use the Toolkit to generate pages, sections, and assets for client and
+    personal projects within your plan's limits.
+  - Modify the Toolkit for your own internal use.
+  - Keep and use copies for backup and normal operation.
+
+NOT PERMITTED
+  - Redistributing, publishing, sublicensing, reselling, renting, or otherwise
+    making the Toolkit (or any substantial part of it) available to any third
+    party, whether modified or not, whether for charge or free. This includes
+    public repositories, marketplaces, and file-sharing.
+  - Using the Toolkit beyond your plan's user or site limits.
+  - Removing or altering copyright, licence, or attribution notices.
+
+The output you generate with the Toolkit (the resulting Divi/WordPress pages and
+assets) is yours to use for your and your clients' sites without further
+restriction.
+
+TERMINATION
+This Licence ends automatically if you breach it or if your purchase lapses.
+On termination you must stop using and delete the Toolkit. Attribution and
+third-party-notice obligations survive.
+
+NO WARRANTY
+The Toolkit is provided "as is", without warranty of any kind. To the maximum
+extent permitted by law, iConnectIT is not liable for any damages arising from
+its use.
+
+Questions / additional seats: kieran@iconnectit.co.uk

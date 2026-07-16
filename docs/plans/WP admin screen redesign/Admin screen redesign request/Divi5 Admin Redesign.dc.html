@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#efece6;font-family:'Inter',system-ui,sans-serif;color:#4b5563;-webkit-font-smoothing:antialiased}
+a{color:#1e9df1;text-decoration:none}
+a:hover{color:#f95e00}
+.dv-turn{padding:46px 50px 40px;scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 24px}
+.dv-tid{font:700 10px 'JetBrains Mono',monospace;padding:3px 7px;background:#141414;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 'Inter';color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:44px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
+.dv-olabel{display:flex;align-items:baseline;gap:9px;font:400 12px/1.35 'Inter';color:rgba(0,0,0,.55);max-width:1180px}
+.dv-oid{font:700 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none;flex:none}
+.dv-opt:target .dv-oid{background:#f95e00;color:#fff}
+.dv-screen{width:1180px;max-width:100%;background:#f3f4f6;border-radius:16px;overflow:hidden;box-shadow:0 30px 70px -28px rgba(20,20,20,.34),0 2px 8px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.06)}
+.dv-next{margin:26px 0 0;font:13px/1.7 'Inter';color:rgba(0,0,0,.5)}
+@keyframes d5dot{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Divi5 Generator &mdash; admin screen redesign &middot; iConnectIT brand</span></div>
+<div class="dv-opts">
+
+<!-- ============================ OPTION 1a ============================ -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a><span><strong>Guided onboarding</strong> &mdash; a warm, scroll-down narrative. Big "set up in 3 steps", the two build paths as side-by-side cards, live connection status, a prominent Pro banner, and advanced tools tucked into an accordion. Best for the non-technical half of the audience.</span></div>
+<div class="dv-screen">
+
+  <!-- wp admin bar -->
+  <div style="height:34px;background:#1d2327;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:12px;color:#c3c4c7">
+    <div style="display:flex;align-items:center;gap:14px"><span style="font-size:15px">&#9776;</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">&#127968;</span>plugin.iconnectit.co.uk</span></div>
+    <div style="display:flex;align-items:center;gap:6px">Howdy, Kieran <span style="width:22px;height:22px;border-radius:50%;background:#3c434a;display:inline-block"></span></div>
+  </div>
+
+  <div style="padding:30px 36px 40px">
+    <!-- breadcrumb -->
+    <div style="font-size:12px;color:#9199a5;margin-bottom:16px">Settings <span style="opacity:.5">&rsaquo;</span> <span style="color:#4b5563;font-weight:600">Divi5 Generator</span></div>
+
+    <!-- opt-in success banner -->
+    <div style="display:flex;align-items:center;gap:12px;background:#ecfdf3;border:1px solid #b7e9c8;border-left:4px solid #16a34a;border-radius:10px;padding:12px 16px;margin-bottom:22px">
+      <span style="width:22px;height:22px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;flex:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div style="font-size:13.5px;color:#14532d">Almost there &mdash; check <strong>kieran@iconnectit.co.uk</strong> and click the confirmation link to finish setup.</div>
+      <span style="margin-left:auto;color:#7fae90;cursor:pointer;font-size:16px">&times;</span>
+    </div>
+
+    <!-- HERO -->
+    <div style="background:linear-gradient(120deg,#222428 0%,#2d2f36 60%,#3a2a1e 100%);border-radius:16px;padding:26px 30px;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(249,94,0,.28),transparent 70%);pointer-events:none"></div>
+      <img src="d5g-icon.png" alt="Divi5 Generator" style="width:60px;height:60px;border-radius:14px;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.35)">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:12px">
+          <h1 style="margin:0;font:800 24px/1.1 'Inter';color:#fff;letter-spacing:-.01em">Divi5 Generator</h1>
+          <span style="font:700 10.5px 'Inter';letter-spacing:.08em;text-transform:uppercase;color:#f9c32e;border:1px solid rgba(249,195,46,.5);background:rgba(249,195,46,.12);padding:4px 9px;border-radius:20px">Free plan</span>
+        </div>
+        <p style="margin:6px 0 0;font-size:14px;color:#b9bcc4;max-width:560px">Ask Claude for a Divi&nbsp;5 section or page in plain English &mdash; it lands on your site. No code required.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex:none">
+        <span style="display:inline-flex;align-items:center;gap:7px;font:600 12.5px 'Inter';color:#e6e7ea;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:7px 12px;border-radius:20px"><span style="width:8px;height:8px;border-radius:50%;background:#34d399;animation:d5dot 1.8s infinite"></span>API key active</span>
+        <span style="font-size:11.5px;color:#8b8e97">30 requests / min</span>
+      </div>
+    </div>
+
+    <!-- STEP SECTION -->
+    <div style="margin-top:32px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px"><h2 style="margin:0;font:800 19px/1.2 'Inter';color:#0f0f0f;letter-spacing:-.01em">Set up in 3 steps</h2><span style="font-size:13px;color:#9199a5">&mdash; about 2 minutes</span></div>
+      <p style="margin:0 0 20px;font-size:13.5px;color:#6b7280">Install the free skill in Claude Code, hand it two values, then just ask.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+
+        <!-- step 1 -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="width:28px;height:28px;border-radius:8px;background:#f95e00;color:#fff;font:800 14px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">1</span><h3 style="margin:0;font:700 15px 'Inter';color:#0f0f0f">Install the free skill</h3></div>
+          <p style="margin:0 0 14px;font-size:13px;color:#6b7280;line-height:1.55">Adds the Divi&nbsp;5 section generator to Claude Code. Public &amp; free.</p>
+          <div style="background:#141414;border-radius:10px;padding:13px 62px 13px 14px;font:500 12px/1.75 'JetBrains Mono',monospace;color:#e6e6e6;position:relative;margin-top:auto">
+            <div><span style="color:#f9c32e">$</span> claude plugin marketplace add <span style="color:#f9a86b">Kieransaunders/divi5-starter</span></div>
+            <div><span style="color:#f9c32e">$</span> claude plugin install <span style="color:#f9a86b">divi5-starter</span></div>
+            <button onClick="{{ copyInstall }}" data-label="Copy" style="position:absolute;top:9px;right:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#cbd0d8;border-radius:7px;padding:5px 9px;font:600 11px 'Inter';cursor:pointer">Copy</button>
+          </div>
+        </div>
+
+        <!-- step 2 -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="width:28px;height:28px;border-radius:8px;background:#f95e00;color:#fff;font:800 14px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">2</span><h3 style="margin:0;font:700 15px 'Inter';color:#0f0f0f">Give Claude your site</h3></div>
+          <p style="margin:0 0 14px;font-size:13px;color:#6b7280;line-height:1.55">Paste these two values into Claude when it asks. That's the whole connection.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:auto">
+            <div>
+              <div style="font:600 10.5px 'Inter';letter-spacing:.06em;text-transform:uppercase;color:#9199a5;margin-bottom:4px">Site URL</div>
+              <div style="display:flex;align-items:center;gap:8px;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px"><code style="font:500 12px 'JetBrains Mono',monospace;color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://plugin.iconnectit.co.uk</code><button onClick="{{ copySiteUrl }}" data-label="&#10697;" style="background:#fff;border:1px solid #d7dae0;border-radius:6px;padding:5px 8px;font:600 11px 'Inter';color:#374151;cursor:pointer;flex:none">&#10697;</button></div>
+            </div>
+            <div>
+              <div style="font:600 10.5px 'Inter';letter-spacing:.06em;text-transform:uppercase;color:#9199a5;margin-bottom:4px">API key</div>
+              <div style="display:flex;align-items:center;gap:8px;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px"><code style="font:500 12px 'JetBrains Mono',monospace;color:#9199a5;flex:1">d5gk_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</code><span style="font-size:11px;color:#9199a5;flex:none">shown once</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- step 3 -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="width:28px;height:28px;border-radius:8px;background:#f95e00;color:#fff;font:800 14px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">3</span><h3 style="margin:0;font:700 15px 'Inter';color:#0f0f0f">Ask in plain English</h3></div>
+          <p style="margin:0 0 14px;font-size:13px;color:#6b7280;line-height:1.55">Claude writes the copy, validates it, and imports it straight to your Divi Library.</p>
+          <div style="margin-top:auto;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:10px;padding:13px 14px">
+            <div style="display:flex;gap:9px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:6px;background:#222428;color:#fff;font:800 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">C</span><p style="margin:0;font-size:12.5px;color:#374151;line-height:1.5">&ldquo;Build me a services section for my plumbing business &mdash; emergency callouts, boiler servicing, bathroom installs. Brand colour <span style="color:#0B6E4F;font-weight:600">#0B6E4F</span>.&rdquo;</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TWO PATHS -->
+    <div style="margin-top:34px">
+      <h2 style="margin:0 0 4px;font:800 19px/1.2 'Inter';color:#0f0f0f;letter-spacing:-.01em">Two ways to build</h2>
+      <p style="margin:0 0 20px;font-size:13.5px;color:#6b7280">Start free with sections you drop in yourself. Upgrade when hand-assembly becomes the bottleneck.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+        <!-- FREE PATH -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden">
+          <div style="padding:20px 24px;border-bottom:1px solid #f0f1f3;display:flex;align-items:center;justify-content:space-between">
+            <div><h3 style="margin:0;font:800 17px 'Inter';color:#0f0f0f">Import a section</h3><p style="margin:4px 0 0;font-size:12.5px;color:#6b7280">Into your Divi Library &mdash; unlimited</p></div>
+            <span style="font:700 10.5px 'Inter';letter-spacing:.06em;text-transform:uppercase;color:#16a34a;background:#ecfdf3;border:1px solid #b7e9c8;padding:5px 10px;border-radius:20px">Free</span>
+          </div>
+          <div style="padding:8px 24px 22px">
+            <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f4f5f6"><span style="width:22px;height:22px;border-radius:50%;background:#f7f7f7;border:1px solid #e5e7eb;color:#6b7280;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">1</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Ask Claude for a <strong>services section</strong> in your words.</p></div>
+            <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f4f5f6"><span style="width:22px;height:22px;border-radius:50%;background:#f7f7f7;border:1px solid #e5e7eb;color:#6b7280;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">2</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">It generates validated Divi&nbsp;5 JSON and <strong>imports it to your Library</strong>.</p></div>
+            <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f4f5f6"><span style="width:22px;height:22px;border-radius:50%;background:#f7f7f7;border:1px solid #e5e7eb;color:#6b7280;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">3</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Open the <strong>Visual Builder</strong>, drop the section onto any page.</p></div>
+            <div style="display:flex;gap:12px;padding:12px 0"><span style="width:22px;height:22px;border-radius:50%;background:#ecfdf3;border:1px solid #b7e9c8;color:#16a34a;display:flex;align-items:center;justify-content:center;flex:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Published &mdash; you did the assembly, three clicks.</p></div>
+          </div>
+        </div>
+
+        <!-- PRO PATH -->
+        <div style="background:linear-gradient(160deg,#fffdf7,#fff);border:1px solid #f2dfa8;border-radius:16px;overflow:hidden;position:relative">
+          <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 60% at 100% 0%,rgba(249,195,46,.12),transparent 60%)"></div>
+          <div style="padding:20px 24px;border-bottom:1px solid #f4ecd4;display:flex;align-items:center;justify-content:space-between;position:relative">
+            <div><h3 style="margin:0;font:800 17px 'Inter';color:#0f0f0f">Create a whole page</h3><p style="margin:4px 0 0;font-size:12.5px;color:#8a7a4a">Brand, SEO &amp; schema &mdash; automatically</p></div>
+            <span style="display:inline-flex;align-items:center;gap:5px;font:700 10.5px 'Inter';letter-spacing:.06em;text-transform:uppercase;color:#8a6d16;background:#fdf3d3;border:1px solid #f2dfa8;padding:5px 10px;border-radius:20px"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Pro</span>
+          </div>
+          <div style="padding:8px 24px 22px;position:relative">
+            <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f6f0dd"><span style="width:22px;height:22px;border-radius:50%;background:#fdf3d3;border:1px solid #f2dfa8;color:#8a6d16;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">1</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5"><strong>Unlock the full toolkit</strong> &mdash; ships as a download with your licence.</p></div>
+            <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f6f0dd"><span style="width:22px;height:22px;border-radius:50%;background:#fdf3d3;border:1px solid #f2dfa8;color:#8a6d16;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">2</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Ask for a <strong>full page</strong> &mdash; hero, features, FAQ &mdash; in your brand.</p></div>
+            <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f6f0dd"><span style="width:22px;height:22px;border-radius:50%;background:#fdf3d3;border:1px solid #f2dfa8;color:#8a6d16;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">3</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">It extracts your colours, fonts &amp; presets, writes <strong>SEO + schema</strong>.</p></div>
+            <div style="display:flex;gap:12px;padding:12px 0"><span style="width:22px;height:22px;border-radius:50%;background:#f9c32e;color:#3a2c05;display:flex;align-items:center;justify-content:center;flex:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5"><strong>One command deploys it</strong> &mdash; draft or live &mdash; with screenshot QA.</p></div>
+            <div style="margin-top:8px;background:#faf6ec;border:1px solid #f2dfa8;border-radius:12px;padding:15px 16px">
+              <div style="display:flex;align-items:center;gap:7px;font:700 11px 'Inter';letter-spacing:.05em;text-transform:uppercase;color:#8a6d16;margin-bottom:10px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Z"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Installing the Pro skills</div>
+              <ol style="margin:0 0 12px;padding-left:18px;font-size:12.5px;color:#5b5330;line-height:1.7">
+                <li>Upgrade, then download the toolkit from your <strong>iConnectIT account</strong> &mdash; you get a licensed <code style="font:500 11px 'JetBrains Mono',monospace;color:#8a6d16">.zip</code> (it isn't on the public marketplace).</li>
+                <li>Unzip it, then point Claude Code at the folder:</li>
+              </ol>
+              <div style="background:#141414;border-radius:9px;padding:12px 62px 12px 14px;font:500 12px/1.75 'JetBrains Mono',monospace;color:#e6e6e6;position:relative">
+                <div><span style="color:#f9c32e">$</span> claude plugin marketplace add <span style="color:#f9a86b">~/Downloads/divi5generate</span></div>
+                <div><span style="color:#f9c32e">$</span> claude plugin install <span style="color:#f9a86b">divi5generate@divi5generate</span></div>
+                <button onClick="{{ copyProInstall }}" data-label="Copy" style="position:absolute;top:9px;right:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#cbd0d8;border-radius:7px;padding:5px 9px;font:600 11px 'Inter';cursor:pointer">Copy</button>
+              </div>
+              <p style="margin:10px 0 0;font-size:11.5px;color:#a08a4a">Unlocks the advanced skills &mdash; full page generator, brand systems, deploy &amp; QA &mdash; plus every Pro connector feature on this site.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CONNECTION STATUS -->
+    <div style="margin-top:34px">
+      <h2 style="margin:0 0 4px;font:800 19px/1.2 'Inter';color:#0f0f0f;letter-spacing:-.01em">Your connection</h2>
+      <p style="margin:0 0 20px;font-size:13.5px;color:#6b7280">What's live on this site right now.</p>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
+          <div style="border:1px solid #eef0f2;border-radius:12px;padding:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:#9199a5;font-weight:600">API key</span><span style="width:8px;height:8px;border-radius:50%;background:#34d399"></span></div><div style="font:700 14px 'Inter';color:#0f0f0f">Set &amp; hidden</div><button style="margin-top:10px;background:#fff;border:1px solid #d7dae0;border-radius:8px;padding:7px 12px;font:600 12px 'Inter';color:#374151;cursor:pointer" style-hover="border-color:#f95e00;color:#f95e00">Regenerate key</button></div>
+          <div style="border:1px solid #eef0f2;border-radius:12px;padding:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:#9199a5;font-weight:600">Import endpoint</span></div><code style="font:500 11px 'JetBrains Mono',monospace;color:#374151;display:block;line-height:1.4;word-break:break-all">/wp-json/divi5-generator/v1/import</code><button onClick="{{ copyEndpoint }}" data-label="Copy endpoint" style="margin-top:10px;background:#fff;border:1px solid #d7dae0;border-radius:8px;padding:7px 12px;font:600 12px 'Inter';color:#374151;cursor:pointer">Copy endpoint</button></div>
+          <div style="border:1px solid #fde3e0;background:#fef6f5;border-radius:12px;padding:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:#c0574f;font-weight:600">SEO plugin</span><span style="width:18px;height:18px;border-radius:50%;background:#f3d0cc;color:#b32d2e;display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div><div style="font:700 13.5px 'Inter';color:#0f0f0f">Not detected</div><p style="margin:6px 0 0;font-size:11.5px;color:#a1615c;line-height:1.4">Install Yoast or Rank Math for auto meta.</p></div>
+          <div style="border:1px solid #fde3e0;background:#fef6f5;border-radius:12px;padding:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:#c0574f;font-weight:600">Divi 5</span><span style="width:18px;height:18px;border-radius:50%;background:#f3d0cc;color:#b32d2e;display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div><div style="font:700 13.5px 'Inter';color:#0f0f0f">Not detected</div><p style="margin:6px 0 0;font-size:11.5px;color:#a1615c;line-height:1.4">Content-only import until Divi&nbsp;5 is active.</p></div>
+        </div>
+        <!-- quick test -->
+        <div style="border-top:1px solid #f0f1f3;padding-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div><div style="font:700 13px 'Inter';color:#0f0f0f">Quick test</div><div style="font-size:12px;color:#9199a5">Sends your key in the <code style="font:500 11px 'JetBrains Mono';color:#6b7280">X-D5G-Key</code> header, like the importer does.</div></div>
+          <input id="test-in-1a" type="text" placeholder="Paste your API key" spellcheck="false" style="flex:1;min-width:200px;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:9px;padding:11px 13px;font:500 13px 'JetBrains Mono',monospace;color:#374151;outline:none" style-focus="border-color:#f95e00;background:#fff">
+          <button onClick="{{ testA }}" style="background:#f95e00;color:#fff;border:none;border-radius:9px;padding:11px 20px;font:700 13px 'Inter';cursor:pointer" style-hover="background:#e05400">Test connection</button>
+          <span id="test-res-1a" style="font:600 13px 'Inter'"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRO BANNER -->
+    <div style="margin-top:34px;background:linear-gradient(120deg,#222428 0%,#2b2620 55%,#3a2410 100%);border-radius:18px;padding:30px 34px;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-30px;top:-50px;width:300px;height:300px;background:radial-gradient(circle,rgba(249,195,46,.22),transparent 68%);pointer-events:none"></div>
+      <div style="position:relative;display:flex;gap:34px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:340px">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:700 10.5px 'Inter';letter-spacing:.08em;text-transform:uppercase;color:#f9c32e;background:rgba(249,195,46,.12);border:1px solid rgba(249,195,46,.4);padding:5px 11px;border-radius:20px"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Divi5 Generator Pro</span>
+          <h2 style="margin:14px 0 8px;font:800 24px/1.15 'Inter';color:#fff;letter-spacing:-.015em;max-width:460px">Go from sections to whole pages.</h2>
+          <p style="margin:0;font-size:14px;color:#b9bcc4;max-width:480px;line-height:1.55">Now imagine that section &mdash; but the entire page, in your brand, with SEO baked in, deployed in one command. That's Pro.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;max-width:520px">
+            <span style="font-size:12px;color:#e6e7ea;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 11px;border-radius:8px">Full page generation</span>
+            <span style="font-size:12px;color:#e6e7ea;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 11px;border-radius:8px">SEO titles, meta &amp; JSON-LD</span>
+            <span style="font-size:12px;color:#e6e7ea;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 11px;border-radius:8px">Brand extract &amp; deploy</span>
+            <span style="font-size:12px;color:#e6e7ea;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 11px;border-radius:8px">Presets &amp; global variables</span>
+            <span style="font-size:12px;color:#e6e7ea;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 11px;border-radius:8px">Nav menus</span>
+            <span style="font-size:12px;color:#e6e7ea;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 11px;border-radius:8px">120 req/min &mdash; 4&times; Free</span>
+          </div>
+        </div>
+        <div style="flex:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:22px;width:270px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.1)"><div><div style="font:700 13px 'Inter';color:#fff">Pro Single</div><div style="font-size:11.5px;color:#8b8e97">1 user &middot; 1 site</div></div><div style="font:800 20px 'Inter';color:#f9c32e">&pound;89<span style="font-size:12px;color:#8b8e97;font-weight:500">/yr</span></div></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 16px"><div><div style="font:700 13px 'Inter';color:#fff">Pro Agency</div><div style="font-size:11.5px;color:#8b8e97">3 users &middot; 25 sites</div></div><div style="font:800 20px 'Inter';color:#f9c32e">&pound;249<span style="font-size:12px;color:#8b8e97;font-weight:500">/yr</span></div></div>
+          <button style="width:100%;background:#f95e00;color:#fff;border:none;border-radius:10px;padding:13px;font:700 14px 'Inter';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#e05400">Upgrade to Pro <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+          <div style="text-align:center;margin-top:10px;font-size:11.5px;color:#8b8e97">Lifetime from &pound;299 &middot; <a href="#1a" style="color:#f9c32e">Compare plans</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVANCED ACCORDION -->
+    <div style="margin-top:28px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
+      <button onClick="{{ toggleAdvA }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#fff;border:none;padding:18px 24px;cursor:pointer;text-align:left">
+        <span style="display:flex;flex-direction:column;gap:2px"><span style="font:700 15px 'Inter';color:#0f0f0f">Advanced &amp; developer tools</span><span style="font-size:12.5px;color:#9199a5">Example request, connector activity log</span></span>
+        <svg id="advchev-1a" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9199a5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div id="adv-1a" style="display:none;padding:0 24px 24px;border-top:1px solid #f0f1f3">
+        <div style="margin-top:20px;font:700 12px 'Inter';letter-spacing:.05em;text-transform:uppercase;color:#9199a5;margin-bottom:10px">Example request</div>
+        <pre style="margin:0;background:#141414;color:#d4d4d4;padding:16px 18px;border-radius:10px;overflow-x:auto;font:500 12px/1.7 'JetBrains Mono',monospace"><span style="color:#7ec699">curl</span> -s -X POST \
+  '<span style="color:#f9a86b">https://plugin.iconnectit.co.uk/wp-json/divi5-generator/v1/import</span>' \
+  -H '<span style="color:#8fbce6">Content-Type</span>: application/json' \
+  -H '<span style="color:#8fbce6">X-D5G-Key</span>: <span style="color:#f9c32e">YOUR_KEY_HERE</span>' \
+  -d '{ "layout": {...}, "seo": {...}, "publish": false }'</pre>
+        <div style="margin-top:22px;display:flex;align-items:baseline;gap:8px"><span style="font:700 12px 'Inter';letter-spacing:.05em;text-transform:uppercase;color:#9199a5">Connector log</span><span style="font-size:11.5px;color:#c3c6cc">last 50</span></div>
+        <div style="margin-top:10px;border:1px dashed #dfe2e6;border-radius:12px;padding:26px;text-align:center;background:#fafbfc">
+          <div style="font:700 14px 'Inter';color:#4b5563">No imports yet</div>
+          <p style="margin:6px 0 0;font-size:12.5px;color:#9199a5">Run your first section import and it'll appear here &mdash; time, slug, status and any warnings.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div style="margin-top:26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px;color:#9199a5">
+      <span>Divi5 Generator v2.0.0 &middot; by <a href="#1a">iConnectIT</a></span>
+      <span><a href="#1a">Documentation</a> &middot; <a href="#1a">support@iconnectit.co.uk</a></span>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ============================ OPTION 1b ============================ -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a><span><strong>Operator dashboard</strong> &mdash; a denser two-column layout. Workflow on the left with a Free/Pro tab switch; a sticky right rail holds connection, credentials and the Pro card. Advanced tools live in tabs at the bottom. Best for the developer/agency half.</span></div>
+<div class="dv-screen">
+
+  <div style="height:34px;background:#1d2327;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:12px;color:#c3c4c7">
+    <div style="display:flex;align-items:center;gap:14px"><span style="font-size:15px">&#9776;</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:13px">&#127968;</span>plugin.iconnectit.co.uk</span></div>
+    <div style="display:flex;align-items:center;gap:6px">Howdy, Kieran <span style="width:22px;height:22px;border-radius:50%;background:#3c434a;display:inline-block"></span></div>
+  </div>
+
+  <div style="padding:26px 32px 36px">
+    <!-- compact header -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+      <img src="d5g-icon.png" alt="Divi5 Generator" style="width:48px;height:48px;border-radius:12px;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.18)">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px"><h1 style="margin:0;font:800 21px/1.1 'Inter';color:#0f0f0f;letter-spacing:-.01em">Divi5 Generator</h1><span style="font:700 10px 'Inter';letter-spacing:.07em;text-transform:uppercase;color:#8a6d16;background:#fdf3d3;border:1px solid #f2dfa8;padding:3px 8px;border-radius:20px">Free plan</span></div>
+        <p style="margin:4px 0 0;font-size:13px;color:#6b7280">Ask Claude for Divi&nbsp;5 sections and pages in plain English. No code required.</p>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:7px;font:600 12px 'Inter';color:#15803d;background:#ecfdf3;border:1px solid #b7e9c8;padding:8px 13px;border-radius:20px;flex:none"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e;animation:d5dot 1.8s infinite"></span>Connected</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start">
+
+      <!-- LEFT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:22px">
+
+        <!-- install steps -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:24px">
+          <h2 style="margin:0 0 3px;font:800 17px 'Inter';color:#0f0f0f">Get started</h2>
+          <p style="margin:0 0 18px;font-size:13px;color:#6b7280">Install the free skill, hand Claude two values, then ask.</p>
+
+          <div style="display:flex;gap:14px;padding-bottom:18px;border-bottom:1px solid #f2f3f5">
+            <span style="width:26px;height:26px;border-radius:8px;background:#f95e00;color:#fff;font:800 13px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">1</span>
+            <div style="flex:1"><div style="font:700 14px 'Inter';color:#0f0f0f;margin-bottom:8px">Install the free skill in Claude Code</div>
+              <div style="background:#141414;border-radius:9px;padding:12px 62px 12px 14px;font:500 12px/1.75 'JetBrains Mono',monospace;color:#e6e6e6;position:relative">
+                <div><span style="color:#f9c32e">$</span> claude plugin marketplace add <span style="color:#f9a86b">Kieransaunders/divi5-starter</span></div>
+                <div><span style="color:#f9c32e">$</span> claude plugin install <span style="color:#f9a86b">divi5-starter</span></div>
+                <button onClick="{{ copyInstall }}" data-label="Copy" style="position:absolute;top:9px;right:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#cbd0d8;border-radius:7px;padding:5px 9px;font:600 11px 'Inter';cursor:pointer">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:14px;padding:18px 0;border-bottom:1px solid #f2f3f5">
+            <span style="width:26px;height:26px;border-radius:8px;background:#f95e00;color:#fff;font:800 13px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">2</span>
+            <div style="flex:1"><div style="font:700 14px 'Inter';color:#0f0f0f;margin-bottom:3px">Give Claude your Site URL + API key</div><p style="margin:0;font-size:12.5px;color:#6b7280">Both are in the panel on the right &mdash; paste them when Claude asks.</p></div>
+          </div>
+
+          <div style="display:flex;gap:14px;padding-top:18px">
+            <span style="width:26px;height:26px;border-radius:8px;background:#f95e00;color:#fff;font:800 13px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">3</span>
+            <div style="flex:1"><div style="font:700 14px 'Inter';color:#0f0f0f;margin-bottom:8px">Ask in plain English</div>
+              <div style="background:#f7f7f7;border:1px solid #e5e7eb;border-radius:9px;padding:12px 14px;display:flex;gap:9px;align-items:flex-start"><span style="width:20px;height:20px;border-radius:6px;background:#222428;color:#fff;font:800 10px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">C</span><p style="margin:0;font-size:12.5px;color:#374151;line-height:1.5">&ldquo;Build me a services section for my plumbing business. Brand colour <span style="color:#0B6E4F;font-weight:600">#0B6E4F</span>.&rdquo;</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- two-path tabs -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:24px">
+          <h2 style="margin:0 0 14px;font:800 17px 'Inter';color:#0f0f0f">The workflow</h2>
+          <div style="display:inline-flex;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:4px;gap:4px;margin-bottom:18px">
+            <button id="tabf-1b" onClick="{{ tabFreeB }}" style="border:none;border-radius:7px;padding:8px 16px;font:700 13px 'Inter';cursor:pointer;background:#fff;color:#0f0f0f;box-shadow:0 1px 2px rgba(0,0,0,.08);display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a"></span>Import a section &middot; Free</button>
+            <button id="tabp-1b" onClick="{{ tabProB }}" style="border:none;border-radius:7px;padding:8px 16px;font:700 13px 'Inter';cursor:pointer;background:transparent;color:#6b7280;box-shadow:none;display:flex;align-items:center;gap:7px"><svg width="11" height="11" viewBox="0 0 24 24" fill="#c9a227"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Create a page &middot; Pro</button>
+          </div>
+
+          <!-- free panel -->
+          <div id="path-free-1b">
+            <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #f4f5f6"><span style="width:22px;height:22px;border-radius:50%;background:#f7f7f7;border:1px solid #e5e7eb;color:#6b7280;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">1</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Ask Claude for a <strong>services section</strong> in your own words.</p></div>
+            <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #f4f5f6"><span style="width:22px;height:22px;border-radius:50%;background:#f7f7f7;border:1px solid #e5e7eb;color:#6b7280;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">2</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">It generates validated JSON and <strong>imports to your Divi Library</strong> &mdash; unlimited.</p></div>
+            <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #f4f5f6"><span style="width:22px;height:22px;border-radius:50%;background:#f7f7f7;border:1px solid #e5e7eb;color:#6b7280;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">3</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Open the <strong>Visual Builder</strong> and drop the section onto any page.</p></div>
+            <div style="display:flex;gap:13px;padding:11px 0"><span style="width:22px;height:22px;border-radius:50%;background:#ecfdf3;border:1px solid #b7e9c8;color:#16a34a;display:flex;align-items:center;justify-content:center;flex:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Live on your site &mdash; you did the three-click assembly.</p></div>
+          </div>
+
+          <!-- pro panel -->
+          <div id="path-pro-1b" style="display:none">
+            <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #f6f0dd"><span style="width:22px;height:22px;border-radius:50%;background:#fdf3d3;border:1px solid #f2dfa8;color:#8a6d16;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">1</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5"><strong>Unlock the full toolkit</strong> &mdash; ships as a download with your Pro licence.</p></div>
+            <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #f6f0dd"><span style="width:22px;height:22px;border-radius:50%;background:#fdf3d3;border:1px solid #f2dfa8;color:#8a6d16;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">2</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">Ask for a <strong>full page</strong> &mdash; hero, features, FAQ &mdash; in your brand.</p></div>
+            <div style="display:flex;gap:13px;padding:11px 0;border-bottom:1px solid #f6f0dd"><span style="width:22px;height:22px;border-radius:50%;background:#fdf3d3;border:1px solid #f2dfa8;color:#8a6d16;font:700 11px 'Inter';display:flex;align-items:center;justify-content:center;flex:none">3</span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5">It extracts your colours &amp; fonts and writes <strong>SEO + JSON-LD schema</strong>.</p></div>
+            <div style="display:flex;gap:13px;padding:11px 0"><span style="width:22px;height:22px;border-radius:50%;background:#f9c32e;color:#3a2c05;display:flex;align-items:center;justify-content:center;flex:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p style="margin:0;font-size:13.5px;color:#374151;line-height:1.5"><strong>One command deploys it</strong> &mdash; draft or live &mdash; with screenshot QA.</p></div>
+            <div style="margin-top:6px;background:#faf6ec;border:1px solid #f2dfa8;border-radius:11px;padding:14px 15px">
+              <div style="display:flex;align-items:center;gap:7px;font:700 11px 'Inter';letter-spacing:.05em;text-transform:uppercase;color:#8a6d16;margin-bottom:9px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Z"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Installing the Pro skills</div>
+              <p style="margin:0 0 10px;font-size:12.5px;color:#5b5330;line-height:1.6">After upgrading, download the licensed toolkit <code style="font:500 11px 'JetBrains Mono',monospace;color:#8a6d16">.zip</code> from your iConnectIT account, unzip it, then:</p>
+              <div style="background:#141414;border-radius:9px;padding:12px 62px 12px 14px;font:500 12px/1.75 'JetBrains Mono',monospace;color:#e6e6e6;position:relative">
+                <div><span style="color:#f9c32e">$</span> claude plugin marketplace add <span style="color:#f9a86b">~/Downloads/divi5generate</span></div>
+                <div><span style="color:#f9c32e">$</span> claude plugin install <span style="color:#f9a86b">divi5generate@divi5generate</span></div>
+                <button onClick="{{ copyProInstall }}" data-label="Copy" style="position:absolute;top:9px;right:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#cbd0d8;border-radius:7px;padding:5px 9px;font:600 11px 'Inter';cursor:pointer">Copy</button>
+              </div>
+              <p style="margin:9px 0 0;font-size:11.5px;color:#a08a4a">Unlocks the advanced skills plus every Pro connector feature on this site.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- advanced tabs -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
+          <div style="display:flex;border-bottom:1px solid #f0f1f3">
+            <button id="advb-curl-1b" onClick="{{ advCurlB }}" style="border:none;background:#fff;padding:15px 20px;font:700 13px 'Inter';color:#0f0f0f;cursor:pointer;border-bottom:2px solid #f95e00">Example request</button>
+            <button id="advb-log-1b" onClick="{{ advLogB }}" style="border:none;background:#fff;padding:15px 20px;font:700 13px 'Inter';color:#9199a5;cursor:pointer;border-bottom:2px solid transparent">Activity log</button>
+          </div>
+          <div id="adv-curl-1b" style="padding:20px 22px">
+            <pre style="margin:0;background:#141414;color:#d4d4d4;padding:16px 18px;border-radius:10px;overflow-x:auto;font:500 12px/1.7 'JetBrains Mono',monospace"><span style="color:#7ec699">curl</span> -s -X POST \
+  '<span style="color:#f9a86b">https://plugin.iconnectit.co.uk/wp-json/divi5-generator/v1/import</span>' \
+  -H '<span style="color:#8fbce6">Content-Type</span>: application/json' \
+  -H '<span style="color:#8fbce6">X-D5G-Key</span>: <span style="color:#f9c32e">YOUR_KEY_HERE</span>' \
+  -d '{ "layout": {...}, "seo": {...}, "publish": false }'</pre>
+          </div>
+          <div id="adv-log-1b" style="display:none;padding:20px 22px">
+            <div style="border:1px dashed #dfe2e6;border-radius:12px;padding:26px;text-align:center;background:#fafbfc">
+              <div style="font:700 14px 'Inter';color:#4b5563">No imports yet</div>
+              <p style="margin:6px 0 0;font-size:12.5px;color:#9199a5">Your first import will appear here &mdash; time, slug, status and warnings.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT RAIL -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- credentials -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:20px">
+          <h3 style="margin:0 0 14px;font:800 14px 'Inter';color:#0f0f0f">For Claude</h3>
+          <div style="font:600 10.5px 'Inter';letter-spacing:.06em;text-transform:uppercase;color:#9199a5;margin-bottom:5px">Site URL</div>
+          <div style="display:flex;align-items:center;gap:8px;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;margin-bottom:14px"><code style="font:500 12px 'JetBrains Mono',monospace;color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://plugin.iconnectit.co.uk</code><button onClick="{{ copySiteUrl }}" data-label="&#10697;" style="background:#fff;border:1px solid #d7dae0;border-radius:6px;padding:5px 8px;font:600 12px 'Inter';color:#374151;cursor:pointer;flex:none">&#10697;</button></div>
+          <div style="font:600 10.5px 'Inter';letter-spacing:.06em;text-transform:uppercase;color:#9199a5;margin-bottom:5px">API key</div>
+          <div style="display:flex;align-items:center;gap:8px;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;margin-bottom:12px"><code style="font:500 12px 'JetBrains Mono',monospace;color:#9199a5;flex:1">d5gk_&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</code><span style="font-size:10.5px;color:#9199a5;flex:none">shown once</span></div>
+          <button style="width:100%;background:#fff;border:1px solid #d7dae0;border-radius:8px;padding:9px;font:600 12.5px 'Inter';color:#374151;cursor:pointer" style-hover="border-color:#f95e00;color:#f95e00">Regenerate key</button>
+        </div>
+
+        <!-- status -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:20px">
+          <h3 style="margin:0 0 14px;font:800 14px 'Inter';color:#0f0f0f">Site status</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f4f5f6"><span style="font-size:13px;color:#4b5563">API key</span><span style="display:inline-flex;align-items:center;gap:6px;font:600 12.5px 'Inter';color:#15803d"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e"></span>Active</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f4f5f6"><span style="font-size:13px;color:#4b5563">Plan</span><span style="font:700 12.5px 'Inter';color:#8a6d16;background:#fdf3d3;border:1px solid #f2dfa8;padding:2px 8px;border-radius:20px">Free</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f4f5f6"><span style="font-size:13px;color:#4b5563">SEO plugin</span><span style="display:inline-flex;align-items:center;gap:6px;font:600 12.5px 'Inter';color:#b32d2e"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Missing</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f4f5f6"><span style="font-size:13px;color:#4b5563">Divi 5</span><span style="display:inline-flex;align-items:center;gap:6px;font:600 12.5px 'Inter';color:#b32d2e"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Missing</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0"><span style="font-size:13px;color:#4b5563">Rate limit</span><span style="font:600 12.5px 'Inter';color:#4b5563">30 / min</span></div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f0f1f3">
+            <input id="test-in-1b" type="text" placeholder="Paste your API key" spellcheck="false" style="width:100%;background:#f7f7f7;border:1px solid #e5e7eb;border-radius:8px;padding:9px 11px;font:500 12px 'JetBrains Mono',monospace;color:#374151;outline:none;margin-bottom:9px" style-focus="border-color:#f95e00;background:#fff">
+            <button onClick="{{ testB }}" style="width:100%;background:#222428;color:#fff;border:none;border-radius:8px;padding:10px;font:700 12.5px 'Inter';cursor:pointer" style-hover="background:#000">Test connection</button>
+            <div id="test-res-1b" style="margin-top:9px;text-align:center;font:600 12.5px 'Inter';min-height:16px"></div>
+          </div>
+        </div>
+
+        <!-- pro card -->
+        <div style="background:linear-gradient(160deg,#222428,#2b2620 60%,#3a2410);border-radius:16px;padding:22px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-24px;top:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(249,195,46,.22),transparent 68%);pointer-events:none"></div>
+          <div style="position:relative">
+            <span style="display:inline-flex;align-items:center;gap:6px;font:700 10px 'Inter';letter-spacing:.08em;text-transform:uppercase;color:#f9c32e;background:rgba(249,195,46,.12);border:1px solid rgba(249,195,46,.4);padding:4px 9px;border-radius:20px"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Pro</span>
+            <h3 style="margin:12px 0 6px;font:800 17px/1.2 'Inter';color:#fff">Whole pages, not just sections</h3>
+            <p style="margin:0 0 14px;font-size:12.5px;color:#b9bcc4;line-height:1.5">Full page generation, SEO + schema, brand extract &amp; one-command deploy.</p>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px"><span style="font:800 22px 'Inter';color:#f9c32e">&pound;89</span><span style="font-size:12px;color:#8b8e97">/yr &middot; Single</span><span style="font-size:11.5px;color:#6b6e78;margin-left:auto">Agency &pound;249</span></div>
+            <button style="width:100%;background:#f95e00;color:#fff;border:none;border-radius:9px;padding:11px;font:700 13px 'Inter';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px" style-hover="background:#e05400">Upgrade to Pro <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px;color:#9199a5">
+      <span>Divi5 Generator v2.0.0 &middot; by <a href="#1b">iConnectIT</a></span>
+      <span><a href="#1b">Documentation</a> &middot; <a href="#1b">support@iconnectit.co.uk</a></span>
+    </div>
+
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "combine <a class="dv-oid" href="#1a">1a</a>'s Pro banner into <a class="dv-oid" href="#1b">1b</a>" &middot; "add a Free-vs-Pro comparison table" &middot; "show what the 401 / rate-limit test states look like" &middot; "new directions"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  mkCopy(text) {
+    return (e) => {
+      try { navigator.clipboard && navigator.clipboard.writeText(text); } catch (_) {}
+      const b = e.currentTarget;
+      if (b.dataset.busy) return;
+      b.dataset.busy = '1';
+      const html = b.innerHTML;
+      const oc = b.style.color, obc = b.style.borderColor;
+      b.innerHTML = 'Copied &#10003;';
+      b.style.color = '#16a34a';
+      b.style.borderColor = '#16a34a';
+      setTimeout(() => { b.innerHTML = html; b.style.color = oc; b.style.borderColor = obc; delete b.dataset.busy; }, 1300);
+    };
+  }
+  mkTest(inId, resId) {
+    return () => {
+      const inp = document.getElementById(inId);
+      const res = document.getElementById(resId);
+      if (!res) return;
+      const v = ((inp && inp.value) || '').trim();
+      if (!v) { res.textContent = 'Enter your key first'; res.style.color = '#dc2626'; return; }
+      res.textContent = 'Testing\u2026'; res.style.color = '#6b7280';
+      setTimeout(() => { res.textContent = '\u2713 Connected \u2014 key valid'; res.style.color = '#16a34a'; }, 700);
+    };
+  }
+  toggleAdvA(e) {
+    const b = document.getElementById('adv-1a');
+    const c = document.getElementById('advchev-1a');
+    if (!b) return;
+    const hidden = getComputedStyle(b).display === 'none';
+    b.style.display = hidden ? 'block' : 'none';
+    if (c) c.style.transform = hidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+  tab1b(which) {
+    const f = document.getElementById('path-free-1b'), p = document.getElementById('path-pro-1b');
+    const bf = document.getElementById('tabf-1b'), bp = document.getElementById('tabp-1b');
+    if (!f || !p) return;
+    const on = (btn) => { btn.style.background = '#fff'; btn.style.color = '#0f0f0f'; btn.style.boxShadow = '0 1px 2px rgba(0,0,0,.08)'; };
+    const off = (btn) => { btn.style.background = 'transparent'; btn.style.color = '#6b7280'; btn.style.boxShadow = 'none'; };
+    if (which === 'free') { f.style.display = ''; p.style.display = 'none'; on(bf); off(bp); }
+    else { p.style.display = ''; f.style.display = 'none'; on(bp); off(bf); }
+  }
+  adv1b(which) {
+    const c = document.getElementById('adv-curl-1b'), l = document.getElementById('adv-log-1b');
+    const bc = document.getElementById('advb-curl-1b'), bl = document.getElementById('advb-log-1b');
+    if (!c || !l) return;
+    const on = (btn) => { btn.style.color = '#0f0f0f'; btn.style.borderBottomColor = '#f95e00'; };
+    const off = (btn) => { btn.style.color = '#9199a5'; btn.style.borderBottomColor = 'transparent'; };
+    if (which === 'curl') { c.style.display = ''; l.style.display = 'none'; on(bc); off(bl); }
+    else { l.style.display = ''; c.style.display = 'none'; on(bl); off(bc); }
+  }
+  renderVals() {
+    const endpoint = 'https://plugin.iconnectit.co.uk/wp-json/divi5-generator/v1/import';
+    const siteUrl = 'https://plugin.iconnectit.co.uk';
+    const installCmd = 'claude plugin marketplace add Kieransaunders/divi5-starter\nclaude plugin install divi5-starter';
+    const proInstallCmd = 'claude plugin marketplace add ~/Downloads/divi5generate\nclaude plugin install divi5generate@divi5generate';
+    return {
+      copyEndpoint: this.mkCopy(endpoint),
+      copySiteUrl: this.mkCopy(siteUrl),
+      copyInstall: this.mkCopy(installCmd),
+      copyProInstall: this.mkCopy(proInstallCmd),
+      testA: this.mkTest('test-in-1a', 'test-res-1a'),
+      testB: this.mkTest('test-in-1b', 'test-res-1b'),
+      toggleAdvA: (e) => this.toggleAdvA(e),
+      tabFreeB: () => this.tab1b('free'),
+      tabProB: () => this.tab1b('pro'),
+      advCurlB: () => this.adv1b('curl'),
+      advLogB: () => this.adv1b('log'),
+    };
+  }
+}
+</script>
+</body>
+</html>

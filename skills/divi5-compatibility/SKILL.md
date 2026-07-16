@@ -2,6 +2,7 @@
 name: Divi 5 Compatibility
 description: Use this skill when validating CSS for Divi 5 / Divi 5.6 compatibility, checking unsupported features or units, troubleshooting Divi CSS that isn't applying, debugging plugin conflicts (WP Rocket, LiteSpeed, Wordfence, WooCommerce, Perfmatters), migrating from Divi 4 to Divi 5, understanding breakpoints, applying the 5.5 Aspect Ratio + Framing settings to prevent CLS, using the 5.3 pseudo-class editing modes (:checked / :focus / :active) instead of custom CSS, the 5.4 Sizing Variable Generator and Relative Colorscheme Generator, the 5.6 new modules (Timeline, Breadcrumbs, SVG, Table of Contents, Instagram Feed), Nested Option Presets, Critical CSS / Dynamic CSS / Inline Stylesheets, or fixing "styles not working" / "button override not working" / "static CSS cache" issues. Provides compatibility rules, validation patterns, specificity fixes, composable settings alternatives, version-specific bug fix history, and a full error-message reference.
 user-invocable: false
+license: MIT
 ---
 
 # Divi 5 Compatibility Reference
