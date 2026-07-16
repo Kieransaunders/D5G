@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "divi5-starter",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Generate a polished, importable Divi 5 services section (3 columns: icon, title, description) from a plain-English brief. Free starter from the D5G toolkit.",
       "source": "./",
       "category": "productivity"
