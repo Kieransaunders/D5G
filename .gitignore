@@ -51,13 +51,12 @@ skills/divi5-page-generator/*-registry.json
 skills/divi5-page-generator/*-seo-meta.json
 skills/divi5-page-generator/__unlink_probe*
 
-# Divi5 Generator — dev tooling only (not shipped in the installable zip).
-# vendor/ is installed by `composer install`; tests/.phpunit.cache is PHPUnit's
-# result cache. Both are excluded from the zip by build-plugin-zip.sh.
-plugin/divi5-generator/vendor/
-plugin/divi5-generator/tests/.phpunit.cache/
-plugin/divi5-generator/package-lock.json
-plugin/divi5-generator/node_modules/
+# WordPress plugin split into its own PRIVATE repo (16/07/2026): its
+# Pro-gating logic (RestApi.php, PageCompiler.php, DbExporter/DbImporter)
+# can't sit inside this now-public toolkit repo without giving away the
+# whole enforcement mechanism the Freemius gate depends on. Plugin source
+# + history now lives at github.com/Kieransaunders/divi5-generator (private).
+/plugin/
 
 # Root vendor/ + composer files are unused cruft — the WordPress plugin under
 # plugin/divi5-generator/ carries its own vendor/. Nothing in skills/, commands/
